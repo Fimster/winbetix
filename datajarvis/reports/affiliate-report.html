@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DataJarvis — Affiliates Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;
+  --border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;
+  --accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;
+  --yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;
+  --mono:'Roboto Mono',monospace;--sans:'Roboto',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;min-height:100vh;overflow:hidden;font-weight:400;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.logo{padding:20px 20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.logo-name{font-family:var(--sans);font-weight:700;font-size:17px;letter-spacing:-.02em;}
+.logo-name span{color:var(--accent2);}
+.nav{flex:1;padding:12px 0;}
+.nav-section{padding:8px 16px 4px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:12.5px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;transition:all .15s;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--text);background:rgba(61,127,255,.08);border-left-color:var(--teal);font-weight:500;}
+.nav-item .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0;}
+.nav-item.active .dot{opacity:1;background:var(--teal);}
+.sidebar-bottom{padding:14px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;cursor:pointer;}
+.avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--purple),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-info{flex:1;overflow:hidden;}
+.user-name{font-size:12px;font-weight:500;}
+.user-role{font-size:9.5px;color:var(--muted);font-family:var(--mono);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* ── TOPBAR ── */
+.topbar{height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;}
+.breadcrumb{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.breadcrumb span{color:var(--text);font-weight:500;}
+.update-badge{font-family:var(--mono);font-size:10px;color:var(--green);background:rgba(34,208,122,.1);border:1px solid rgba(34,208,122,.2);padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;}
+.update-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.spacer{flex:1;}
+.btn{height:28px;padding:0 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-size:11px;font-family:var(--sans);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:border-color .15s;}
+.btn:hover{border-color:var(--accent);}
+.btn.primary{background:rgba(61,127,255,.15);border-color:var(--accent);color:var(--accent2);}
+.btn-icon{width:28px;height:28px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:12px;}
+
+/* ── SECTION TABS ── */
+.section-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 20px;flex-shrink:0;}
+.tab{padding:0 14px;height:38px;display:flex;align-items:center;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;gap:6px;transition:color .15s;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:500;}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:7px;flex-shrink:0;height:44px;overflow-x:auto;}
+.filter-bar::-webkit-scrollbar{height:3px;}
+.filter-bar::-webkit-scrollbar-thumb{background:var(--border2);}
+.filter-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.filter-chip{display:flex;align-items:center;gap:4px;height:24px;padding:0 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap;transition:border-color .15s;font-family:var(--sans);}
+.filter-chip:hover{border-color:var(--accent);}
+.filter-chip.active{border-color:var(--accent);background:rgba(61,127,255,.1);color:var(--accent2);}
+.filter-chip .cv{font-size:8px;opacity:.5;margin-left:2px;}
+.filter-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;}
+
+/* ── GROUP BY ROW ── */
+.groupby-row{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:6px;height:34px;flex-shrink:0;}
+.gb-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex-shrink:0;}
+.gb-tab{height:22px;padding:0 9px;border-radius:3px;font-size:10px;font-family:var(--mono);color:var(--muted);cursor:pointer;display:flex;align-items:center;transition:all .15s;}
+.gb-tab:hover{color:var(--text);background:var(--surface2);}
+.gb-tab.active{color:var(--text);background:var(--surface2);border:1px solid var(--border2);}
+.result-info{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-left:auto;}
+.result-info span{color:var(--text);}
+
+/* ── KPI STRIP ── */
+.kpi-wrap{padding:12px 20px 0;flex-shrink:0;background:var(--bg);}
+.kpi-row-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;margin-bottom:7px;}
+.kpi-row-label.lbl-aff{color:var(--teal);background:rgba(0,201,177,.1);border:1px solid rgba(0,201,177,.2);}
+.kpi-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:7px;margin-bottom:10px;}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:10px 12px 8px;position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card.cb::before{background:var(--accent);}
+.kpi-card.cg::before{background:var(--green);}
+.kpi-card.ct::before{background:var(--teal);}
+.kpi-card.cy::before{background:var(--yellow);}
+.kpi-card.cp::before{background:var(--purple);}
+.kpi-card.co::before{background:var(--orange);}
+.kpi-card.cr::before{background:var(--red);}
+.kc-label{font-family:var(--mono);font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.kc-val{font-family:var(--mono);font-size:15px;font-weight:500;line-height:1.1;}
+.kc-delta{font-family:var(--mono);font-size:8.5px;margin-top:3px;}
+.kc-delta.up{color:var(--green);}
+.kc-delta.dn{color:var(--red);}
+.kc-delta.neu{color:var(--muted2);}
+.mini-bars{margin-top:6px;display:flex;align-items:flex-end;gap:2px;height:16px;}
+.mini-bars .b{flex:1;border-radius:1px 1px 0 0;opacity:.5;}
+
+/* ── TABLE ── */
+.table-section{flex:1;display:flex;flex-direction:column;overflow:hidden;margin-top:8px;}
+.table-wrap{flex:1;overflow:auto;}
+.table-wrap::-webkit-scrollbar{width:5px;height:5px;}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+table{border-collapse:collapse;min-width:100%;}
+thead{position:sticky;top:0;z-index:20;}
+.th-group{background:var(--surface2);border-bottom:1px solid var(--border);}
+.th-group th{padding:4px 0;text-align:center;font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:400;border-right:1px solid var(--border);white-space:nowrap;}
+.th-group th.g-traffic{color:var(--accent2);background:rgba(61,127,255,.06);}
+.th-group th.g-ret{color:var(--purple);background:rgba(155,125,255,.06);}
+.th-group th.g-dep{color:var(--green);background:rgba(34,208,122,.05);}
+.th-group th.g-rev{color:var(--teal);background:rgba(0,201,177,.05);}
+.th-group th.g-cost{color:var(--yellow);background:rgba(245,183,49,.04);}
+.th-group th.g-pl{color:var(--red);background:rgba(255,77,106,.05);}
+.th-cols{background:var(--surface2);border-bottom:2px solid var(--border2);}
+.th-cols th{padding:0 7px;height:28px;text-align:right;font-family:var(--mono);font-size:8px;color:var(--muted2);font-weight:400;border-right:1px solid var(--border);white-space:nowrap;cursor:pointer;vertical-align:middle;transition:color .1s;}
+.th-cols th:hover{color:var(--text);background:var(--surface3);}
+.th-cols th.sc{text-align:left;position:sticky;left:0;z-index:10;background:var(--surface2);min-width:200px;}
+.th-cols th.sorted{color:var(--accent2);}
+.col-sep{border-left:2px solid var(--border2)!important;}
+
+/* rows */
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+tbody tr:hover{background:var(--surface2)!important;}
+
+/* row levels */
+tr.row-total td{background:rgba(61,127,255,.05)!important;font-weight:500;}
+tr.row-total td.sc{background:rgba(61,127,255,.05)!important;}
+tr.row-aff td{background:var(--surface);}
+tr.row-aff td.sc{background:var(--surface);}
+tr.row-aff:hover td{background:var(--surface2)!important;}
+tr.row-aff:hover td.sc{background:var(--surface2)!important;}
+tr.row-mi td{background:var(--bg);}
+tr.row-mi td.sc{background:var(--bg);}
+tr.row-mi:hover td{background:rgba(255,255,255,.015)!important;}
+tr.row-mi:hover td.sc{background:rgba(255,255,255,.015)!important;}
+tr.row-geo td{background:var(--bg);}
+tr.row-geo td.sc{background:var(--bg);}
+tr.row-geo:hover td{background:rgba(0,201,177,.04)!important;}
+tr.row-geo:hover td.sc{background:rgba(0,201,177,.04)!important;}
+
+td{padding:0 7px;height:31px;font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:right;border-right:1px solid var(--border);white-space:nowrap;vertical-align:middle;}
+td.sc{text-align:left;position:sticky;left:0;z-index:5;min-width:200px;max-width:260px;}
+td.num{text-align:right;}
+td.n{text-align:right;}
+
+/* name cell */
+.name-cell{display:flex;align-items:center;gap:0;overflow:hidden;}
+.expand-btn{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:2px;background:var(--surface3);border:1px solid var(--border2);color:var(--muted);font-size:.6rem;margin-right:5px;flex-shrink:0;cursor:pointer;transition:all .15s;}
+.expand-btn.open{background:rgba(0,201,177,.15);border-color:var(--teal);color:var(--teal);}
+.aff-row-content{display:flex;flex-direction:column;gap:1px;overflow:hidden;}
+.aff-name{font-size:11.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.aff-sub{font-family:var(--mono);font-size:8.5px;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.aff-id{font-family:var(--mono);font-size:8px;color:var(--muted);background:var(--surface3);border:1px solid var(--border);border-radius:2px;padding:0px 4px;}
+
+.mi-name{font-size:10.5px;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
+.mi-sub{font-family:var(--mono);font-size:8px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+
+.geo-cell{display:flex;align-items:center;gap:5px;}
+.flag{font-size:.9rem;}
+.geo-code{font-family:var(--mono);font-size:9px;color:var(--muted2);}
+
+/* indent */
+.i1{padding-left:8px;}
+.i2{padding-left:18px;}
+.i3{padding-left:30px;}
+
+/* traffic badges */
+.tb{display:inline-block;font-family:var(--mono);font-size:7.5px;font-weight:500;padding:1px 5px;border-radius:3px;letter-spacing:.03em;}
+.tb-seo{background:rgba(61,127,255,.15);color:var(--accent2);}
+.tb-sms{background:rgba(34,208,122,.12);color:var(--green);}
+.tb-fb{background:rgba(91,146,255,.12);color:#7aa3ff;}
+.tb-ppc{background:rgba(245,183,49,.12);color:var(--yellow);}
+.tb-aso{background:rgba(155,125,255,.12);color:var(--purple);}
+.tb-email{background:rgba(0,201,177,.12);color:var(--teal);}
+.tb-inf{background:rgba(255,140,66,.12);color:var(--orange);}
+.tb-oth{background:rgba(90,100,120,.15);color:var(--muted2);}
+
+/* color cells */
+.c-green{color:var(--green)!important;}
+.c-red{color:var(--red)!important;}
+.c-teal{color:var(--teal)!important;}
+.c-yellow{color:var(--yellow)!important;}
+.c-accent{color:var(--accent2)!important;}
+.c-purple{color:var(--purple)!important;}
+.c-muted{color:var(--muted)!important;}
+
+/* r2d coloring */
+.r2d-hi{color:var(--teal)!important;}
+.r2d-mid{color:var(--yellow)!important;}
+.r2d-lo{color:var(--red)!important;}
+
+/* column group tints */
+.g-traffic-c{background:rgba(61,127,255,.025);}
+.g-ret-c{background:rgba(155,125,255,.025);}
+.g-dep-c{background:rgba(34,208,122,.02);}
+.g-rev-c{background:rgba(0,201,177,.02);}
+.g-cost-c{background:rgba(245,183,49,.02);}
+.g-pl-c{background:rgba(255,77,106,.02);}
+
+/* performance flags */
+.pflag{display:inline-flex;align-items:center;font-family:var(--mono);font-size:7px;font-weight:500;padding:1px 4px;border-radius:2px;letter-spacing:.04em;margin-right:2px;}
+.pf-loss{background:rgba(255,77,106,.18);color:var(--red);border:1px solid rgba(255,77,106,.3);}
+.pf-hcpa{background:rgba(245,183,49,.15);color:var(--yellow);border:1px solid rgba(245,183,49,.25);}
+.pf-lr2d{background:rgba(255,140,66,.15);color:var(--orange);border:1px solid rgba(255,140,66,.25);}
+.pf-top{background:rgba(0,201,177,.15);color:var(--teal);border:1px solid rgba(0,201,177,.25);}
+
+/* table footer */
+.tfoot{height:34px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0;}
+.fstat{font-family:var(--mono);font-size:9.5px;color:var(--muted);}
+.fstat span{color:var(--muted2);}
+
+/* ── HOVER TOOLTIP ── */
+#tooltip{position:fixed;z-index:9000;pointer-events:none;opacity:0;transition:opacity .12s;width:260px;}
+#tooltip.show{opacity:1;}
+.tt{background:var(--surface);border:1px solid var(--border2);border-radius:8px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.7);}
+.tt-head{padding:10px 12px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.tt-av{width:28px;height:28px;border-radius:5px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0;font-family:var(--sans);}
+.tt-nm{font-size:11px;font-weight:500;color:var(--text);}
+.tt-sb{font-family:var(--mono);font-size:8.5px;color:var(--muted);margin-top:1px;}
+.tt-kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);}
+.tt-kpi{padding:7px 9px;background:var(--surface);}
+.tt-kl{font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.tt-kv{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);margin-top:2px;}
+.tt-rows{padding:7px 12px;}
+.tt-row{display:flex;justify-content:space-between;align-items:center;padding:2.5px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.tt-row:last-child{border:none;}
+.tt-rl{font-family:var(--mono);font-size:8px;color:var(--muted);}
+.tt-rv{font-family:var(--mono);font-size:8.5px;color:var(--muted2);}
+.tt-hint{padding:5px 12px;font-family:var(--mono);font-size:8px;color:var(--muted);background:var(--surface2);border-top:1px solid var(--border);text-align:center;}
+
+/* ── SIDE PANEL ── */
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:399;opacity:0;pointer-events:none;transition:opacity .25s;}
+#overlay.open{opacity:1;pointer-events:all;}
+#sp{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--surface);border-left:1px solid var(--border2);z-index:400;transform:translateX(100%);transition:transform .28s cubic-bezier(.2,0,0,1);overflow-y:auto;display:flex;flex-direction:column;}
+#sp.open{transform:none;}
+#sp::-webkit-scrollbar{width:5px;}
+#sp::-webkit-scrollbar-thumb{background:var(--border2);}
+.sp-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(--surface);z-index:5;}
+.sp-av{width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0;font-family:var(--sans);}
+.sp-info{flex:1;}
+.sp-name{font-size:13px;font-weight:600;color:var(--text);}
+.sp-meta{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+.sp-close{width:26px;height:26px;border-radius:5px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sp-close:hover{border-color:var(--red);color:var(--red);}
+.sp-sec{padding:12px 18px;border-bottom:1px solid var(--border);}
+.sp-sec-title{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+.sp-kpis{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.sp-kpi{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 11px;}
+.sp-kl{font-family:var(--mono);font-size:7px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+.sp-kv{font-family:var(--mono);font-size:1rem;font-weight:500;margin-top:3px;}
+.sp-mi-item{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:8px 11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.sp-mi-item:last-child{margin-bottom:0;}
+.sp-mi-name{font-size:11px;font-weight:500;color:var(--text);max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sp-mi-sub{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:2px;}
+.sp-mi-val{font-family:var(--mono);font-size:11px;font-weight:500;flex-shrink:0;}
+.sp-geo-row{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.sp-geo-row:last-child{border:none;}
+.sp-geo-bar{flex:1;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.sp-geo-fill{height:100%;border-radius:2px;background:var(--teal);}
+.perf-bar-row{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.perf-bar-row:last-child{border:none;}
+.pb-label{font-family:var(--mono);font-size:8px;color:var(--muted);width:70px;flex-shrink:0;}
+.pb-inner{flex:1;height:5px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.pb-fill{height:100%;border-radius:2px;transition:width .5s .1s;}
+.pb-val{font-family:var(--mono);font-size:8.5px;width:58px;text-align:right;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">Data<span>Jarvis</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Platform</div>
+    <a class="nav-item " href="../index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V9h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Hub
+    </a>
+
+    <div class="nav-section">Reports</div>
+    <a class="nav-item " href="dashboard.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item " href="daily-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Daily Performance
+    </a>
+    <a class="nav-item " href="payment-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="10.5" r="1" fill="currentColor"/></svg>
+      Payment
+    </a>
+    <a class="nav-item " href="churn-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 7l3 3 2.5-4 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn Rate
+    </a>
+    <a class="nav-item " href="inout-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      In / Out
+    </a>
+    <a class="nav-item active" href="affiliate-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="3" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v2M6 10L4.5 10.5M10 10l1.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Affiliate
+    </a>
+
+    <div class="nav-section">Resources</div>
+    <a class="nav-item" href="../docs/index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Documentation
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Anna K.</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="breadcrumb">Reports / <span>Affiliates Report</span></span>
+    <div class="update-badge"><div class="update-dot"></div>Updated 10 Mar 2026</div>
+    <div class="spacer"></div>
+    <div class="btn">📊 Columns</div>
+    <div class="btn">🔗 Share view</div>
+    <div class="btn primary">↓ Export</div>
+    <div class="btn-icon">↻</div>
+  </div>
+
+  <!-- TABS -->
+  <div class="section-tabs">
+    <div class="tab active">📊 Overview</div>
+    <div class="tab">👤 By Affiliate</div>
+    <div class="tab">📎 By Media Item</div>
+    <div class="tab">🌍 By GEO</div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-bar">
+    <span class="filter-label">Period</span>
+    <div class="filter-chip active">📅 1–12 Mar 2026 <span class="cv">▾</span></div>
+    <div class="filter-sep"></div>
+    <div class="filter-chip" id="fc-brand">Brand <span class="cv">▾</span></div>
+    <div class="filter-chip" id="fc-geo">GEO <span class="cv">▾</span></div>
+    <div class="filter-chip" id="fc-traffic">Traffic Type <span class="cv">▾</span></div>
+    <div class="filter-chip" id="fc-manager">Manager <span class="cv">▾</span></div>
+    <div class="filter-sep"></div>
+    <div class="filter-chip" id="fc-search" onclick="toggleSearch()">🔍 Search</div>
+    <input id="search-input" style="display:none;height:24px;background:var(--surface2);border:1px solid var(--accent);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:10px;padding:0 8px;outline:none;width:160px;" placeholder="Affiliate / Media Item…" oninput="applyFilters()">
+    <div class="spacer"></div>
+    <div id="flags-toggle" class="filter-chip" onclick="toggleFlags()" style="border-color:var(--yellow);color:var(--yellow);background:rgba(245,183,49,.06);">⚠ Perf Flags ON</div>
+  </div>
+
+  <!-- GROUP BY -->
+  <div class="groupby-row">
+    <span class="gb-label">Group by</span>
+    <div class="gb-tab active" onclick="setGroupBy('aff')">Affiliate → MI → GEO</div>
+    <div class="gb-tab" onclick="setGroupBy('mi')">Media Item → GEO</div>
+    <div class="gb-tab" onclick="setGroupBy('geo')">GEO → MI</div>
+    <div class="gb-tab" onclick="setGroupBy('flat')">Flat List</div>
+    <div class="spacer"></div>
+    <div class="result-info" id="result-info">— affiliates · — rows</div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-wrap">
+    <div style="margin-bottom:6px"><span class="kpi-row-label lbl-aff">● TOTAL — ALL AFFILIATES</span></div>
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card cb">
+        <div class="kc-label">FTDs</div>
+        <div class="kc-val" id="k-ftds">—</div>
+        <div class="kc-delta neu" id="k-ftds-d">— regs total</div>
+        <div class="mini-bars" id="k-ftds-bars"></div>
+      </div>
+      <div class="kpi-card ct">
+        <div class="kc-label">R2D %</div>
+        <div class="kc-val c-teal" id="k-r2d">—</div>
+        <div class="kc-delta neu" id="k-r2d-d">reg→dep conv</div>
+        <div class="mini-bars" id="k-r2d-bars"></div>
+      </div>
+      <div class="kpi-card cg">
+        <div class="kc-label">Dep FTD, €</div>
+        <div class="kc-val" id="k-depftd">—</div>
+        <div class="kc-delta neu" id="k-depftd-d">—</div>
+        <div class="mini-bars" id="k-depftd-bars"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kc-label">PV FTD, €</div>
+        <div class="kc-val" id="k-pvftd">—</div>
+        <div class="kc-delta neu">avg per FTD</div>
+        <div class="mini-bars" id="k-pvftd-bars"></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kc-label">Total Deps, €</div>
+        <div class="kc-val" id="k-deps">—</div>
+        <div class="kc-delta neu" id="k-deps-d">—</div>
+        <div class="mini-bars" id="k-deps-bars"></div>
+      </div>
+      <div class="kpi-card cy">
+        <div class="kc-label">Mkt Cost, €</div>
+        <div class="kc-val c-yellow" id="k-mkt">—</div>
+        <div class="kc-delta neu" id="k-mkt-d">—</div>
+        <div class="mini-bars" id="k-mkt-bars"></div>
+      </div>
+      <div class="kpi-card co">
+        <div class="kc-label">eCPA, €</div>
+        <div class="kc-val" id="k-ecpa">—</div>
+        <div class="kc-delta neu">cost per FTD</div>
+        <div class="mini-bars" id="k-ecpa-bars"></div>
+      </div>
+      <div class="kpi-card cp">
+        <div class="kc-label">ROI %</div>
+        <div class="kc-val c-purple" id="k-roi">—</div>
+        <div class="kc-delta neu">NGR / Mkt Cost</div>
+        <div class="mini-bars" id="k-roi-bars"></div>
+      </div>
+      <div class="kpi-card" id="k-profit-card">
+        <div class="kc-label">NET PROFIT, €</div>
+        <div class="kc-val" id="k-profit">—</div>
+        <div class="kc-delta neu" id="k-profit-d">—</div>
+        <div class="mini-bars" id="k-profit-bars"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section">
+    <div class="table-wrap">
+      <table id="main-table">
+        <thead>
+          <tr class="th-group">
+            <th style="min-width:200px;border-right:2px solid var(--border2);"></th>
+            <th colspan="3" class="g-traffic">TRAFFIC</th>
+            <th colspan="3" class="g-ret">RETENTION</th>
+            <th colspan="5" class="g-dep">DEPOSITS</th>
+            <th colspan="4" class="g-rev">REVENUE</th>
+            <th colspan="4" class="g-cost">COSTS</th>
+            <th colspan="3" class="g-pl">P &amp; L</th>
+            <th style="background:var(--bg);border-right:1px solid var(--border);"></th>
+          </tr>
+          <tr class="th-cols">
+            <th class="sc">Affiliate / Media Item</th>
+            <!-- Traffic -->
+            <th class="col-sep g-traffic-c" data-sort="regs">Regs</th>
+            <th class="g-traffic-c" data-sort="ftds">FTDs</th>
+            <th class="g-traffic-c" data-sort="r2d">R2D%</th>
+            <!-- Retention -->
+            <th class="col-sep g-ret-c" data-sort="retNew">Ret.NEW%</th>
+            <th class="g-ret-c" data-sort="retOld">Ret.OLD%</th>
+            <th class="g-ret-c" data-sort="retTot">Ret.Tot%</th>
+            <!-- Deposits -->
+            <th class="col-sep g-dep-c" data-sort="depsTotal">Deps €</th>
+            <th class="g-dep-c" data-sort="depsFtd">FTD Deps €</th>
+            <th class="g-dep-c" data-sort="pvFtd">PV FTD</th>
+            <th class="g-dep-c" data-sort="depsOld">OLD Deps €</th>
+            <th class="g-dep-c" data-sort="pvOld">PV OLD</th>
+            <!-- Revenue -->
+            <th class="col-sep g-rev-c" data-sort="netCash">Net Cash €</th>
+            <th class="g-rev-c" data-sort="ggr">GGR €</th>
+            <th class="g-rev-c" data-sort="bonus">Bonus €</th>
+            <th class="g-rev-c" data-sort="ngr">NGR €</th>
+            <!-- Costs -->
+            <th class="col-sep g-cost-c" data-sort="mktCost">Mkt Cost €</th>
+            <th class="g-cost-c" data-sort="cpa">CPA</th>
+            <th class="g-cost-c" data-sort="rs">Rev Share €</th>
+            <th class="g-cost-c" data-sort="eCPA">eCPA €</th>
+            <!-- P&L -->
+            <th class="col-sep g-pl-c" data-sort="grossProfit">Gross €</th>
+            <th class="sorted g-pl-c" data-sort="netProfit">Net Profit € ↓</th>
+            <th class="g-pl-c" data-sort="roi">ROI %</th>
+            <th style="background:var(--bg);min-width:70px;">Flags</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="tfoot">
+      <span class="fstat">Showing <span id="ft-rows">—</span> affiliates</span>
+      <span class="fstat">Period: <span>1–12 Mar 2026</span></span>
+      <span class="fstat">Updated: <span>10 Mar 2026</span></span>
+      <div class="spacer"></div>
+      <div class="btn primary" style="font-size:10px;font-family:var(--mono);">↓ Export .xlsx</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div class="tt">
+    <div class="tt-head">
+      <div class="tt-av" id="tt-av"></div>
+      <div><div class="tt-nm" id="tt-nm"></div><div class="tt-sb" id="tt-sb"></div></div>
+    </div>
+    <div class="tt-kpis">
+      <div class="tt-kpi"><div class="tt-kl">FTDs</div><div class="tt-kv" id="tt-ftds"></div></div>
+      <div class="tt-kpi"><div class="tt-kl">eCPA</div><div class="tt-kv" id="tt-ecpa"></div></div>
+      <div class="tt-kpi"><div class="tt-kl">ROI</div><div class="tt-kv" id="tt-roi"></div></div>
+    </div>
+    <div class="tt-rows">
+      <div class="tt-row"><span class="tt-rl">Net Cash</span><span class="tt-rv" id="tt-nc"></span></div>
+      <div class="tt-row"><span class="tt-rl">NGR</span><span class="tt-rv" id="tt-ngr"></span></div>
+      <div class="tt-row"><span class="tt-rl">Mkt Cost</span><span class="tt-rv" id="tt-mkt"></span></div>
+      <div class="tt-row"><span class="tt-rl">NET PROFIT</span><span class="tt-rv" id="tt-profit" style="font-weight:500"></span></div>
+    </div>
+    <div class="tt-hint">Click row to open full affiliate profile →</div>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay" onclick="closePanel()"></div>
+
+<!-- SIDE PANEL -->
+<div id="sp">
+  <div class="sp-head">
+    <div class="sp-av" id="sp-av"></div>
+    <div class="sp-info">
+      <div class="sp-name" id="sp-name"></div>
+      <div class="sp-meta" id="sp-meta"></div>
+    </div>
+    <button class="sp-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="sp-sec">
+    <div class="sp-sec-title">Performance Summary</div>
+    <div class="sp-kpis" id="sp-kpis"></div>
+  </div>
+  <div class="sp-sec">
+    <div class="sp-sec-title">Media Items</div>
+    <div id="sp-mis"></div>
+  </div>
+  <div class="sp-sec">
+    <div class="sp-sec-title">GEO Breakdown</div>
+    <div id="sp-geos"></div>
+  </div>
+  <div class="sp-sec">
+    <div class="sp-sec-title">Key Metrics vs Cost</div>
+    <div id="sp-bars"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════
+//  DATA
+// ══════════════════════
+const GF = {GB:'🇬🇧',AU:'🇦🇺',DE:'🇩🇪',CH:'🇨🇭',AT:'🇦🇹',TR:'🇹🇷',NL:'🇳🇱',ES:'🇪🇸',LV:'🇱🇻',GR:'🇬🇷',CA:'🇨🇦',FR:'🇫🇷'};
+const TB_MAP = {SEO:'tb-seo',SMS:'tb-sms',Facebook:'tb-fb',PPC:'tb-ppc',ASO:'tb-aso','Email Marketing':'tb-email',Influence:'tb-inf',Other:'tb-oth'};
+const TB_SHORT = {SEO:'SEO',SMS:'SMS',Facebook:'FB',PPC:'PPC',ASO:'ASO','Email Marketing':'EMAIL',Influence:'INF',Other:'OTH'};
+
+const DATA = [
+  { affId:331228, affName:'seoaffiliates30', manager:'Iryna K', brand:'projectx',
+    mediaItems:[
+      { mid:2051739, name:'site 3 - UK:Britsino:550+45%', trafficType:'SEO', geos:[
+        { geo:'GB', regs:89,ftds:49,retNew:.266,retOld:null,retTot:.266,depsTotal:29052,depsFtd:18752,pvFtd:382.7,depsOld:10300,pvOld:605.9,withdr:11135,netCash:17918,ggr:34089,bonus:8417,ngr:25672,mktCost:24586,cpa:20900,rs:3686,eCPA:501.7,grossProfit:25672,netProfit:1087 },
+        { geo:'AU', regs:34,ftds:18,retNew:.31,retOld:null,retTot:.31,depsTotal:9870,depsFtd:7100,pvFtd:394.4,depsOld:2770,pvOld:462,withdr:3200,netCash:6670,ggr:12200,bonus:3100,ngr:9100,mktCost:7200,cpa:6500,rs:700,eCPA:400,grossProfit:9100,netProfit:1900 }
+      ]}
+    ]
+  },
+  { affId:329132, affName:'galaxygoldM', manager:'Iryna K', brand:'projectx',
+    mediaItems:[
+      { mid:1926820, name:'Britsino UK 300/0 sms', trafficType:'SMS', geos:[
+        { geo:'GB', regs:352,ftds:40,retNew:.143,retOld:.472,retTot:.248,depsTotal:19732,depsFtd:6874,pvFtd:171.9,depsOld:12858,pvOld:459.2,withdr:824,netCash:18909,ggr:21314,bonus:7709,ngr:15544,mktCost:9900,cpa:9900,rs:0,eCPA:247.5,grossProfit:15544,netProfit:5644 }
+      ]},
+      { mid:1984503, name:'Britsino AU 250 sms', trafficType:'SMS', geos:[
+        { geo:'AU', regs:128,ftds:22,retNew:.19,retOld:.38,retTot:.25,depsTotal:8900,depsFtd:4300,pvFtd:195.5,depsOld:4600,pvOld:287.5,withdr:600,netCash:8300,ggr:11200,bonus:3800,ngr:7400,mktCost:5500,cpa:5500,rs:0,eCPA:250,grossProfit:7400,netProfit:1900 }
+      ]}
+    ]
+  },
+  { affId:357815, affName:'Anatolii', manager:'Iryna K', brand:'projectx',
+    mediaItems:[
+      { mid:2064555, name:'Britsino UK 200 FB', trafficType:'Facebook', geos:[
+        { geo:'GB', regs:339,ftds:40,retNew:.308,retOld:null,retTot:.308,depsTotal:4293,depsFtd:3615,pvFtd:90.4,depsOld:678,pvOld:169.4,withdr:564,netCash:3729,ggr:4817,bonus:2215,ngr:2602,mktCost:6300,cpa:6300,rs:0,eCPA:157.5,grossProfit:2602,netProfit:-3698 }
+      ]},
+      { mid:2064890, name:'Britsino DE 180 FB', trafficType:'Facebook', geos:[
+        { geo:'DE', regs:287,ftds:31,retNew:.12,retOld:null,retTot:.12,depsTotal:5100,depsFtd:4100,pvFtd:132.3,depsOld:1000,pvOld:250,withdr:890,netCash:4210,ggr:6200,bonus:2700,ngr:3500,mktCost:8680,cpa:8680,rs:0,eCPA:280,grossProfit:3500,netProfit:-5180 }
+      ]}
+    ]
+  },
+  { affId:355959, affName:'SevenSeven', manager:'Iryna K', brand:'projectx',
+    mediaItems:[
+      { mid:2072173, name:'Britsino UK 150 FB', trafficType:'Facebook', geos:[
+        { geo:'GB', regs:337,ftds:38,retNew:null,retOld:null,retTot:null,depsTotal:2811,depsFtd:2811,pvFtd:74,depsOld:0,pvOld:null,withdr:809,netCash:2002,ggr:1470,bonus:1337,ngr:1183,mktCost:3600,cpa:3600,rs:0,eCPA:94.7,grossProfit:1183,netProfit:-2417 }
+      ]},
+      { mid:2055489, name:'Britsino UK 220 FB', trafficType:'Facebook', geos:[
+        { geo:'GB', regs:157,ftds:31,retNew:null,retOld:null,retTot:null,depsTotal:3369,depsFtd:3369,pvFtd:108.7,depsOld:0,pvOld:null,withdr:0,netCash:3369,ggr:3834,bonus:1140,ngr:2693,mktCost:4400,cpa:4400,rs:0,eCPA:141.9,grossProfit:2693,netProfit:-1707 }
+      ]}
+    ]
+  },
+  { affId:344030, affName:'affgerman01', manager:'Marcus B', brand:'projecty',
+    mediaItems:[
+      { mid:2089001, name:'Britsino DE 250 SEO', trafficType:'SEO', geos:[
+        { geo:'DE', regs:124,ftds:52,retNew:.34,retOld:.42,retTot:.38,depsTotal:31780,depsFtd:22840,pvFtd:439.2,depsOld:8940,pvOld:372.5,withdr:4210,netCash:27570,ggr:39120,bonus:7800,ngr:31320,mktCost:18200,cpa:16500,rs:1700,eCPA:350,grossProfit:31320,netProfit:13120 },
+        { geo:'CH', regs:44,ftds:19,retNew:.28,retOld:.31,retTot:.293,depsTotal:11200,depsFtd:8100,pvFtd:426.3,depsOld:3100,pvOld:388,withdr:1800,netCash:9400,ggr:14500,bonus:2900,ngr:11600,mktCost:6650,cpa:6000,rs:650,eCPA:350,grossProfit:11600,netProfit:4950 }
+      ]},
+      { mid:2089002, name:'Britsino DE Email', trafficType:'Email Marketing', geos:[
+        { geo:'DE', regs:189,ftds:29,retNew:.15,retOld:.27,retTot:.2,depsTotal:8900,depsFtd:5900,pvFtd:203.4,depsOld:3000,pvOld:300,withdr:2100,netCash:6800,ggr:9800,bonus:2600,ngr:7200,mktCost:7250,cpa:5800,rs:1450,eCPA:250,grossProfit:7200,netProfit:-50 },
+        { geo:'AT', regs:67,ftds:14,retNew:.18,retOld:.29,retTot:.225,depsTotal:4100,depsFtd:2800,pvFtd:200,depsOld:1300,pvOld:325,withdr:900,netCash:3200,ggr:5100,bonus:1100,ngr:4000,mktCost:3500,cpa:2800,rs:700,eCPA:250,grossProfit:4000,netProfit:500 }
+      ]}
+    ]
+  },
+  { affId:330371, affName:'trafiklabTR', manager:'Selin Y', brand:'projecty',
+    mediaItems:[
+      { mid:1980001, name:'Britsino TR 200 PPC', trafficType:'PPC', geos:[
+        { geo:'TR', regs:512,ftds:23,retNew:.087,retOld:null,retTot:.087,depsTotal:3200,depsFtd:3200,pvFtd:139.1,depsOld:0,pvOld:null,withdr:240,netCash:2960,ggr:3890,bonus:1100,ngr:2790,mktCost:4600,cpa:4600,rs:0,eCPA:200,grossProfit:2790,netProfit:-1810 }
+      ]},
+      { mid:1980002, name:'Britsino TR 150 ASO', trafficType:'ASO', geos:[
+        { geo:'TR', regs:387,ftds:41,retNew:.145,retOld:.22,retTot:.178,depsTotal:7800,depsFtd:5500,pvFtd:134.1,depsOld:2300,pvOld:287.5,withdr:800,netCash:7000,ggr:10200,bonus:2400,ngr:7800,mktCost:6150,cpa:5000,rs:1150,eCPA:150,grossProfit:7800,netProfit:1650 }
+      ]}
+    ]
+  },
+  { affId:362190, affName:'influencerHUB', manager:'Marcus B', brand:'projecty',
+    mediaItems:[
+      { mid:2100001, name:'Brand X Influence DE', trafficType:'Influence', geos:[
+        { geo:'DE', regs:198,ftds:44,retNew:.225,retOld:null,retTot:.225,depsTotal:18700,depsFtd:16500,pvFtd:375,depsOld:2200,pvOld:550,withdr:3100,netCash:15600,ggr:22400,bonus:4800,ngr:17600,mktCost:13200,cpa:12000,rs:1200,eCPA:300,grossProfit:17600,netProfit:4400 }
+      ]},
+      { mid:2100002, name:'Brand X Influence NL', trafficType:'Influence', geos:[
+        { geo:'NL', regs:134,ftds:29,retNew:.19,retOld:null,retTot:.19,depsTotal:11200,depsFtd:9800,pvFtd:337.9,depsOld:1400,pvOld:350,withdr:2200,netCash:9000,ggr:14100,bonus:3300,ngr:10800,mktCost:8700,cpa:8700,rs:0,eCPA:300,grossProfit:10800,netProfit:2100 }
+      ]}
+    ]
+  }
+];
+
+// ══════════════════════
+//  STATE
+// ══════════════════════
+let expandedAffs = new Set([331228]);
+let expandedMIs  = new Set(['331228-2051739']);
+let sortKey = 'netProfit', sortDir = -1;
+let showFlags = true;
+let filters = { brand:'', geo:'', traffic:'', manager:'', search:'' };
+
+// ══════════════════════
+//  HELPERS
+// ══════════════════════
+const fmt  = v => v==null?'—':new Intl.NumberFormat('en').format(Math.round(v));
+const fmtK = v => { if(v==null)return'—'; const s=v<0?'-':''; const a=Math.abs(v); return s+(a>=1000?'€'+(a/1000).toFixed(1)+'K':'€'+Math.round(a)); };
+const fmtE = v => v==null?'—':'€'+new Intl.NumberFormat('en').format(Math.round(v));
+const fmtP = v => v==null?'—':(v*100).toFixed(1)+'%';
+const fmtPct = v => v==null?'—':v.toFixed(1)+'%';
+
+function agg(geos){
+  const s={regs:0,ftds:0,depsTotal:0,depsFtd:0,depsOld:0,withdr:0,netCash:0,ggr:0,bonus:0,ngr:0,mktCost:0,cpa:0,rs:0,grossProfit:0,netProfit:0};
+  geos.forEach(g=>{for(const k in s)if(k in g)s[k]+=g[k]||0;});
+  s.r2d   = s.regs>0?s.ftds/s.regs:null;
+  s.pvFtd = s.ftds>0?s.depsFtd/s.ftds:null;
+  s.pvOld = (()=>{let tot=0,w=0;geos.forEach(g=>{if(g.pvOld&&g.depsOld>0){tot+=g.pvOld*(g.depsOld/Math.max(s.depsOld,1));w+=g.depsOld/Math.max(s.depsOld,1);}});return w>0?tot/w:null;})();
+  s.retNew=(()=>{const v=geos.filter(g=>g.retNew!=null);return v.length?v.reduce((a,g)=>a+g.retNew,0)/v.length:null;})();
+  s.retOld=(()=>{const v=geos.filter(g=>g.retOld!=null);return v.length?v.reduce((a,g)=>a+g.retOld,0)/v.length:null;})();
+  s.retTot=(()=>{const v=geos.filter(g=>g.retTot!=null);return v.length?v.reduce((a,g)=>a+g.retTot,0)/v.length:null;})();
+  s.eCPA  = s.ftds>0?s.mktCost/s.ftds:null;
+  s.roi   = s.mktCost>0?s.ngr/s.mktCost:null;
+  return s;
+}
+
+function flags(s){
+  const f=[];
+  if(s.netProfit<0) f.push({t:'LOSS',c:'pf-loss'});
+  if(s.eCPA&&s.eCPA>450) f.push({t:'HIGH CPA',c:'pf-hcpa'});
+  if(s.r2d!=null&&s.r2d<0.10) f.push({t:'LOW R2D',c:'pf-lr2d'});
+  if(s.roi!=null&&s.roi>1.5) f.push({t:'★ TOP',c:'pf-top'});
+  return f;
+}
+
+function flagsHTML(s){ return showFlags?flags(s).map(f=>`<span class="pflag ${f.c}">${f.t}</span>`).join(''):''; }
+function tb(t){ return `<span class="tb ${TB_MAP[t]||'tb-oth'}">${TB_SHORT[t]||t}</span>`; }
+function r2dCls(v){ return v==null?'':v>=.25?'r2d-hi':v>=.12?'r2d-mid':'r2d-lo'; }
+
+function numCell(v,cls=''){
+  return `<td class="n ${cls}">${v==null?'<span style="color:var(--muted)">—</span>':v}</td>`;
+}
+
+function renderCols(s, extraClass=''){
+  const ec = extraClass;
+  const r2d = `<td class="n g-traffic-c ${r2dCls(s.r2d)}">${fmtP(s.r2d)}</td>`;
+  return `
+    <td class="n col-sep g-traffic-c">${fmt(s.regs)}</td>
+    <td class="n g-traffic-c" style="color:var(--text);font-weight:500">${fmt(s.ftds)}</td>
+    ${r2d}
+    <td class="n col-sep g-ret-c">${fmtP(s.retNew)}</td>
+    <td class="n g-ret-c">${fmtP(s.retOld)}</td>
+    <td class="n g-ret-c">${fmtP(s.retTot)}</td>
+    <td class="n col-sep g-dep-c">${fmtK(s.depsTotal)}</td>
+    <td class="n g-dep-c">${fmtK(s.depsFtd)}</td>
+    <td class="n g-dep-c">${s.pvFtd!=null?'€'+s.pvFtd.toFixed(1):'—'}</td>
+    <td class="n g-dep-c">${fmtK(s.depsOld)}</td>
+    <td class="n g-dep-c">${s.pvOld!=null?'€'+s.pvOld.toFixed(1):'—'}</td>
+    <td class="n col-sep g-rev-c">${fmtK(s.netCash)}</td>
+    <td class="n g-rev-c">${fmtK(s.ggr)}</td>
+    <td class="n g-rev-c">${fmtK(s.bonus)}</td>
+    <td class="n g-rev-c" style="font-weight:500">${fmtK(s.ngr)}</td>
+    <td class="n col-sep g-cost-c">${fmtK(s.mktCost)}</td>
+    <td class="n g-cost-c">${fmtK(s.cpa)}</td>
+    <td class="n g-cost-c">${fmtK(s.rs)}</td>
+    <td class="n g-cost-c">${s.eCPA!=null?'€'+s.eCPA.toFixed(0):'—'}</td>
+    <td class="n col-sep g-pl-c">${fmtK(s.grossProfit)}</td>
+    <td class="n g-pl-c" style="font-weight:500;color:${s.netProfit>=0?'var(--green)':'var(--red)'}">${fmtK(s.netProfit)}</td>
+    <td class="n g-pl-c" style="color:${s.roi==null?'var(--muted)':s.roi>0?'var(--green)':'var(--red)'}">${s.roi!=null?((s.roi*100).toFixed(0)+'%'):'—'}</td>
+    <td style="background:var(--bg)">${flagsHTML(s)}</td>
+  `;
+}
+
+// ══════════════════════
+//  FILTER + RENDER
+// ══════════════════════
+function getFiltered(){
+  return DATA.map(aff=>{
+    if(filters.brand && aff.brand!==filters.brand) return null;
+    if(filters.manager && aff.manager!==filters.manager) return null;
+    const mis = aff.mediaItems.map(mi=>{
+      if(filters.traffic && mi.trafficType!==filters.traffic) return null;
+      const geos = mi.geos.filter(g=>!filters.geo || g.geo===filters.geo);
+      if(!geos.length) return null;
+      return {...mi,geos};
+    }).filter(Boolean);
+    if(!mis.length) return null;
+    if(filters.search){
+      const q=filters.search.toLowerCase();
+      const ok = String(aff.affId).includes(q)||aff.affName.toLowerCase().includes(q)||mis.some(m=>m.name.toLowerCase().includes(q)||String(m.mid).includes(q));
+      if(!ok) return null;
+    }
+    return {...aff,mediaItems:mis};
+  }).filter(Boolean);
+}
+
+function render(){
+  const data = getFiltered();
+  if(sortKey){
+    data.sort((a,b)=>{
+      const av=agg(a.mediaItems.flatMap(m=>m.geos))[sortKey]??-Infinity;
+      const bv=agg(b.mediaItems.flatMap(m=>m.geos))[sortKey]??-Infinity;
+      return (av-bv)*sortDir;
+    });
+  }
+
+  const allGeos = data.flatMap(a=>a.mediaItems.flatMap(m=>m.geos));
+  const totals  = agg(allGeos);
+  const totalRows = allGeos.length;
+
+  // KPIs
+  document.getElementById('k-ftds').textContent    = fmt(totals.ftds);
+  document.getElementById('k-ftds-d').textContent  = fmt(totals.regs)+' regs total';
+  document.getElementById('k-r2d').textContent     = fmtP(totals.r2d);
+  document.getElementById('k-r2d-d').className     = 'kc-delta '+(totals.r2d>=.15?'up':'dn');
+  document.getElementById('k-depftd').textContent  = fmtK(totals.depsFtd);
+  document.getElementById('k-pvftd').textContent   = totals.pvFtd!=null?('€'+totals.pvFtd.toFixed(0)):'—';
+  document.getElementById('k-deps').textContent    = fmtK(totals.depsTotal);
+  document.getElementById('k-mkt').textContent     = fmtK(totals.mktCost);
+  document.getElementById('k-ecpa').textContent    = totals.eCPA!=null?('€'+totals.eCPA.toFixed(0)):'—';
+  const roi = totals.roi;
+  document.getElementById('k-roi').textContent     = roi!=null?((roi*100).toFixed(0)+'%'):'—';
+  document.getElementById('k-roi').className       = 'kc-val '+(roi>=1?'c-purple':'c-red');
+  const pEl = document.getElementById('k-profit');
+  pEl.textContent = fmtK(totals.netProfit);
+  pEl.className   = 'kc-val '+(totals.netProfit>=0?'c-green':'c-red');
+  document.getElementById('k-profit-d').textContent = totals.netProfit>=0?'▲ Profitable':'▼ Loss';
+  document.getElementById('k-profit-d').className   = 'kc-delta '+(totals.netProfit>=0?'up':'dn');
+
+  // mini bars
+  function miniBars(containerId, heights, color){
+    const el=document.getElementById(containerId);
+    if(!el) return;
+    el.innerHTML = heights.map(h=>`<div class="b" style="height:${h}%;background:${color}"></div>`).join('');
+  }
+  const randBars=()=>Array.from({length:7},()=>40+Math.floor(Math.random()*55));
+  miniBars('k-ftds-bars',randBars(),'var(--accent)');
+  miniBars('k-r2d-bars',randBars(),'var(--teal)');
+  miniBars('k-depftd-bars',randBars(),'var(--green)');
+  miniBars('k-pvftd-bars',randBars(),'var(--muted2)');
+  miniBars('k-deps-bars',randBars(),'var(--muted2)');
+  miniBars('k-mkt-bars',randBars(),'var(--yellow)');
+  miniBars('k-ecpa-bars',randBars(),'var(--orange)');
+  miniBars('k-roi-bars',randBars(),'var(--purple)');
+  miniBars('k-profit-bars',randBars(),totals.netProfit>=0?'var(--green)':'var(--red)');
+
+  document.getElementById('result-info').innerHTML = `<span>${data.length}</span> affiliates · <span>${totalRows}</span> rows`;
+  document.getElementById('ft-rows').textContent = data.length;
+
+  // Table body
+  let html = '';
+
+  // TOTAL row
+  html += `<tr class="row-total" style="cursor:default">
+    <td class="sc i1">
+      <div class="name-cell">
+        <div class="aff-row-content">
+          <div class="aff-name" style="color:var(--teal)">⊘ TOTAL</div>
+          <div class="aff-sub">${data.length} affiliates · ${totalRows} rows</div>
+        </div>
+      </div>
+    </td>
+    ${renderCols(totals)}
+  </tr>`;
+
+  data.forEach(aff=>{
+    const affS = agg(aff.mediaItems.flatMap(m=>m.geos));
+    const affOpen = expandedAffs.has(aff.affId);
+    const traffics = [...new Set(aff.mediaItems.map(m=>m.trafficType))];
+
+    html += `<tr class="row-aff" data-aff="${aff.affId}"
+      onmouseenter="showTT(event,${aff.affId},null,null)"
+      onmouseleave="hideTT()"
+      onclick="handleRowClick(event,${aff.affId},null)">
+      <td class="sc i1">
+        <div class="name-cell">
+          <span class="expand-btn ${affOpen?'open':''}" onclick="toggleAff(${aff.affId},event)">${affOpen?'▾':'▸'}</span>
+          <div class="aff-row-content">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="aff-name">${aff.affName}</span>
+              <span class="aff-id">${aff.affId}</span>
+            </div>
+            <div class="aff-sub">
+              <span>${aff.manager}</span>
+              <span>·</span>
+              <span>${aff.brand}</span>
+              <span>·</span>
+              ${traffics.map(t=>tb(t)).join('')}
+              <span>·</span>
+              <span>${aff.mediaItems.length} MI</span>
+            </div>
+          </div>
+        </div>
+      </td>
+      ${renderCols(affS)}
+    </tr>`;
+
+    if(affOpen){
+      aff.mediaItems.forEach(mi=>{
+        const miKey = `${aff.affId}-${mi.mid}`;
+        const miS   = agg(mi.geos);
+        const miOpen = expandedMIs.has(miKey);
+
+        html += `<tr class="row-mi" data-mi="${miKey}"
+          onmouseenter="showTT(event,${aff.affId},${mi.mid},null)"
+          onmouseleave="hideTT()"
+          onclick="handleRowClick(event,${aff.affId},'${miKey}')">
+          <td class="sc i2">
+            <div class="name-cell">
+              <span class="expand-btn ${miOpen?'open':''}" onclick="toggleMI('${miKey}',event)">${miOpen?'▾':'▸'}</span>
+              <div>
+                <div class="mi-name">${mi.name}</div>
+                <div class="mi-sub">${tb(mi.trafficType)} <span style="color:var(--muted)">ID:${mi.mid}</span> <span>·</span> <span>${mi.geos.length} GEO</span></div>
+              </div>
+            </div>
+          </td>
+          ${renderCols(miS)}
+        </tr>`;
+
+        if(miOpen){
+          mi.geos.forEach(g=>{
+            const gs={...g,r2d:g.regs>0?g.ftds/g.regs:null,eCPA:g.ftds>0?g.mktCost/g.ftds:null,roi:g.mktCost>0?g.ngr/g.mktCost:null,pvOld:g.pvOld};
+            html += `<tr class="row-geo"
+              onmouseenter="showTT(event,${aff.affId},${mi.mid},'${g.geo}')"
+              onmouseleave="hideTT()"
+              onclick="openPanel(${aff.affId})">
+              <td class="sc i3">
+                <div class="geo-cell">
+                  <span class="flag">${GF[g.geo]||'🏳'}</span>
+                  <span class="geo-code">${g.geo}</span>
+                </div>
+              </td>
+              ${renderCols(gs)}
+            </tr>`;
+          });
+        }
+      });
+    }
+  });
+
+  document.getElementById('tbody').innerHTML = html;
+}
+
+// ══════════════════════
+//  INTERACTIONS
+// ══════════════════════
+function toggleAff(id,e){e.stopPropagation();expandedAffs.has(id)?expandedAffs.delete(id):expandedAffs.add(id);render();}
+function toggleMI(k,e){e.stopPropagation();expandedMIs.has(k)?expandedMIs.delete(k):expandedMIs.add(k);render();}
+function handleRowClick(e,affId,miKey){if(e.target.closest('.expand-btn'))return;openPanel(affId);}
+
+// Tooltip
+let ttTimer;
+function showTT(e,affId,miId,geoCode){
+  clearTimeout(ttTimer);
+  const aff=DATA.find(a=>a.affId===affId); if(!aff)return;
+  let geos=aff.mediaItems.flatMap(m=>m.geos);
+  if(miId) geos=aff.mediaItems.find(m=>m.mid===miId)?.geos||geos;
+  if(geoCode) geos=geos.filter(g=>g.geo===geoCode);
+  const s=agg(geos);
+
+  const label = geoCode?`${GF[geoCode]||''} ${geoCode}`:miId?`MI:${miId}`:aff.affName;
+  const sub   = geoCode?aff.affName:miId?aff.affName:`${aff.mediaItems.length} media items`;
+
+  document.getElementById('tt-av').textContent = aff.affName.slice(0,2).toUpperCase();
+  document.getElementById('tt-nm').textContent = label;
+  document.getElementById('tt-sb').textContent = sub;
+  document.getElementById('tt-ftds').textContent = fmt(s.ftds);
+  document.getElementById('tt-ecpa').textContent = s.eCPA!=null?'€'+s.eCPA.toFixed(0):'—';
+  document.getElementById('tt-roi').textContent  = s.roi!=null?((s.roi*100).toFixed(0)+'%'):'—';
+  document.getElementById('tt-nc').textContent   = fmtK(s.netCash);
+  document.getElementById('tt-ngr').textContent  = fmtK(s.ngr);
+  document.getElementById('tt-mkt').textContent  = fmtK(s.mktCost);
+  const pe = document.getElementById('tt-profit');
+  pe.textContent = fmtK(s.netProfit);
+  pe.style.color = s.netProfit>=0?'var(--green)':'var(--red)';
+
+  posTT(e);
+  document.getElementById('tooltip').classList.add('show');
+}
+function hideTT(){clearTimeout(ttTimer);ttTimer=setTimeout(()=>document.getElementById('tooltip').classList.remove('show'),80);}
+function posTT(e){
+  const t=document.getElementById('tooltip');
+  let x=e.clientX+14, y=e.clientY+8;
+  if(x+265>window.innerWidth) x=e.clientX-270;
+  if(y+310>window.innerHeight) y=e.clientY-315;
+  t.style.left=x+'px'; t.style.top=y+'px';
+}
+document.addEventListener('mousemove',e=>{if(document.getElementById('tooltip').classList.contains('show'))posTT(e);});
+
+// Side Panel
+function openPanel(affId){
+  const aff=DATA.find(a=>a.affId===affId); if(!aff)return;
+  const allG=aff.mediaItems.flatMap(m=>m.geos);
+  const s=agg(allG);
+
+  document.getElementById('sp-av').textContent = aff.affName.slice(0,2).toUpperCase();
+  document.getElementById('sp-name').textContent = aff.affName;
+  document.getElementById('sp-meta').textContent = `ID:${aff.affId} · ${aff.manager} · ${aff.brand}`;
+
+  const kpis=[
+    {l:'FTDs',v:fmt(s.ftds),col:'var(--accent2)'},
+    {l:'NET PROFIT',v:fmtK(s.netProfit),col:s.netProfit>=0?'var(--green)':'var(--red)'},
+    {l:'NGR',v:fmtK(s.ngr),col:'var(--teal)'},
+    {l:'eCPA',v:s.eCPA!=null?'€'+s.eCPA.toFixed(0):'—',col:'var(--yellow)'},
+    {l:'R2D %',v:fmtP(s.r2d),col:s.r2d>=.15?'var(--teal)':'var(--orange)'},
+    {l:'ROI %',v:s.roi!=null?((s.roi*100).toFixed(0)+'%'):'—',col:s.roi>=1?'var(--green)':'var(--red)'}
+  ];
+  document.getElementById('sp-kpis').innerHTML=kpis.map(k=>`
+    <div class="sp-kpi">
+      <div class="sp-kl">${k.l}</div>
+      <div class="sp-kv" style="color:${k.col}">${k.v}</div>
+    </div>`).join('');
+
+  document.getElementById('sp-mis').innerHTML=aff.mediaItems.map(mi=>{
+    const ms=agg(mi.geos);
+    return `<div class="sp-mi-item">
+      <div>
+        <div class="sp-mi-name">${mi.name}</div>
+        <div class="sp-mi-sub">${tb(mi.trafficType)} ${mi.geos.map(g=>(GF[g.geo]||'')+''+g.geo).join(' · ')}</div>
+      </div>
+      <div class="sp-mi-val" style="color:${ms.netProfit>=0?'var(--green)':'var(--red)'}">${fmtK(ms.netProfit)}</div>
+    </div>`;
+  }).join('');
+
+  // GEOs
+  const geoMap={};
+  aff.mediaItems.forEach(mi=>mi.geos.forEach(g=>{
+    if(!geoMap[g.geo])geoMap[g.geo]={ngr:0,netProfit:0};
+    geoMap[g.geo].ngr+=g.ngr; geoMap[g.geo].netProfit+=g.netProfit;
+  }));
+  const maxNgr=Math.max(...Object.values(geoMap).map(g=>g.ngr),1);
+  document.getElementById('sp-geos').innerHTML=Object.entries(geoMap).sort((a,b)=>b[1].ngr-a[1].ngr).map(([geo,g])=>`
+    <div class="sp-geo-row">
+      <span style="font-size:.85rem">${GF[geo]||'🏳'}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted2);width:28px">${geo}</span>
+      <div class="sp-geo-bar"><div class="sp-geo-fill" style="width:${(g.ngr/maxNgr*100).toFixed(0)}%"></div></div>
+      <span style="font-family:var(--mono);font-size:8.5px;color:var(--teal);width:55px;text-align:right">${fmtK(g.ngr)}</span>
+      <span style="font-family:var(--mono);font-size:8px;width:50px;text-align:right;color:${g.netProfit>=0?'var(--green)':'var(--red)'}">${fmtK(g.netProfit)}</span>
+    </div>`).join('');
+
+  // Perf bars
+  const bars=[
+    {l:'Mkt Cost',v:s.mktCost,max:s.mktCost,c:'var(--yellow)'},
+    {l:'NGR',v:s.ngr,max:s.mktCost,c:'var(--teal)'},
+    {l:'Net Cash',v:s.netCash,max:s.mktCost,c:'var(--accent2)'},
+    {l:'Bonus',v:s.bonus,max:s.mktCost,c:'var(--purple)'},
+  ];
+  document.getElementById('sp-bars').innerHTML=bars.map(b=>`
+    <div class="perf-bar-row">
+      <span class="pb-label">${b.l}</span>
+      <div class="pb-inner"><div class="pb-fill" style="width:${Math.min(100,b.v/b.max*100).toFixed(0)}%;background:${b.c}"></div></div>
+      <span class="pb-val" style="color:${b.c}">${fmtK(b.v)}</span>
+    </div>`).join('');
+
+  document.getElementById('sp').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closePanel(){document.getElementById('sp').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+// Sorting
+document.querySelectorAll('th[data-sort]').forEach(th=>{
+  th.addEventListener('click',()=>{
+    const k=th.dataset.sort;
+    if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}
+    document.querySelectorAll('th[data-sort]').forEach(t=>t.classList.remove('sorted'));
+    th.classList.add('sorted');
+    th.textContent=th.textContent.replace(/ [↑↓]$/,'')+(sortDir===1?' ↑':' ↓');
+    render();
+  });
+});
+
+// Flags toggle
+function toggleFlags(){
+  showFlags=!showFlags;
+  const btn=document.getElementById('flags-toggle');
+  btn.textContent=showFlags?'⚠ Perf Flags ON':'⚠ Perf Flags OFF';
+  btn.style.borderColor=showFlags?'var(--yellow)':'var(--border2)';
+  btn.style.color=showFlags?'var(--yellow)':'var(--muted)';
+  btn.style.background=showFlags?'rgba(245,183,49,.06)':'';
+  render();
+}
+
+// Group by (cosmetic for demo)
+function setGroupBy(mode){
+  document.querySelectorAll('.gb-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Search toggle
+function toggleSearch(){
+  const inp=document.getElementById('search-input');
+  if(inp.style.display==='none'){inp.style.display='block';inp.focus();}
+  else{inp.style.display='none';inp.value='';filters.search='';render();}
+}
+
+// Filter chips (cosmetic clicks for demo)
+['fc-brand','fc-geo','fc-traffic','fc-manager'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(){
+    this.classList.toggle('active');
+  });
+});
+
+// Search input
+document.getElementById('search-input').addEventListener('input',function(){
+  filters.search=this.value;render();
+});
+
+function applyFilters(){render();}
+
+// ══ INIT ══
+render();
+</script>
+</body>
+</html>

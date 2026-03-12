@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>DataJarvis — Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0b0d; --surface:#111318; --surface2:#181c22; --surface3:#1e2330;
+  --border:#1f2530; --border2:#2a3040;
+  --text:#e8eaf0; --muted:#5a6478; --muted2:#8892a4;
+  --accent:#3d7fff; --accent2:#5b92ff;
+  --green:#22d07a; --red:#ff4d6a; --yellow:#f5b731;
+  --purple:#9b7dff; --orange:#ff8c42; --teal:#00c9b1;
+  --mono:'DM Mono',monospace; --sans:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 10% 20%,rgba(61,127,255,.07) 0%,transparent 60%);pointer-events:none;z-index:0;}
+
+/* NAV BAR */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,11,13,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0 40px;height:56px;}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);margin-right:32px;}
+.tl-mark{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.tl-name{font-weight:900;font-size:16px;letter-spacing:-.03em;}
+.tl-name span{color:var(--accent2);}
+.topbar-sep{width:1px;height:20px;background:var(--border);margin-right:32px;}
+.topbar-nav{display:flex;gap:4px;}
+.tnav{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;text-decoration:none;font-family:var(--mono);font-size:11px;color:var(--muted);transition:.15s;letter-spacing:.04em;}
+.tnav:hover{color:var(--text);background:var(--surface2);}
+.tnav.active{color:var(--accent2);background:rgba(61,127,255,.1);}
+
+/* HERO */
+.doc-hero{position:relative;z-index:10;padding:60px 40px 48px;border-bottom:1px solid var(--border);}
+.doc-hero-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;}
+.doc-hero h1{font-size:40px;font-weight:900;letter-spacing:-.04em;margin-bottom:12px;}
+.doc-hero p{font-family:var(--mono);font-size:12px;color:var(--muted2);font-weight:300;max-width:520px;line-height:1.6;}
+
+/* GRID */
+.doc-grid{position:relative;z-index:10;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);flex:1;}
+
+.doc-card{background:var(--bg);padding:40px;display:flex;flex-direction:column;gap:20px;text-decoration:none;color:var(--text);transition:.2s;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+.doc-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--card-color,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+.doc-card:hover{background:var(--surface);}
+.doc-card:hover::after{transform:scaleX(1);}
+
+.dc-num{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;}
+.dc-icon{font-size:32px;margin:4px 0;}
+.dc-title{font-size:18px;font-weight:700;letter-spacing:-.03em;}
+.dc-desc{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;font-weight:300;}
+.dc-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;}
+.dc-tag{font-family:var(--mono);font-size:9px;padding:3px 8px;border-radius:4px;background:var(--surface2);color:var(--muted2);}
+.dc-arrow{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;transition:.2s;}
+.doc-card:hover .dc-arrow{color:var(--accent2);gap:10px;}
+
+/* FOOTER */
+footer{position:relative;z-index:10;border-top:1px solid var(--border);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
+.f-left{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.f-links{display:flex;gap:20px;}
+.f-links a{font-family:var(--mono);font-size:10px;color:var(--muted);text-decoration:none;transition:.15s;}
+.f-links a:hover{color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="../index.html">
+    <div class="tl-mark">⚡</div>
+    <div class="tl-name">Data<span>Jarvis</span></div>
+  </a>
+  <div class="topbar-sep"></div>
+  <nav class="topbar-nav">
+    <a class="tnav" href="../index.html">Hub</a>
+    <a class="tnav" href="../reports/dashboard.html">Dashboard</a>
+    <a class="tnav active">Docs</a>
+  </nav>
+</div>
+
+<div class="doc-hero">
+  <div class="doc-hero-label">Documentation</div>
+  <h1>Project Knowledge Base</h1>
+  <p>Полная документация проекта DataJarvis — от общего описания до архитектурных решений и технических требований.</p>
+</div>
+
+<div class="doc-grid">
+
+  <a class="doc-card" href="overview.html" style="--card-color:var(--accent);">
+    <div class="dc-num">01</div>
+    <div class="dc-icon">📋</div>
+    <div class="dc-title">Project Overview</div>
+    <div class="dc-desc">Общее описание проекта, цели, аудитория, роли пользователей и нефункциональные требования.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">Goals</span>
+      <span class="dc-tag">Roles</span>
+      <span class="dc-tag">NFRs</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+  <a class="doc-card" href="reports.html" style="--card-color:var(--green);">
+    <div class="dc-num">02</div>
+    <div class="dc-icon">📈</div>
+    <div class="dc-title">Reports Specifications</div>
+    <div class="dc-desc">Технические спецификации всех 5 отчётов: фильтры, метрики, группировки, экспорт, UI требования.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">5 Reports</span>
+      <span class="dc-tag">Filters</span>
+      <span class="dc-tag">Metrics</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+  <a class="doc-card" href="architecture.html" style="--card-color:var(--yellow);">
+    <div class="dc-num">03</div>
+    <div class="dc-icon">⚙️</div>
+    <div class="dc-title">Architecture Brief</div>
+    <div class="dc-desc">Инженерные решения: Data Pipeline, модель данных, кэширование, безопасность, API design, ETL idempotency.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">Data Pipeline</span>
+      <span class="dc-tag">RLS</span>
+      <span class="dc-tag">API</span>
+      <span class="dc-tag">Cache</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+  <a class="doc-card" href="vocabulary.html" style="--card-color:var(--teal);">
+    <div class="dc-num">04</div>
+    <div class="dc-icon">📖</div>
+    <div class="dc-title">Vocabulary v1.4</div>
+    <div class="dc-desc">Словарь терминов и определений: GGR, NGR, FTD, Retention, AR%, Cohort, Player lifecycle и все ключевые метрики.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">Metrics</span>
+      <span class="dc-tag">Definitions</span>
+      <span class="dc-tag">Formulas</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+  <a class="doc-card" href="design-system.html" style="--card-color:var(--purple);">
+    <div class="dc-num">05</div>
+    <div class="dc-icon">🎨</div>
+    <div class="dc-title">Design System</div>
+    <div class="dc-desc">CSS-переменные, типографика, цвета, компоненты — документация дизайн-системы DataJarvis UI.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">Colors</span>
+      <span class="dc-tag">Typography</span>
+      <span class="dc-tag">Components</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+  <a class="doc-card" href="changelog.html" style="--card-color:var(--orange);">
+    <div class="dc-num">06</div>
+    <div class="dc-icon">🔖</div>
+    <div class="dc-title">Changelog v2.3</div>
+    <div class="dc-desc">История версий проекта — все изменения в ТЗ, прототипах, Notion документации и архитектурных решениях.</div>
+    <div class="dc-meta">
+      <span class="dc-tag">v2.3</span>
+      <span class="dc-tag">History</span>
+      <span class="dc-tag">Releases</span>
+    </div>
+    <div class="dc-arrow">Read Docs <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </a>
+
+</div>
+
+<footer>
+  <div class="f-left">DataJarvis Docs · v2.3 · March 2026</div>
+  <div class="f-links">
+    <a href="../index.html">← Hub</a>
+    <a href="overview.html">Overview</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="changelog.html">Changelog</a>
+  </div>
+</footer>
+
+</body>
+</html>

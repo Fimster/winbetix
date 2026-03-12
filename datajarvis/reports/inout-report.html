@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DataJarvis — In/Out Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;
+  --border:#1f2530;--border2:#2a3040;
+  --text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;
+  --accent:#3d7fff;--accent2:#5b92ff;
+  --green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;
+  --purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;
+  --sans:'Roboto',sans-serif;--mono:'Roboto Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;min-height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.logo{padding:26px 22px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.logo-name{font-weight:700;font-size:16px;letter-spacing:-.01em;}
+.logo-name span{color:var(--accent2);}
+.nav{flex:1;padding:14px 0;}
+.nav-section{padding:8px 16px 4px;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:12.5px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--text);background:rgba(0,201,177,.07);border-left-color:var(--teal);font-weight:500;}
+.nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0;}
+.nav-item.active .dot{opacity:1;background:var(--teal);}
+.sidebar-bottom{padding:14px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--surface2);border-radius:8px;}
+.avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--purple),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:500;}
+.user-role{font-size:10px;color:var(--muted);font-family:var(--mono);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* TOPBAR */
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:10px;flex-shrink:0;}
+.breadcrumb{font-family:var(--mono);font-size:10.5px;color:var(--muted);}
+.breadcrumb span{color:var(--text);font-weight:500;}
+.live-badge{font-family:var(--mono);font-size:9.5px;color:var(--green);background:rgba(34,208,122,.1);border:1px solid rgba(34,208,122,.2);padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;}
+.live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.spacer{flex:1;}
+.btn{height:28px;padding:0 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;font-size:11px;font-family:var(--sans);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.btn:hover{border-color:var(--accent2);}
+.btn.primary{background:rgba(61,127,255,.12);border-color:var(--accent);color:var(--accent2);}
+
+/* SECTION TABS */
+.sec-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 22px;flex-shrink:0;}
+.stab{padding:0 16px;height:38px;display:flex;align-items:center;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;gap:6px;}
+.stab:hover{color:var(--text);}
+.stab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:500;}
+
+/* FILTER BAR */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:7px;height:44px;overflow-x:auto;flex-shrink:0;}
+.filter-bar::-webkit-scrollbar{height:3px;}
+.filter-bar::-webkit-scrollbar-thumb{background:var(--border2);}
+.fl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.chip{display:flex;align-items:center;gap:5px;height:24px;padding:0 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap;}
+.chip:hover,.chip.on{border-color:var(--accent);background:rgba(61,127,255,.08);color:var(--accent2);}
+.chip .cv{font-size:7px;opacity:.5;}
+.fsep{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;}
+.radio-chip{display:flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid transparent;background:var(--surface2);color:var(--muted);}
+.radio-chip.sel{border-color:var(--teal);color:var(--teal);background:rgba(0,201,177,.08);}
+.rdot{width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rdot.on::after{content:'';width:3px;height:3px;border-radius:50%;background:currentColor;}
+
+/* KPI STRIP */
+.kpi-strip{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;}
+.kpi-item{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 18px;border-right:1px solid var(--border);position:relative;overflow:hidden;}
+.kpi-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.ki-in::before{background:var(--green);}
+.ki-out::before{background:var(--red);}
+.ki-net::before{background:var(--teal);}
+.ki-count::before{background:var(--accent);}
+.ki-players::before{background:var(--purple);}
+.ki-avg::before{background:var(--yellow);}
+.kpi-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.kpi-val{font-family:var(--mono);font-size:16px;font-weight:500;line-height:1.1;}
+.kpi-sub{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--muted2);}
+.kpi-sub.up{color:var(--green);}
+.kpi-sub.dn{color:var(--red);}
+
+/* CTRL ROW */
+.ctrl-row{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:8px;height:36px;flex-shrink:0;}
+.cl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.segs{display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;overflow:hidden;}
+.seg{height:22px;padding:0 10px;font-size:10px;font-family:var(--mono);color:var(--muted2);cursor:pointer;border-right:1px solid var(--border2);}
+.seg:last-child{border-right:none;}
+.seg:hover{color:var(--text);background:var(--surface3);}
+.seg.on{color:var(--teal);background:rgba(0,201,177,.1);}
+.risk-btn{display:flex;align-items:center;gap:5px;height:22px;padding:0 9px;background:rgba(255,77,106,.08);border:1px solid rgba(255,77,106,.25);border-radius:4px;font-size:10px;font-family:var(--mono);color:var(--red);cursor:pointer;}
+.risk-btn.off{background:var(--surface2);border-color:var(--border2);color:var(--muted2);}
+
+/* HEATMAP */
+.heat-row{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 22px 6px;flex-shrink:0;}
+.heat-title{font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.heat-grid{display:flex;gap:2px;align-items:flex-end;height:46px;}
+.heat-col{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
+.heat-bar{width:100%;border-radius:2px 2px 0 0;cursor:pointer;transition:opacity .1s;}
+.heat-bar:hover{opacity:.75;}
+.heat-lbl{font-family:var(--mono);font-size:6.5px;color:var(--muted);}
+
+/* TABLE SECTION */
+.tbl-section{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.tbl-wrap{flex:1;overflow:auto;}
+.tbl-wrap::-webkit-scrollbar{width:5px;height:5px;}
+.tbl-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+table{border-collapse:collapse;width:100%;table-layout:fixed;}
+thead{position:sticky;top:0;z-index:20;}
+
+.th-groups th{
+  background:var(--surface2);height:22px;
+  font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:500;border-right:1px solid var(--border);border-bottom:1px solid var(--border2);
+  white-space:nowrap;padding:0 8px;text-align:center;color:var(--muted);
+}
+.th-groups th.g-player{text-align:left;color:var(--muted2);}
+.th-groups th.g-tx{color:var(--accent2);background:rgba(61,127,255,.04);}
+.th-groups th.g-amt{color:var(--green);background:rgba(34,208,122,.04);}
+.th-groups th.g-pay{color:var(--teal);background:rgba(0,201,177,.04);}
+.th-groups th.g-ctx{color:var(--yellow);background:rgba(245,183,49,.03);}
+.th-groups th.g-risk{color:var(--red);background:rgba(255,77,106,.04);}
+
+.th-cols th{
+  background:var(--surface2);height:27px;
+  font-family:var(--mono);font-size:8px;color:var(--muted2);font-weight:400;
+  border-right:1px solid var(--border);border-bottom:2px solid var(--border2);
+  white-space:nowrap;padding:0 8px;text-align:left;cursor:pointer;vertical-align:middle;
+}
+.th-cols th.r{text-align:right;}
+.th-cols th:hover{color:var(--text);background:rgba(255,255,255,.025);}
+.th-cols th.sorted{color:var(--accent2);}
+
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .08s;}
+tbody tr:hover{background:rgba(255,255,255,.02);}
+tbody tr.risk-row{background:rgba(255,77,106,.03);}
+tbody tr.risk-row:hover{background:rgba(255,77,106,.06);}
+
+td{
+  padding:0 8px;height:30px;
+  font-family:var(--mono);font-size:9.5px;color:var(--muted2);
+  text-align:left;border-right:1px solid var(--border);
+  white-space:nowrap;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;
+}
+td.r{text-align:right;}
+td.n{color:var(--text);}
+
+/* PLAYER CELL */
+.pl-cell{display:flex;align-items:center;gap:7px;}
+.pl-av{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;}
+.pl-name{font-size:10px;color:var(--text);font-weight:500;line-height:1.2;}
+.pl-id{font-size:8px;color:var(--muted2);}
+
+/* BADGES */
+.badge-in{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:500;background:rgba(34,208,122,.1);color:var(--green);border:1px solid rgba(34,208,122,.18);}
+.badge-out{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:500;background:rgba(255,77,106,.1);color:var(--red);border:1px solid rgba(255,77,106,.18);}
+.badge-ok{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;background:rgba(34,208,122,.08);color:var(--green);}
+.badge-pend{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;background:rgba(245,183,49,.08);color:var(--yellow);}
+.badge-fail{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;background:rgba(255,77,106,.1);color:var(--red);}
+.badge-bonus{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;background:rgba(155,125,255,.1);color:var(--purple);}
+.badge-funnel{display:inline-flex;align-items:center;padding:1px 6px;border-radius:3px;font-size:8.5px;background:var(--surface3);color:var(--muted2);}
+.flag-large{display:inline-flex;align-items:center;padding:1px 5px;border-radius:3px;font-size:8px;background:rgba(255,140,66,.1);color:var(--orange);border:1px solid rgba(255,140,66,.2);}
+.flag-fail{display:inline-flex;align-items:center;padding:1px 5px;border-radius:3px;font-size:8px;background:rgba(255,77,106,.1);color:var(--red);border:1px solid rgba(255,77,106,.2);}
+.flag-ftd{display:inline-flex;align-items:center;padding:1px 5px;border-radius:3px;font-size:8px;background:rgba(34,208,122,.1);color:var(--green);border:1px solid rgba(34,208,122,.2);}
+.flag-multi{display:inline-flex;align-items:center;padding:1px 5px;border-radius:3px;font-size:8px;background:rgba(155,125,255,.1);color:var(--purple);border:1px solid rgba(155,125,255,.2);}
+
+/* PROC TIME */
+.proc{display:flex;align-items:center;gap:5px;}
+.proc-track{width:38px;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.proc-fill{height:100%;border-radius:2px;}
+
+/* TABLE FOOTER */
+.tbl-foot{height:34px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:16px;flex-shrink:0;}
+.fstat{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.fstat span{color:var(--text);}
+.pag{display:flex;gap:3px;}
+.pag-btn{width:22px;height:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-family:var(--mono);font-size:9px;color:var(--muted2);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pag-btn.on{background:rgba(61,127,255,.12);border-color:var(--accent);color:var(--accent2);}
+.pag-btn:hover:not(.on){border-color:var(--border2);color:var(--text);}
+
+/* ── HOVER TOOLTIP ─────────────────────────────────────────────── */
+#ptip{
+  position:fixed;z-index:9999;pointer-events:none;
+  background:#0e1420;border:1px solid #2a3548;border-radius:8px;
+  box-shadow:0 16px 48px rgba(0,0,0,.6);
+  width:268px;display:none;
+}
+#ptip.show{display:block;}
+
+.ptip-head{display:flex;align-items:center;gap:10px;padding:11px 14px 9px;border-bottom:1px solid var(--border);}
+.ptip-av{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.ptip-name{font-size:12px;font-weight:500;color:var(--text);}
+.ptip-id{font-family:var(--mono);font-size:8.5px;color:var(--muted2);}
+
+.ptip-kpis{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
+.ptip-k{padding:7px 10px;border-right:1px solid var(--border);text-align:center;}
+.ptip-k:last-child{border-right:none;}
+.ptip-k-lbl{font-family:var(--mono);font-size:6.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.ptip-k-val{font-family:var(--mono);font-size:12.5px;font-weight:500;}
+
+.ptip-rows{padding:8px 14px 9px;}
+.ptip-row{display:flex;justify-content:space-between;align-items:center;padding:2.5px 0;}
+.ptip-row-l{font-family:var(--mono);font-size:8.5px;color:var(--muted2);}
+.ptip-row-v{font-family:var(--mono);font-size:8.5px;color:var(--text);}
+
+.ptip-foot{padding:5px 14px;background:rgba(0,201,177,.05);border-top:1px solid var(--border);font-family:var(--mono);font-size:7.5px;color:var(--teal);text-align:center;border-radius:0 0 8px 8px;}
+
+/* ── PROFILE PANEL ─────────────────────────────────────────────── */
+.panel{position:fixed;top:0;right:0;width:340px;height:100vh;background:var(--surface);border-left:1px solid var(--border2);z-index:100;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .2s ease;box-shadow:-8px 0 40px rgba(0,0,0,.5);}
+.panel.open{transform:translateX(0);}
+.panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.panel-close{width:24px;height:24px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--muted);margin-left:auto;}
+.panel-close:hover{color:var(--text);border-color:var(--red);}
+.panel-av{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.panel-name{font-size:14px;font-weight:500;}
+.panel-id{font-family:var(--mono);font-size:9px;color:var(--muted2);}
+.panel-body{flex:1;overflow-y:auto;padding:12px 16px;}
+.panel-body::-webkit-scrollbar{width:4px;}
+.panel-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+.panel-sec{margin-bottom:14px;}
+.panel-sec-t{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+.panel-kpis{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px;}
+.panel-kpi{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;}
+.panel-kpi-l{font-family:var(--mono);font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.panel-kpi-v{font-family:var(--mono);font-size:13px;font-weight:500;}
+.panel-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--border);}
+.panel-row:last-child{border-bottom:none;}
+.panel-rl{font-family:var(--mono);font-size:9px;color:var(--muted2);}
+.panel-rv{font-family:var(--mono);font-size:9px;color:var(--text);}
+.journey{display:flex;flex-direction:column;}
+.j-item{display:flex;gap:10px;position:relative;}
+.j-item::before{content:'';position:absolute;left:7px;top:16px;bottom:-4px;width:1px;background:var(--border2);}
+.j-item:last-child::before{display:none;}
+.j-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;}
+.j-dot.reg{background:rgba(61,127,255,.15);color:var(--accent2);border:1px solid rgba(61,127,255,.25);}
+.j-dot.dep{background:rgba(34,208,122,.15);color:var(--green);border:1px solid rgba(34,208,122,.25);}
+.j-dot.wit{background:rgba(255,77,106,.15);color:var(--red);border:1px solid rgba(255,77,106,.25);}
+.j-dot.bon{background:rgba(155,125,255,.15);color:var(--purple);border:1px solid rgba(155,125,255,.25);}
+.j-body{padding-bottom:10px;}
+.j-label{font-size:10px;color:var(--text);font-weight:500;}
+.j-meta{font-family:var(--mono);font-size:8px;color:var(--muted2);margin-top:1px;}
+.mini-tx{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;background:var(--surface2);border-radius:4px;margin-bottom:3px;}
+.mt-t{font-family:var(--mono);font-size:8.5px;}
+.mt-t.in{color:var(--green);}
+.mt-t.out{color:var(--red);}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99;display:none;}
+.overlay.show{display:block;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">Data<span>Jarvis</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Platform</div>
+    <a class="nav-item " href="../index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V9h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Hub
+    </a>
+
+    <div class="nav-section">Reports</div>
+    <a class="nav-item " href="dashboard.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item " href="daily-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Daily Performance
+    </a>
+    <a class="nav-item " href="payment-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="10.5" r="1" fill="currentColor"/></svg>
+      Payment
+    </a>
+    <a class="nav-item " href="churn-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 7l3 3 2.5-4 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn Rate
+    </a>
+    <a class="nav-item active" href="inout-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      In / Out
+    </a>
+    <a class="nav-item " href="affiliate-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="3" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v2M6 10L4.5 10.5M10 10l1.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Affiliate
+    </a>
+
+    <div class="nav-section">Resources</div>
+    <a class="nav-item" href="../docs/index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Documentation
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Anna K.</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="topbar">
+    <span class="breadcrumb">Reports / <span>In/Out Report</span></span>
+    <div class="live-badge"><div class="live-dot"></div>Live · 45s ago</div>
+    <div class="spacer"></div>
+    <div class="btn">📊 Columns</div>
+    <div class="btn">🔗 Share</div>
+    <div class="btn primary">↓ Export</div>
+  </div>
+
+  <div class="sec-tabs">
+    <div class="stab active">💳 All Transactions</div>
+    <div class="stab">📥 Deposits (In)</div>
+    <div class="stab">📤 Cashouts (Out)</div>
+    <div class="stab">⚠️ Risk Flagged</div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="fl">Period</span>
+    <div class="chip on">📅 12 Mar 2026 <span class="cv">▾</span></div>
+    <div class="fsep"></div>
+    <div class="chip">Brand <span class="cv">▾</span></div>
+    <div class="chip">Country / GEO <span class="cv">▾</span></div>
+    <div class="chip">Currency <span class="cv">▾</span></div>
+    <div class="chip">Payment Method <span class="cv">▾</span></div>
+    <div class="chip">Status <span class="cv">▾</span></div>
+    <div class="chip">Bonus Status <span class="cv">▾</span></div>
+    <div class="chip">Affiliate ID <span class="cv">▾</span></div>
+    <div class="chip">Company ID <span class="cv">▾</span></div>
+    <div class="chip">Funnel <span class="cv">▾</span></div>
+    <div class="fsep"></div>
+    <span class="fl">Direction</span>
+    <div class="radio-chip sel"><div class="rdot on"></div>All</div>
+    <div class="radio-chip"><div class="rdot"></div>In</div>
+    <div class="radio-chip"><div class="rdot"></div>Out</div>
+    <div class="spacer"></div>
+    <div class="chip">🔍 Search player / TX</div>
+  </div>
+
+  <!-- KPI STRIP -->
+  <div class="kpi-strip">
+    <div class="kpi-item ki-in">
+      <div class="kpi-lbl">Total IN (EUR)</div>
+      <div class="kpi-val" style="color:var(--green)">€ 53 473</div>
+      <div class="kpi-sub up">▲ +12.4% vs yesterday</div>
+    </div>
+    <div class="kpi-item ki-out">
+      <div class="kpi-lbl">Total OUT (EUR)</div>
+      <div class="kpi-val" style="color:var(--red)">€ 31 208</div>
+      <div class="kpi-sub dn">▲ +8.1% vs yesterday</div>
+    </div>
+    <div class="kpi-item ki-net">
+      <div class="kpi-lbl">Net (IN − OUT)</div>
+      <div class="kpi-val" style="color:var(--teal)">€ 22 265</div>
+      <div class="kpi-sub up">▲ +18.9% vs yesterday</div>
+    </div>
+    <div class="kpi-item ki-count">
+      <div class="kpi-lbl">Transactions</div>
+      <div class="kpi-val" style="color:var(--accent2)">1 487</div>
+      <div class="kpi-sub">In: 1 012 · Out: 475</div>
+    </div>
+    <div class="kpi-item ki-players">
+      <div class="kpi-lbl">Unique Players</div>
+      <div class="kpi-val" style="color:var(--purple)">756</div>
+      <div class="kpi-sub dn">▼ −59 vs yesterday</div>
+    </div>
+    <div class="kpi-item ki-avg">
+      <div class="kpi-lbl">Avg TX Amount</div>
+      <div class="kpi-val" style="color:var(--yellow)">€ 35.9</div>
+      <div class="kpi-sub up">▲ +€3.2 vs yesterday</div>
+    </div>
+  </div>
+
+  <!-- CTRL ROW -->
+  <div class="ctrl-row">
+    <span class="cl">Sort by</span>
+    <div class="segs">
+      <div class="seg on">Time ↓</div>
+      <div class="seg">Amount ↓</div>
+      <div class="seg">Player</div>
+      <div class="seg">Status</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="cl">Proc. time</span>
+    <div class="segs">
+      <div class="seg on">Show</div>
+      <div class="seg">Hide</div>
+    </div>
+    <div class="fsep"></div>
+    <div class="risk-btn" id="risk-btn" onclick="toggleRisk()">⚠ Risk Flags ON</div>
+    <div class="spacer"></div>
+    <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">
+      <span style="color:var(--text)" id="row-count">—</span> transactions ·
+      hover row for player totals · click to open profile
+    </span>
+  </div>
+
+  <!-- HOURLY HEATMAP -->
+  <div class="heat-row">
+    <div class="heat-title">Transaction volume by hour · 12 Mar 2026</div>
+    <div class="heat-grid" id="heat-grid"></div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="tbl-section">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr class="th-groups">
+            <th class="g-player" colspan="2">Player</th>
+            <th class="g-tx" colspan="3">Transaction</th>
+            <th class="g-amt" colspan="3">Amount</th>
+            <th class="g-pay" colspan="4">Payment</th>
+            <th class="g-ctx" colspan="5">Context</th>
+            <th class="g-risk" colspan="2">Risk / Proc.</th>
+          </tr>
+          <tr class="th-cols">
+            <th style="min-width:178px">Player</th>
+            <th style="min-width:82px">Player ID</th>
+            <th class="sorted" style="min-width:108px">TX ID ↓</th>
+            <th style="min-width:66px">Type</th>
+            <th style="min-width:128px">Date / Time</th>
+            <th class="r" style="min-width:96px">Orig. Amount</th>
+            <th style="min-width:40px">CCY</th>
+            <th class="r" style="min-width:88px">EUR equiv</th>
+            <th style="min-width:88px">Method</th>
+            <th style="min-width:88px">Aggregator</th>
+            <th style="min-width:88px">Status</th>
+            <th style="min-width:72px">Bonus</th>
+            <th style="min-width:54px">GEO</th>
+            <th style="min-width:66px">Brand</th>
+            <th style="min-width:76px">Affiliate</th>
+            <th style="min-width:84px">Company</th>
+            <th style="min-width:90px">Funnel</th>
+            <th style="min-width:88px">Proc. Time</th>
+            <th style="min-width:96px">Flags</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="tbl-foot">
+      <span class="fstat">Period: <span>12 Mar 2026</span></span>
+      <span class="fstat">Rows: <span id="foot-count">—</span></span>
+      <span class="fstat">Updated: <span>14:51</span></span>
+      <div class="spacer"></div>
+      <div class="pag">
+        <div class="pag-btn">‹</div>
+        <div class="pag-btn on">1</div>
+        <div class="pag-btn">2</div>
+        <div class="pag-btn">3</div>
+        <div class="pag-btn">…</div>
+        <div class="pag-btn">49</div>
+        <div class="pag-btn">›</div>
+      </div>
+      <div class="btn primary" style="font-family:var(--mono);font-size:10px;margin-left:12px">↓ Export .xlsx</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- PLAYER HOVER TOOLTIP -->
+<div id="ptip">
+  <div class="ptip-head">
+    <div class="ptip-av" id="ptip-av"></div>
+    <div>
+      <div class="ptip-name" id="ptip-name"></div>
+      <div class="ptip-id" id="ptip-id"></div>
+    </div>
+  </div>
+  <div class="ptip-kpis">
+    <div class="ptip-k">
+      <div class="ptip-k-lbl">Total IN</div>
+      <div class="ptip-k-val" id="ptip-in" style="color:var(--green)"></div>
+    </div>
+    <div class="ptip-k">
+      <div class="ptip-k-lbl">Total OUT</div>
+      <div class="ptip-k-val" id="ptip-out" style="color:var(--red)"></div>
+    </div>
+    <div class="ptip-k">
+      <div class="ptip-k-lbl">Net</div>
+      <div class="ptip-k-val" id="ptip-net"></div>
+    </div>
+  </div>
+  <div class="ptip-rows">
+    <div class="ptip-row"><span class="ptip-row-l">TX count today</span><span class="ptip-row-v" id="ptip-cnt"></span></div>
+    <div class="ptip-row"><span class="ptip-row-l">Failed today</span><span class="ptip-row-v" id="ptip-fail"></span></div>
+    <div class="ptip-row"><span class="ptip-row-l">Avg TX</span><span class="ptip-row-v" id="ptip-avg"></span></div>
+    <div class="ptip-row"><span class="ptip-row-l">Brand</span><span class="ptip-row-v" id="ptip-brand"></span></div>
+    <div class="ptip-row"><span class="ptip-row-l">Affiliate</span><span class="ptip-row-v" id="ptip-aff"></span></div>
+    <div class="ptip-row"><span class="ptip-row-l">Funnel</span><span class="ptip-row-v" id="ptip-funnel"></span></div>
+  </div>
+  <div class="ptip-foot">Click row to open full player profile →</div>
+</div>
+
+<!-- SIDE PANEL OVERLAY -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- PLAYER PROFILE PANEL -->
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div class="panel-av" id="panel-av"></div>
+    <div>
+      <div class="panel-name" id="panel-name"></div>
+      <div class="panel-id" id="panel-id"></div>
+    </div>
+    <div class="panel-close" onclick="closePanel()">✕</div>
+  </div>
+  <div class="panel-body">
+    <div class="panel-sec">
+      <div class="panel-sec-t">Today's summary</div>
+      <div class="panel-kpis">
+        <div class="panel-kpi"><div class="panel-kpi-l">Total IN</div><div class="panel-kpi-v" id="pan-in" style="color:var(--green)"></div></div>
+        <div class="panel-kpi"><div class="panel-kpi-l">Total OUT</div><div class="panel-kpi-v" id="pan-out" style="color:var(--red)"></div></div>
+        <div class="panel-kpi"><div class="panel-kpi-l">Net</div><div class="panel-kpi-v" id="pan-net" style="color:var(--teal)"></div></div>
+        <div class="panel-kpi"><div class="panel-kpi-l">TX Count</div><div class="panel-kpi-v" id="pan-cnt"></div></div>
+      </div>
+    </div>
+    <div class="panel-sec">
+      <div class="panel-sec-t">Profile</div>
+      <div class="panel-row"><span class="panel-rl">Country</span><span class="panel-rv" id="pan-country"></span></div>
+      <div class="panel-row"><span class="panel-rl">Brand</span><span class="panel-rv" id="pan-brand"></span></div>
+      <div class="panel-row"><span class="panel-rl">Affiliate</span><span class="panel-rv" id="pan-aff"></span></div>
+      <div class="panel-row"><span class="panel-rl">Company</span><span class="panel-rv" id="pan-company"></span></div>
+      <div class="panel-row"><span class="panel-rl">Funnel</span><span class="panel-rv" id="pan-funnel"></span></div>
+      <div class="panel-row"><span class="panel-rl">Registered</span><span class="panel-rv" id="pan-reg"></span></div>
+    </div>
+    <div class="panel-sec">
+      <div class="panel-sec-t">Player journey</div>
+      <div class="journey" id="pan-journey"></div>
+    </div>
+    <div class="panel-sec">
+      <div class="panel-sec-t">Today's transactions</div>
+      <div id="pan-txlist"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── HEATMAP ──────────────────────────────────────────────────────────────────
+const hourlyData=[4,2,1,1,0,2,8,24,61,89,112,98,134,121,109,88,74,62,48,39,31,22,14,8];
+const hMax=Math.max(...hourlyData);
+const hg=document.getElementById('heat-grid');
+hourlyData.forEach((v,i)=>{
+  const barH=Math.max(3,Math.round((v/hMax)*34));
+  const pct=v/hMax;
+  const col=pct>.7?'#22d07a':pct>.4?'#f5b731':pct>.15?'#ff8c42':'#3d7fff';
+  const d=document.createElement('div');
+  d.className='heat-col';
+  d.innerHTML=`<div class="heat-bar" style="height:${barH}px;background:${col};opacity:${(.35+pct*.65).toFixed(2)}" title="${String(i).padStart(2,'0')}:00 — ${v} TX"></div><div class="heat-lbl">${i%4===0?String(i).padStart(2,'0'):''}</div>`;
+  hg.appendChild(d);
+});
+
+// ── MOCK DATA ────────────────────────────────────────────────────────────────
+const PLAYERS=[
+  {name:'Michael Chen',  id:'PLR-00441',av:'MC',col:'#9b7dff',country:'🇩🇪 DE',brand:'Alpha',aff:'AFF-0291',company:'Edjowa Gaming',  funnel:'Welcome Bonus', reg:'08 Jan 2026'},
+  {name:'Amira Hassan',  id:'PLR-01829',av:'AH',col:'#22d07a',country:'🇬🇧 GB',brand:'Beta', aff:'AFF-0104',company:'BetCorp Ltd',   funnel:'Retargeting',   reg:'15 Nov 2025'},
+  {name:'Jonas Weber',   id:'PLR-00072',av:'JW',col:'#3d7fff',country:'🇩🇪 DE',brand:'Alpha',aff:'AFF-0291',company:'Edjowa Gaming',  funnel:'Organic',       reg:'02 Sep 2025'},
+  {name:'Sofia Reyes',   id:'PLR-02341',av:'SR',col:'#f5b731',country:'🇪🇸 ES',brand:'Gamma',aff:'AFF-0567',company:'GameCo SA',     funnel:'Promo',         reg:'19 Jan 2026'},
+  {name:'Luca Ferretti', id:'PLR-00918',av:'LF',col:'#ff8c42',country:'🇮🇹 IT',brand:'Beta', aff:'AFF-0104',company:'BetCorp Ltd',   funnel:'Email',         reg:'04 Dec 2025'},
+  {name:'Yuki Tanaka',   id:'PLR-03112',av:'YT',col:'#00c9b1',country:'🇯🇵 JP',brand:'Alpha',aff:'AFF-0812',company:'Edjowa Gaming',  funnel:'Welcome Bonus', reg:'25 Feb 2026'},
+  {name:'Omar Khalid',   id:'PLR-00634',av:'OK',col:'#ff4d6a',country:'🇦🇪 AE',brand:'Delta',aff:'AFF-0291',company:'BetCorp Ltd',   funnel:'Organic',       reg:'11 Oct 2025'},
+  {name:'Petra Novak',   id:'PLR-01144',av:'PN',col:'#e040fb',country:'🇨🇿 CZ',brand:'Beta', aff:'AFF-0567',company:'GameCo SA',     funnel:'VIP',           reg:'30 Aug 2025'},
+  {name:'Ravi Sharma',   id:'PLR-02788',av:'RS',col:'#5b92ff',country:'🇮🇳 IN',brand:'Alpha',aff:'AFF-0104',company:'Edjowa Gaming',  funnel:'Organic',       reg:'12 Mar 2026'},
+];
+
+const METHODS=['Visa','Apple Pay','SEPA','Bkash','Google Pay','PaySafe','MBway'];
+const AGGS=['finteqhub','BankTrans','Exactly','MobCash','FYST','A-pay'];
+const STATUSES=['success','success','success','success','success','success','pending','failed'];
+
+let showRisk=true;
+const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=arr=>arr[r(0,arr.length-1)];
+
+// generate flat TX list
+const allTx=[];
+PLAYERS.forEach(p=>{
+  const cnt=r(4,9);
+  for(let i=0;i<cnt;i++){
+    const isIn=Math.random()>.3;
+    const ccy=['🇩🇪 DE','🇮🇹 IT','🇪🇸 ES','🇨🇿 CZ'].includes(p.country)?'EUR':p.country.includes('GB')?'GBP':p.country.includes('JP')?'JPY':'USD';
+    const rate={EUR:1,GBP:1.17,JPY:0.0062,USD:1.08}[ccy];
+    const amt=r(20,520);
+    const eur=Math.round(amt*rate);
+    const status=pick(STATUSES);
+    const ms=r(180,14000);
+    const hh=String(r(8,22)).padStart(2,'0');
+    const mm=String(r(0,59)).padStart(2,'0');
+    const flags=[];
+    if(amt>300) flags.push('large');
+    if(status==='failed') flags.push('fail');
+    if(i===0&&isIn) flags.push('ftd');
+    if(Math.random()<.07) flags.push('multi');
+    allTx.push({p,txId:`TX-${r(100000,999999)}`,isIn,time:`${hh}:${mm}`,amt,ccy,eur,method:pick(METHODS),agg:pick(AGGS),status,bonus:Math.random()>.62,ms,flags});
+  }
+});
+allTx.sort((a,b)=>b.time.localeCompare(a.time));
+
+// pre-compute player totals
+const totals={};
+PLAYERS.forEach(p=>{
+  const ptx=allTx.filter(t=>t.p===p);
+  const tIn=ptx.filter(t=>t.isIn).reduce((s,t)=>s+t.eur,0);
+  const tOut=ptx.filter(t=>!t.isIn).reduce((s,t)=>s+t.eur,0);
+  const fails=ptx.filter(t=>t.status==='failed').length;
+  const avgTx=ptx.length?Math.round((tIn+tOut)/ptx.length):0;
+  totals[p.id]={tIn,tOut,net:tIn-tOut,cnt:ptx.length,fails,avgTx};
+});
+
+// ── RENDER TABLE ─────────────────────────────────────────────────────────────
+function procHTML(ms){
+  const pct=Math.min(ms/14000,1);
+  const col=pct<.3?'var(--green)':pct<.7?'var(--yellow)':'var(--red)';
+  const label=ms>=1000?(ms/1000).toFixed(1)+'s':ms+'ms';
+  return `<div class="proc"><div class="proc-track"><div class="proc-fill" style="width:${pct*100}%;background:${col}"></div></div><span style="font-size:9px;color:${col}">${label}</span></div>`;
+}
+function flagsHTML(flags){
+  if(!flags.length) return '<span style="color:var(--border2)">—</span>';
+  return flags.map(f=>({
+    large:'<span class="flag-large">⬆ Large</span>',
+    fail: '<span class="flag-fail">✕ Fail</span>',
+    ftd:  '<span class="flag-ftd">★ FTD</span>',
+    multi:'<span class="flag-multi">⋮ Multi</span>',
+  }[f]||'')).join(' ');
+}
+
+function render(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML='';
+  allTx.forEach(tx=>{
+    const{p}=tx;
+    const isRisk=showRisk&&(tx.flags.includes('large')||tx.flags.includes('fail'));
+    const tr=document.createElement('tr');
+    if(isRisk) tr.classList.add('risk-row');
+    tr.innerHTML=`
+      <td>
+        <div class="pl-cell">
+          <div class="pl-av" style="background:${p.col}">${p.av}</div>
+          <div>
+            <div class="pl-name">${p.name}</div>
+            <div class="pl-id">#${p.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span style="color:var(--muted2);font-size:8.5px">${p.id}</span></td>
+      <td class="n" style="font-size:9px">${tx.txId}</td>
+      <td><span class="${tx.isIn?'badge-in':'badge-out'}">${tx.isIn?'↓ IN':'↑ OUT'}</span></td>
+      <td><span style="color:var(--muted2);font-size:9px">12 Mar 2026</span> <span style="color:var(--text)">${tx.time}</span></td>
+      <td class="r n">${tx.amt.toLocaleString()}</td>
+      <td style="color:var(--muted2);font-size:9px">${tx.ccy.split(' ')[0]}</td>
+      <td class="r" style="color:${tx.isIn?'var(--green)':'var(--red)'}">€ ${tx.eur.toLocaleString()}</td>
+      <td class="n" style="font-size:9.5px">${tx.method}</td>
+      <td style="font-size:9px">${tx.agg}</td>
+      <td><span class="${{success:'badge-ok',pending:'badge-pend',failed:'badge-fail'}[tx.status]}">${{success:'✓ Success',pending:'⏳ Pending',failed:'✕ Failed'}[tx.status]}</span></td>
+      <td>${tx.bonus?'<span class="badge-bonus">🎁 Bonus</span>':'<span style="color:var(--muted)">—</span>'}</td>
+      <td style="font-size:13px">${p.country.split(' ')[0]}</td>
+      <td style="font-size:9.5px">${p.brand}</td>
+      <td style="font-size:9px">${p.aff}</td>
+      <td style="font-size:9.5px">${p.company}</td>
+      <td><span class="badge-funnel">${p.funnel}</span></td>
+      <td>${procHTML(tx.ms)}</td>
+      <td>${showRisk?flagsHTML(tx.flags):'<span style="color:var(--border2)">—</span>'}</td>
+    `;
+    tr.addEventListener('mouseenter', e=>showTip(e,p));
+    tr.addEventListener('mousemove',  e=>moveTip(e));
+    tr.addEventListener('mouseleave', hideTip);
+    tr.addEventListener('click', ()=>openPanel(p));
+    tbody.appendChild(tr);
+  });
+  document.getElementById('row-count').textContent=allTx.length.toLocaleString();
+  document.getElementById('foot-count').textContent=allTx.length.toLocaleString();
+}
+
+// ── TOOLTIP ──────────────────────────────────────────────────────────────────
+const tip=document.getElementById('ptip');
+let tipOn=false;
+
+function showTip(e,p){
+  const t=totals[p.id];
+  const net=t.net;
+  document.getElementById('ptip-av').textContent=p.av;
+  document.getElementById('ptip-av').style.background=p.col;
+  document.getElementById('ptip-name').textContent=p.name;
+  document.getElementById('ptip-id').textContent='#'+p.id;
+  document.getElementById('ptip-in').textContent='€ '+t.tIn.toLocaleString();
+  document.getElementById('ptip-out').textContent='€ '+t.tOut.toLocaleString();
+  const netEl=document.getElementById('ptip-net');
+  netEl.textContent=(net>=0?'+ ':'− ')+'€ '+Math.abs(net).toLocaleString();
+  netEl.style.color=net>=0?'var(--teal)':'var(--red)';
+  document.getElementById('ptip-cnt').textContent=t.cnt+' TX';
+  const failEl=document.getElementById('ptip-fail');
+  failEl.textContent=t.fails?t.fails+' fail(s)':'—';
+  failEl.style.color=t.fails?'var(--red)':'var(--muted2)';
+  document.getElementById('ptip-avg').textContent='€ '+t.avgTx.toLocaleString();
+  document.getElementById('ptip-brand').textContent=p.brand;
+  document.getElementById('ptip-aff').textContent=p.aff;
+  document.getElementById('ptip-funnel').textContent=p.funnel;
+  tip.classList.add('show');
+  tipOn=true;
+  posTip(e);
+}
+function moveTip(e){ if(tipOn) posTip(e); }
+function posTip(e){
+  const W=window.innerWidth,H=window.innerHeight;
+  const tw=268,th=tip.offsetHeight||220;
+  let x=e.clientX+20, y=e.clientY-16;
+  if(x+tw>W-10) x=e.clientX-tw-12;
+  if(y+th>H-10) y=H-th-10;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTip(){ tip.classList.remove('show'); tipOn=false; }
+
+// ── PANEL ────────────────────────────────────────────────────────────────────
+function openPanel(p){
+  hideTip();
+  const t=totals[p.id];
+  const ptx=allTx.filter(tx=>tx.p===p);
+  const net=t.net;
+
+  document.getElementById('panel-av').style.background=p.col;
+  document.getElementById('panel-av').textContent=p.av;
+  document.getElementById('panel-name').textContent=p.name;
+  document.getElementById('panel-id').textContent='#'+p.id;
+  document.getElementById('pan-in').textContent='€ '+t.tIn.toLocaleString();
+  document.getElementById('pan-out').textContent='€ '+t.tOut.toLocaleString();
+  document.getElementById('pan-net').textContent=(net>=0?'+ ':'− ')+'€ '+Math.abs(net).toLocaleString();
+  document.getElementById('pan-net').style.color=net>=0?'var(--teal)':'var(--red)';
+  document.getElementById('pan-cnt').textContent=t.cnt;
+  document.getElementById('pan-country').textContent=p.country;
+  document.getElementById('pan-brand').textContent=p.brand;
+  document.getElementById('pan-aff').textContent=p.aff;
+  document.getElementById('pan-company').textContent=p.company;
+  document.getElementById('pan-funnel').textContent=p.funnel;
+  document.getElementById('pan-reg').textContent=p.reg;
+
+  document.getElementById('pan-journey').innerHTML=`
+    <div class="j-item"><div class="j-dot reg">R</div><div class="j-body"><div class="j-label">Registration</div><div class="j-meta">${p.reg} · ${p.funnel}</div></div></div>
+    <div class="j-item"><div class="j-dot dep">D</div><div class="j-body"><div class="j-label">FTD — € ${r(30,80)}</div><div class="j-meta">${p.reg} · Visa · ${p.aff}</div></div></div>
+    <div class="j-item"><div class="j-dot bon">B</div><div class="j-body"><div class="j-label">Bonus awarded</div><div class="j-meta">Welcome match 100%</div></div></div>
+    <div class="j-item"><div class="j-dot dep">D</div><div class="j-body"><div class="j-label">Deposit — € ${r(40,160)}</div><div class="j-meta">14 Jan 2026 · Apple Pay</div></div></div>
+    <div class="j-item"><div class="j-dot wit">W</div><div class="j-body"><div class="j-label">Cashout — € ${r(50,200)}</div><div class="j-meta">22 Jan 2026 · SEPA</div></div></div>
+    <div class="j-item"><div class="j-dot dep">D</div><div class="j-body"><div class="j-label">Deposit today — € ${ptx.filter(t=>t.isIn)[0]?.eur||'—'}</div><div class="j-meta">12 Mar 2026</div></div></div>
+  `;
+
+  document.getElementById('pan-txlist').innerHTML=ptx.slice(0,6).map(tx=>`
+    <div class="mini-tx">
+      <span class="mt-t ${tx.isIn?'in':'out'}">${tx.isIn?'↓ IN':'↑ OUT'}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--text)">€ ${tx.eur}</span>
+      <span style="font-family:var(--mono);font-size:8px;color:var(--muted2)">${tx.time}</span>
+      <span style="font-family:var(--mono);font-size:8px;color:${tx.status==='success'?'var(--green)':tx.status==='pending'?'var(--yellow)':'var(--red)'}">${{success:'✓',pending:'⏳',failed:'✕'}[tx.status]}</span>
+    </div>`).join('');
+
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+// ── RISK TOGGLE ───────────────────────────────────────────────────────────────
+function toggleRisk(){
+  showRisk=!showRisk;
+  const b=document.getElementById('risk-btn');
+  b.textContent=showRisk?'⚠ Risk Flags ON':'⚠ Risk Flags OFF';
+  b.className=showRisk?'risk-btn':'risk-btn off';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

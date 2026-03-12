@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DataJarvis — Churn Rate Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;
+  --border:#1f2530;--border2:#2a3040;
+  --text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;
+  --accent:#3d7fff;--accent2:#5b92ff;
+  --green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;
+  --purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;
+  --sans:'Roboto',sans-serif;--mono:'Roboto Mono',monospace;
+  /* heat */
+  --h5:#22d07a;--h4:#7ab85a;--h3:#c49030;--h2:#d96040;--h1:#f03050;--h0:#ff1a3a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;min-height:100vh;overflow:hidden;font-size:13px;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.logo{padding:26px 22px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.logo-name{font-family:var(--sans);font-weight:700;font-size:16px;letter-spacing:-.01em;}
+.logo-name span{color:var(--accent2);}
+.nav{flex:1;padding:14px 0;}
+.nav-section{padding:8px 16px 4px;font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:12.5px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;font-weight:400;}
+.nav-item:hover{color:var(--text);background:var(--surface2);}
+.nav-item.active{color:var(--text);background:rgba(155,125,255,.08);border-left-color:var(--purple);font-weight:500;}
+.nav-item .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0;}
+.nav-item.active .dot{opacity:1;background:var(--purple);}
+.sidebar-bottom{padding:14px;border-top:1px solid var(--border);}
+.user-pill{display:flex;align-items:center;gap:9px;padding:8px 10px;background:var(--surface2);border-radius:8px;cursor:pointer;}
+.avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--purple),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:12px;font-weight:500;}
+.user-role{font-size:10px;color:var(--muted);font-family:var(--mono);}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+
+/* topbar */
+.topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:10px;flex-shrink:0;}
+.breadcrumb{font-family:var(--mono);font-size:10.5px;color:var(--muted);}
+.breadcrumb span{color:var(--text);font-weight:500;}
+.live-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.live-badge{font-family:var(--mono);font-size:9.5px;color:var(--green);background:rgba(34,208,122,.1);border:1px solid rgba(34,208,122,.2);padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;}
+.spacer{flex:1;}
+.btn{height:28px;padding:0 11px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;font-size:11px;font-family:var(--sans);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;font-weight:400;}
+.btn:hover{border-color:var(--accent2);}
+.btn.primary{background:rgba(61,127,255,.12);border-color:var(--accent);color:var(--accent2);}
+.btn.tog-active{background:rgba(155,125,255,.12);border-color:var(--purple);color:var(--purple);}
+
+/* filter bar */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:7px;height:44px;overflow-x:auto;flex-shrink:0;}
+.filter-bar::-webkit-scrollbar{height:3px;}
+.filter-bar::-webkit-scrollbar-thumb{background:var(--border2);}
+.fl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.chip{display:flex;align-items:center;gap:5px;height:24px;padding:0 9px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap;}
+.chip:hover,.chip.on{border-color:var(--accent);background:rgba(61,127,255,.08);color:var(--accent2);}
+.chip .cv{font-size:7.5px;opacity:.5;}
+.fsep{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;}
+
+/* controls */
+.ctrl-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:9px;height:40px;flex-shrink:0;}
+.cl{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+.segs{display:flex;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;overflow:hidden;}
+.seg{height:22px;padding:0 10px;font-size:10px;font-family:var(--mono);color:var(--muted2);cursor:pointer;border-right:1px solid var(--border2);}
+.seg:last-child{border-right:none;}
+.seg:hover{color:var(--text);background:var(--surface3);}
+.seg.on{color:var(--purple);background:rgba(155,125,255,.12);}
+.mtabs{display:flex;gap:2px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;padding:2px;}
+.mtab{padding:0 9px;height:20px;border-radius:3px;font-size:9.5px;font-family:var(--mono);color:var(--muted2);cursor:pointer;display:flex;align-items:center;}
+.mtab.on{background:rgba(155,125,255,.18);color:var(--purple);}
+.vtog{display:flex;align-items:center;gap:3px;}
+.vopt{height:22px;padding:0 9px;font-size:10px;font-family:var(--mono);cursor:pointer;border-radius:4px;color:var(--muted2);display:flex;align-items:center;}
+.vopt.on{color:var(--text);background:var(--surface2);border:1px solid var(--border2);}
+
+/* scroll */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 22px 24px;}
+.scroll::-webkit-scrollbar{width:5px;}
+.scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:14px;}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px 9px;position:relative;overflow:hidden;}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kc.c1::before{background:var(--accent);}
+.kc.c2::before{background:var(--teal);}
+.kc.c3::before{background:var(--yellow);}
+.kc.c4::before{background:var(--orange);}
+.kc.c5::before{background:#e040fb;}
+.kc.c6::before{background:var(--purple);}
+.kc.c7::before{background:var(--green);}
+.kc-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.kc-val{font-family:var(--mono);font-size:18px;font-weight:500;line-height:1.1;}
+.kc-sub{font-family:var(--mono);font-size:8px;color:var(--muted2);margin-top:2px;}
+.kc-d{font-family:var(--mono);font-size:8.5px;margin-top:4px;}
+.kc-d.up{color:var(--green);}
+.kc-d.dn{color:var(--red);}
+.kc-d.neu{color:var(--muted2);}
+/* trend spark inside card */
+.trend-spark{display:flex;align-items:flex-end;gap:3px;height:20px;margin-top:6px;}
+.ts-b{flex:1;border-radius:2px 2px 0 0;}
+
+/* ── BRAND BLOCK ── */
+.brand-block{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:14px;}
+.sec-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+.sec-ttl{font-size:12px;font-weight:500;}
+.sec-meta{font-family:var(--mono);font-size:9px;color:var(--muted);margin-left:auto;}
+.brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.brand-item{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px 9px;}
+.brand-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.brand-nm{font-size:11px;font-weight:500;color:var(--text);}
+.brand-pct{font-family:var(--mono);font-size:12px;font-weight:500;}
+.bbar-track{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-bottom:7px;}
+.bbar-fill{height:100%;border-radius:2px;}
+.brand-stats{display:flex;justify-content:space-between;}
+.bstat{font-family:var(--mono);font-size:8.5px;}
+.bstat.g{color:var(--green);}
+.bstat.r{color:var(--red);}
+.bstat.y{color:var(--yellow);}
+.bstat.m{color:var(--muted2);}
+.brand-sub{font-family:var(--mono);font-size:8px;color:var(--muted);margin-top:5px;}
+
+/* ── COHORT TABLE ── */
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.tbl-head{display:flex;align-items:center;padding:11px 15px;border-bottom:1px solid var(--border);gap:10px;}
+.tbl-ttl{font-size:12px;font-weight:500;}
+.tbl-meta{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.legend{display:flex;align-items:center;gap:12px;margin-left:auto;}
+.leg{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:8.5px;color:var(--muted2);}
+.leg-sw{width:11px;height:11px;border-radius:2px;}
+.tbl-controls{display:flex;align-items:center;gap:8px;padding:7px 15px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);}
+.grp-toggle{display:flex;gap:3px;}
+.gtog{height:22px;padding:0 9px;border-radius:4px;font-size:9.5px;font-family:var(--mono);cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--muted2);border:1px solid var(--border2);background:var(--surface2);}
+.gtog.expanded{color:var(--teal);border-color:rgba(0,201,177,.3);background:rgba(0,201,177,.06);}
+.thr-wrap{display:flex;align-items:center;gap:5px;margin-left:auto;}
+.thr-lbl{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.thr-inp{width:52px;height:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:4px;color:var(--text);font-family:var(--mono);font-size:10px;text-align:center;padding:0 4px;}
+.sample-legend{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8.5px;color:var(--muted);}
+.sample-dot{width:8px;height:8px;border-radius:2px;background:rgba(245,183,49,.2);border:1px solid rgba(245,183,49,.3);}
+
+.ts{overflow-x:auto;}
+.ts::-webkit-scrollbar{height:5px;}
+.ts::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+table{border-collapse:collapse;min-width:100%;}
+
+/* group header row */
+.grp-hdr th{background:var(--surface2);height:26px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;border-right:1px solid var(--border);border-bottom:1px solid var(--border2);white-space:nowrap;padding:0 8px;text-align:center;}
+.grp-hdr th.g-early{color:var(--teal);background:rgba(0,201,177,.05);}
+.grp-hdr th.g-mid{color:var(--yellow);background:rgba(245,183,49,.04);}
+.grp-hdr th.g-long{color:var(--purple);background:rgba(155,125,255,.04);}
+.grp-hdr th.g-meta{text-align:left;color:var(--muted2);}
+.grp-hdr th.g-delta{color:var(--muted);background:rgba(255,255,255,.02);font-size:7.5px;}
+
+/* col header row */
+.col-hdr th{background:var(--surface2);height:28px;font-family:var(--mono);font-size:8px;color:var(--muted2);font-weight:400;border-right:1px solid var(--border);border-bottom:2px solid var(--border2);white-space:nowrap;padding:0 8px;text-align:center;cursor:pointer;vertical-align:middle;}
+.col-hdr th:hover{color:var(--text);background:var(--surface3);}
+.col-hdr th.lc{text-align:left;min-width:155px;cursor:default;}
+.col-hdr th.lc:hover{background:var(--surface2);color:var(--muted2);}
+.col-hdr th.nc{text-align:right;min-width:72px;}
+.col-hdr th.base-h{color:var(--accent2);}
+.col-hdr th.delta-h{color:var(--muted);font-size:7.5px;background:rgba(255,255,255,.02);}
+.col-hdr th.sorted{color:var(--accent2);}
+
+/* tbody */
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer;}
+tbody tr:hover{background:var(--surface2);}
+tbody tr.avg-row{background:rgba(61,127,255,.05);cursor:default;}
+tbody tr.avg-row:hover{background:rgba(61,127,255,.07);}
+tbody tr.small-n{opacity:.55;}
+tbody tr.small-n td.lc .cohort-nm{color:var(--yellow);}
+tbody tr.low-n{opacity:.32;}
+tbody tr.drill-child{background:rgba(155,125,255,.04);display:none;}
+tbody tr.drill-child.open{display:table-row;}
+tbody tr.drill-child:hover{background:rgba(155,125,255,.06);}
+tbody tr.expanded-parent{background:rgba(155,125,255,.04);}
+
+td{padding:0 8px;height:30px;font-family:var(--mono);font-size:9.5px;color:var(--muted2);text-align:center;border-right:1px solid var(--border);white-space:nowrap;vertical-align:middle;}
+td.lc{text-align:left;font-size:10px;color:var(--text);}
+td.nc{text-align:right;color:var(--muted2);font-size:9px;}
+td.base{color:var(--text);font-weight:500;background:rgba(61,127,255,.07);}
+td.avg-val{font-weight:500;color:var(--accent2);}
+td.delta-cell{background:rgba(255,255,255,.015);font-size:9px;}
+td.delta-cell.neg{color:var(--red);}
+td.delta-cell.sml{color:var(--yellow);}
+td.delta-cell.pos{color:var(--green);}
+td.child-label{padding-left:24px;font-size:9px;color:var(--muted2);}
+
+/* cohort label styling */
+.cohort-nm{display:flex;align-items:center;gap:6px;}
+.expand-icon{width:14px;height:14px;background:var(--surface3);border:1px solid var(--border2);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;color:var(--muted);flex-shrink:0;transition:transform .15s;}
+.expand-icon.open{transform:rotate(90deg);background:rgba(155,125,255,.12);border-color:rgba(155,125,255,.3);color:var(--purple);}
+.tag{display:inline-flex;align-items:center;font-size:7.5px;font-family:var(--mono);padding:1px 5px;border-radius:3px;font-weight:400;margin-left:4px;}
+.tag-best{color:var(--purple);background:rgba(155,125,255,.1);border:1px solid rgba(155,125,255,.25);}
+.tag-warn{color:var(--yellow);background:rgba(245,183,49,.1);border:1px solid rgba(245,183,49,.25);}
+.tag-crit{color:var(--red);background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.25);}
+.tag-small{color:var(--yellow);background:rgba(245,183,49,.08);border:1px solid rgba(245,183,49,.2);}
+.tag-lown{color:var(--muted2);background:rgba(255,255,255,.04);border:1px solid var(--border2);}
+.brand-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* spark in row */
+.row-spark{display:inline-flex;align-items:flex-end;gap:1.5px;height:14px;vertical-align:middle;margin-left:5px;}
+.rs-b{width:4px;border-radius:1px 1px 0 0;}
+
+/* tfoot */
+.tbl-foot{padding:9px 15px;border-top:1px solid var(--border);display:flex;align-items:center;gap:14px;}
+.fstat{font-family:var(--mono);font-size:9px;color:var(--muted);}
+.fstat span{color:var(--text);}
+
+/* tooltip */
+.tooltip{position:fixed;background:#1a2035;border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--text);pointer-events:none;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:160px;}
+.tooltip-title{font-size:9.5px;font-weight:500;margin-bottom:5px;color:var(--accent2);}
+.tooltip-row{display:flex;justify-content:space-between;gap:14px;margin-top:2px;}
+.tooltip-lbl{color:var(--muted2);}
+.tooltip-val{color:var(--text);}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">Data<span>Jarvis</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Platform</div>
+    <a class="nav-item " href="../index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V9h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Hub
+    </a>
+
+    <div class="nav-section">Reports</div>
+    <a class="nav-item " href="dashboard.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item " href="daily-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Daily Performance
+    </a>
+    <a class="nav-item " href="payment-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="10.5" r="1" fill="currentColor"/></svg>
+      Payment
+    </a>
+    <a class="nav-item active" href="churn-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 7l3 3 2.5-4 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn Rate
+    </a>
+    <a class="nav-item " href="inout-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      In / Out
+    </a>
+    <a class="nav-item " href="affiliate-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="3" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v2M6 10L4.5 10.5M10 10l1.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Affiliate
+    </a>
+
+    <div class="nav-section">Resources</div>
+    <a class="nav-item" href="../docs/index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Documentation
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Anna K.</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <span class="breadcrumb">Reports / <span>Churn Rate Report</span></span>
+    <div class="live-badge"><div class="live-dot"></div>Updated 2 min ago</div>
+    <div class="spacer"></div>
+    <div class="btn tog-active">📊 % Retention</div>
+    <div class="btn">🔢 Absolute</div>
+    <div class="btn">Δ Change</div>
+    <div class="btn">🔗 Share</div>
+    <div class="btn primary">↓ Export</div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="fl">Period</span>
+    <div class="chip on">📅 Jan 2025 – Feb 2026 <span class="cv">▾</span></div>
+    <div class="fsep"></div>
+    <div class="chip">Brand <span class="cv">▾</span></div>
+    <div class="chip">Country <span class="cv">▾</span></div>
+    <div class="chip">Affiliate <span class="cv">▾</span></div>
+    <div class="chip">Company <span class="cv">▾</span></div>
+    <div class="chip">Media Item <span class="cv">▾</span></div>
+    <div class="spacer"></div>
+    <div class="chip">🔍 Search</div>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="ctrl-bar">
+    <span class="cl">Cohort</span>
+    <div class="segs">
+      <div class="seg">Daily</div>
+      <div class="seg">Weekly</div>
+      <div class="seg on">Monthly</div>
+    </div>
+    <div class="fsep"></div>
+    <span class="cl">Metric</span>
+    <div class="mtabs">
+      <div class="mtab on">GGR</div>
+      <div class="mtab">NGR</div>
+      <div class="mtab">Net Cash</div>
+      <div class="mtab">Deposits</div>
+      <div class="mtab">GGR/PLR</div>
+      <div class="mtab">NGR/PLR</div>
+      <div class="mtab">Net Cash/PLR</div>
+      <div class="mtab">Dep/PLR</div>
+    </div>
+    <div class="spacer"></div>
+  </div>
+
+  <!-- SCROLL -->
+  <div class="scroll">
+
+    <!-- KPI CARDS (7) -->
+    <div class="kpi-row">
+      <!-- M2 avg -->
+      <div class="kc c1">
+        <div class="kc-lbl">M2 Retention avg</div>
+        <div class="kc-val" style="color:var(--teal)">42.3%</div>
+        <div class="kc-d dn">▼ −1.8 pp vs prev period</div>
+        <div class="trend-spark">
+          <div class="ts-b" style="height:55%;background:var(--teal);opacity:.5"></div>
+          <div class="ts-b" style="height:70%;background:var(--teal);opacity:.6"></div>
+          <div class="ts-b" style="height:80%;background:var(--teal);opacity:.7"></div>
+          <div class="ts-b" style="height:90%;background:var(--teal);opacity:.8"></div>
+          <div class="ts-b" style="height:75%;background:var(--teal);opacity:.7"></div>
+          <div class="ts-b" style="height:65%;background:var(--teal);opacity:.6"></div>
+          <div class="ts-b" style="height:60%;background:var(--teal)"></div>
+        </div>
+      </div>
+      <!-- M6 avg -->
+      <div class="kc c2">
+        <div class="kc-lbl">M6 Retention avg</div>
+        <div class="kc-val" style="color:var(--yellow)">16.1%</div>
+        <div class="kc-d dn">▼ −0.9 pp vs prev period</div>
+        <div class="trend-spark">
+          <div class="ts-b" style="height:60%;background:var(--yellow);opacity:.5"></div>
+          <div class="ts-b" style="height:75%;background:var(--yellow);opacity:.6"></div>
+          <div class="ts-b" style="height:85%;background:var(--yellow);opacity:.7"></div>
+          <div class="ts-b" style="height:100%;background:var(--yellow);opacity:.8"></div>
+          <div class="ts-b" style="height:80%;background:var(--yellow);opacity:.7"></div>
+          <div class="ts-b" style="height:65%;background:var(--yellow);opacity:.6"></div>
+          <div class="ts-b" style="height:55%;background:var(--yellow)"></div>
+        </div>
+      </div>
+      <!-- M9 avg -->
+      <div class="kc c3">
+        <div class="kc-lbl">M9 Retention avg</div>
+        <div class="kc-val" style="color:var(--orange)">8.7%</div>
+        <div class="kc-d up">▲ +0.3 pp vs prev period</div>
+        <div class="trend-spark">
+          <div class="ts-b" style="height:70%;background:var(--orange);opacity:.5"></div>
+          <div class="ts-b" style="height:60%;background:var(--orange);opacity:.6"></div>
+          <div class="ts-b" style="height:75%;background:var(--orange);opacity:.7"></div>
+          <div class="ts-b" style="height:80%;background:var(--orange);opacity:.8"></div>
+          <div class="ts-b" style="height:90%;background:var(--orange);opacity:.8"></div>
+          <div class="ts-b" style="height:95%;background:var(--orange);opacity:.9"></div>
+          <div class="ts-b" style="height:100%;background:var(--orange)"></div>
+        </div>
+      </div>
+      <!-- M12 avg -->
+      <div class="kc c4">
+        <div class="kc-lbl">M12 Retention avg</div>
+        <div class="kc-val" style="color:var(--red)">4.6%</div>
+        <div class="kc-d up">▲ +0.2 pp vs prev period</div>
+        <div class="trend-spark">
+          <div class="ts-b" style="height:65%;background:var(--red);opacity:.4"></div>
+          <div class="ts-b" style="height:70%;background:var(--red);opacity:.5"></div>
+          <div class="ts-b" style="height:80%;background:var(--red);opacity:.6"></div>
+          <div class="ts-b" style="height:90%;background:var(--red);opacity:.7"></div>
+          <div class="ts-b" style="height:85%;background:var(--red);opacity:.8"></div>
+          <div class="ts-b" style="height:95%;background:var(--red);opacity:.9"></div>
+          <div class="ts-b" style="height:100%;background:var(--red)"></div>
+        </div>
+      </div>
+      <!-- Latest vs Avg Δ M2 -->
+      <div class="kc c5">
+        <div class="kc-lbl">Latest vs Avg · Δ M2</div>
+        <div class="kc-val" style="color:var(--red)">−5.1 pp</div>
+        <div class="kc-sub">Feb 2026: 37.2% vs avg 42.3%</div>
+        <div class="kc-d dn">▼ Below average — watch closely</div>
+      </div>
+      <!-- Latest vs Avg Δ M6 -->
+      <div class="kc c6">
+        <div class="kc-lbl">Latest vs Avg · Δ M6</div>
+        <div class="kc-val" style="color:var(--muted2)">—</div>
+        <div class="kc-sub">Aug 2025 (last w/ M6 data)</div>
+        <div class="kc-d neu">+1.4 pp above average</div>
+      </div>
+      <!-- 3-mo Trend -->
+      <div class="kc c7">
+        <div class="kc-lbl">3-mo Trend · M2</div>
+        <div class="kc-val" style="color:var(--red)">↓ Falling</div>
+        <div class="kc-sub">Dec→Jan→Feb: 43.1→40.8→37.2%</div>
+        <div class="kc-d dn">▼ −5.9 pp over 3 cohorts</div>
+      </div>
+    </div>
+
+    <!-- BRAND COMPARISON -->
+    <div class="brand-block">
+      <div class="sec-head">
+        <span class="sec-ttl">🏷️ Brand Comparison — M2 &amp; M6 Retention</span>
+        <span class="sec-meta">Metric: GGR · Cohort: Monthly · Period: last 6 cohorts avg</span>
+      </div>
+      <div class="brand-grid">
+        <div class="brand-item">
+          <div class="brand-hd"><span class="brand-nm">Brand Alpha</span><span class="brand-pct" style="color:var(--green)">47.8%</span></div>
+          <div class="bbar-track"><div class="bbar-fill" style="width:47.8%;background:var(--green)"></div></div>
+          <div class="brand-stats">
+            <span class="bstat g">M2: 47.8%</span>
+            <span class="bstat y">M6: 18.3%</span>
+            <span class="bstat r">M12: 5.2%</span>
+          </div>
+          <div class="brand-sub">Players M0 avg: 512 · GGR/PLR M0: €94</div>
+        </div>
+        <div class="brand-item">
+          <div class="brand-hd"><span class="brand-nm">Brand Beta</span><span class="brand-pct" style="color:var(--teal)">41.2%</span></div>
+          <div class="bbar-track"><div class="bbar-fill" style="width:41.2%;background:var(--teal)"></div></div>
+          <div class="brand-stats">
+            <span class="bstat g">M2: 41.2%</span>
+            <span class="bstat y">M6: 15.7%</span>
+            <span class="bstat r">M12: 4.4%</span>
+          </div>
+          <div class="brand-sub">Players M0 avg: 681 · GGR/PLR M0: €78</div>
+        </div>
+        <div class="brand-item">
+          <div class="brand-hd"><span class="brand-nm">Brand Gamma</span><span class="brand-pct" style="color:var(--yellow)">38.5%</span></div>
+          <div class="bbar-track"><div class="bbar-fill" style="width:38.5%;background:var(--yellow)"></div></div>
+          <div class="brand-stats">
+            <span class="bstat y">M2: 38.5%</span>
+            <span class="bstat y">M6: 14.1%</span>
+            <span class="bstat r">M12: 3.8%</span>
+          </div>
+          <div class="brand-sub">Players M0 avg: 443 · GGR/PLR M0: €61</div>
+        </div>
+        <div class="brand-item">
+          <div class="brand-hd"><span class="brand-nm">Brand Delta</span><span class="brand-pct" style="color:var(--red)">29.4%</span></div>
+          <div class="bbar-track"><div class="bbar-fill" style="width:29.4%;background:var(--red)"></div></div>
+          <div class="brand-stats">
+            <span class="bstat r">M2: 29.4%</span>
+            <span class="bstat r">M6: 11.2%</span>
+            <span class="bstat r">M12: 2.9%</span>
+          </div>
+          <div class="brand-sub">Players M0 avg: 247 · GGR/PLR M0: €44</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COHORT HEATMAP TABLE -->
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div>
+          <div class="tbl-ttl">📊 Cohort Retention Heatmap — GGR % of M0</div>
+          <div class="tbl-meta" style="margin-top:2px">Click row to expand brand breakdown · Dimmed rows = small sample · Δ = drop vs previous group end</div>
+        </div>
+        <div class="legend">
+          <div class="leg"><div class="leg-sw" style="background:var(--h5)"></div>≥50%</div>
+          <div class="leg"><div class="leg-sw" style="background:var(--h4)"></div>30–49%</div>
+          <div class="leg"><div class="leg-sw" style="background:var(--h3)"></div>15–29%</div>
+          <div class="leg"><div class="leg-sw" style="background:var(--h2)"></div>7–14%</div>
+          <div class="leg"><div class="leg-sw" style="background:var(--h0)"></div>&lt;7%</div>
+        </div>
+      </div>
+
+      <div class="tbl-controls">
+        <span class="cl">Groups</span>
+        <div class="grp-toggle">
+          <div class="gtog expanded" id="tog-early" onclick="toggleGroup('early')">▸ Early M1–M3</div>
+          <div class="gtog expanded" id="tog-mid" onclick="toggleGroup('mid')">▸ Mid M4–M6</div>
+          <div class="gtog expanded" id="tog-long" onclick="toggleGroup('long')">▸ Long M7–M12</div>
+        </div>
+        <div class="fsep"></div>
+        <div class="thr-wrap">
+          <span class="thr-lbl">Highlight &lt;</span>
+          <input class="thr-inp" id="thr-inp" type="number" value="20" min="0" max="100" onchange="applyThreshold()">
+          <span class="thr-lbl">%</span>
+        </div>
+        <div class="fsep"></div>
+        <div class="sample-legend">
+          <div class="sample-dot"></div>
+          <span>small sample (&lt;300 players)</span>
+        </div>
+      </div>
+
+      <div class="ts">
+        <table id="cohort-table">
+          <!-- GROUP HEADER -->
+          <thead>
+            <tr class="grp-hdr" id="grp-row">
+              <th class="g-meta" colspan="2">Cohort · Active Players</th>
+              <th class="g-meta" style="text-align:center">Base</th>
+              <th class="g-early early-col" colspan="3">Early Phase</th>
+              <th class="g-delta delta-col">Δ Early</th>
+              <th class="g-mid mid-col" colspan="3">Mid Phase</th>
+              <th class="g-delta delta-col">Δ Mid</th>
+              <th class="g-long long-col" colspan="6">Long Phase</th>
+              <th class="g-delta delta-col">Δ Long</th>
+            </tr>
+            <tr class="col-hdr">
+              <th class="lc">Cohort</th>
+              <th class="nc">Players M0</th>
+              <th class="base-h">M0</th>
+              <th class="early-col">M1</th>
+              <th class="early-col">M2</th>
+              <th class="early-col">M3</th>
+              <th class="delta-h delta-col">Δ E</th>
+              <th class="mid-col">M4</th>
+              <th class="mid-col">M5</th>
+              <th class="mid-col sorted">M6 ↓</th>
+              <th class="delta-h delta-col">Δ M</th>
+              <th class="long-col">M7</th>
+              <th class="long-col">M8</th>
+              <th class="long-col">M9</th>
+              <th class="long-col">M10</th>
+              <th class="long-col">M11</th>
+              <th class="long-col">M12</th>
+              <th class="delta-h delta-col">Δ L</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-foot">
+        <span class="fstat">Showing <span id="cohort-count">14</span> cohorts</span>
+        <span class="fstat">Metric: <span>GGR %</span></span>
+        <span class="fstat">Period: <span>Jan 2025 – Feb 2026</span></span>
+        <span class="fstat">Avg based on <span>cohorts with data</span></span>
+        <div class="spacer"></div>
+        <div class="btn primary" style="font-family:var(--mono);font-size:10px;height:26px">↓ Export .xlsx</div>
+      </div>
+    </div>
+
+  </div><!-- /scroll -->
+</main>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tip">
+  <div class="tooltip-title" id="tip-title"></div>
+  <div id="tip-body"></div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const AVG_PLAYERS = 1380;
+
+const cohorts = [
+  { id:'jan25',  label:'Jan 2025',  players:1843, best:true,  smallN:false, verySmall:false,
+    ret:[100,66.2,48.4,36.1,27.3,21.4,17.8,14.2,11.6,9.8,8.1,6.7,5.5,4.3],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,69,52,39,30,23,19,15,12,10,8.3,6.9,5.7,4.5]},{n:'Beta',c:'#5b92ff',r:[100,65,47,35,26,20,17,13,11,9.2,7.6,6.3,5.1,4.0]},{n:'Gamma',c:'#f5b731',r:[100,62,44,31,23,17,14,11,9.1,7.5,6.1,5.0,4.0,3.1]}]},
+  { id:'feb25',  label:'Feb 2025',  players:1621, best:false, smallN:false, verySmall:false,
+    ret:[100,63.7,45.8,33.4,24.9,19.3,15.7,12.4,10.1,8.4,6.9,5.7,4.6,3.6],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,66,48,35,26,20,16,13,10,8.5,7,5.8,4.7,3.7]},{n:'Beta',c:'#5b92ff',r:[100,63,46,34,25,19,16,12,10,8.2,6.8,5.6,4.5,3.5]},{n:'Gamma',c:'#f5b731',r:[100,60,42,30,22,16,13,10,8,6.7,5.5,4.5,3.6,2.8]}]},
+  { id:'mar25',  label:'Mar 2025',  players:1490, best:false, smallN:false, verySmall:false,
+    ret:[100,61.4,43.7,31.8,23.6,18.1,14.8,11.7,9.5,7.9,6.5,5.4,4.3,3.4],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,64,46,34,25,19,16,12,10,8.2,6.7,5.5,4.4,3.5]},{n:'Beta',c:'#5b92ff',r:[100,61,44,32,24,18,15,11,9.2,7.7,6.3,5.2,4.2,3.3]},{n:'Gamma',c:'#f5b731',r:[100,57,40,28,20,15,12,9.3,7.5,6.2,5.0,4.1,3.3,2.6]}]},
+  { id:'apr25',  label:'Apr 2025',  players:1712, best:false, smallN:false, verySmall:false,
+    ret:[100,64.8,46.2,34.1,25.7,19.8,16.2,12.8,10.4,8.6,7.1,5.9,4.7,3.7],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,67,49,37,27,21,17,13,11,9,7.4,6.1,4.9,3.9]},{n:'Beta',c:'#5b92ff',r:[100,65,47,35,26,20,16,13,10,8.4,6.9,5.7,4.6,3.6]},{n:'Gamma',c:'#f5b731',r:[100,61,43,30,22,17,13,10,8.3,6.9,5.7,4.7,3.8,2.9]}]},
+  { id:'may25',  label:'May 2025',  players:1388, best:false, smallN:false, verySmall:false,
+    ret:[100,60.3,42.4,30.7,22.8,17.5,14.3,11.3,9.2,7.6,6.3,5.2,4.1,3.2],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,63,45,33,24,18,15,11,9.3,7.7,6.3,5.2,4.1,3.2]},{n:'Beta',c:'#5b92ff',r:[100,60,43,31,23,17,14,11,9,7.4,6.1,5,4,3.1]},{n:'Gamma',c:'#f5b731',r:[100,57,39,27,20,15,12,9.4,7.6,6.3,5.2,4.2,3.4,2.6]}]},
+  { id:'jun25',  label:'Jun 2025',  players:1534, best:false, smallN:false, verySmall:false,
+    ret:[100,62.7,44.3,32.2,23.9,18.4,15.1,11.9,9.7,8.1,6.6,5.5,4.4,3.4],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,65,47,35,26,20,16,12,10,8.3,6.8,5.6,4.5,3.5]},{n:'Beta',c:'#5b92ff',r:[100,63,44,32,24,18,15,11,9.5,7.9,6.5,5.4,4.3,3.3]},{n:'Gamma',c:'#f5b731',r:[100,59,41,29,21,16,12,9.6,7.8,6.5,5.3,4.4,3.5,2.7]}]},
+  { id:'jul25',  label:'Jul 2025',  players:1601, best:true,  smallN:false, verySmall:false,
+    ret:[100,67.4,49.1,37.2,28.6,22.3,18.4,14.7,12.0,10.1,8.4,7.0,5.7,4.5],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,70,52,40,31,24,20,16,13,11,9.1,7.5,6.1,4.8]},{n:'Beta',c:'#5b92ff',r:[100,67,49,37,29,22,18,14,11,9.5,7.8,6.5,5.3,4.2]},{n:'Gamma',c:'#f5b731',r:[100,64,46,34,25,20,16,12,9.8,8.2,6.7,5.6,4.5,3.5]}]},
+  { id:'aug25',  label:'Aug 2025',  players:1245, best:false, smallN:false, verySmall:false,
+    ret:[100,59.8,41.6,29.8,22.1,16.9,13.9,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,62,44,32,24,18,14,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,60,42,30,22,17,14,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,56,38,27,19,14,11,null,null,null,null,null,null,null]}]},
+  { id:'sep25',  label:'Sep 2025',  players:1478, best:false, smallN:false, verySmall:false,
+    ret:[100,61.9,43.2,31.1,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,64,46,33,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,62,43,31,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,58,40,29,null,null,null,null,null,null,null,null,null,null]}]},
+  { id:'oct25',  label:'Oct 2025',  players:1832, best:false, smallN:false, verySmall:false,
+    ret:[100,65.3,46.8,null,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,68,49,null,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,65,47,null,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,61,44,null,null,null,null,null,null,null,null,null,null,null]}]},
+  { id:'nov25',  label:'Nov 2025',  players:1203, best:false, smallN:false, verySmall:false,
+    ret:[100,58.4,null,null,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,61,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,58,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,55,null,null,null,null,null,null,null,null,null,null,null,null]}]},
+  { id:'dec25',  label:'Dec 2025',  players:247,  best:false, smallN:false, verySmall:true,
+    ret:[100,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]}]},
+  { id:'jan26',  label:'Jan 2026',  players:2104, best:false, smallN:false, verySmall:false,
+    ret:[100,40.8,null,null,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,43,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,41,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,37,null,null,null,null,null,null,null,null,null,null,null,null]}]},
+  { id:'feb26',  label:'Feb 2026 ← latest',  players:1687, best:false, smallN:false, verySmall:false, latest:true,
+    ret:[100,null,null,null,null,null,null,null,null,null,null,null,null,null],
+    brands:[{n:'Alpha',c:'#22d07a',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Beta',c:'#5b92ff',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]},{n:'Gamma',c:'#f5b731',r:[100,null,null,null,null,null,null,null,null,null,null,null,null,null]}]},
+];
+
+// compute averages
+const periods = 14; // M0..M12+1
+const avgRow = Array(periods).fill(null);
+for(let p=0;p<periods;p++){
+  let vals = cohorts.map(c=>c.ret[p]).filter(v=>v!==null&&v!==undefined);
+  avgRow[p] = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length) : null;
+}
+
+// ─── HEAT COLOR ─────────────────────────────────────────────────────────────
+function heatStyle(v){
+  if(v===null||v===undefined) return '';
+  if(v>=50) return `background:rgba(34,208,122,.18);color:#22d07a`;
+  if(v>=30) return `background:rgba(122,184,90,.16);color:#7ab85a`;
+  if(v>=15) return `background:rgba(196,144,48,.18);color:#c49030`;
+  if(v>=7)  return `background:rgba(217,96,64,.18);color:#d96040`;
+  return `background:rgba(255,26,58,.2);color:#ff4d6a`;
+}
+
+function fmt(v){ return v===null||v===undefined ? '<span style="color:var(--border2)">—</span>' : v.toFixed(1)+'%'; }
+function deltaFmt(v){
+  if(v===null) return '<span style="color:var(--border2)">—</span>';
+  const cls = v>0?'pos':v<-15?'neg':'sml';
+  const sign = v>0?'+':'';
+  return `<span class="delta-cell ${cls}">${sign}${v.toFixed(1)}</span>`;
+}
+
+function calcDelta(c, fromIdx, toIdx){
+  const a=c.ret[fromIdx], b=c.ret[toIdx];
+  if(a===null||a===undefined||b===null||b===undefined) return null;
+  return b-a;
+}
+
+// ─── SPARKLINE SVG in row ───────────────────────────────────────────────────
+function sparkline(ret){
+  const vals = ret.slice(1,7).filter(v=>v!==null);
+  if(!vals.length) return '';
+  const max=Math.max(...vals)||1;
+  let html='<span class="row-spark">';
+  vals.forEach(v=>{
+    const h=Math.round((v/max)*14);
+    const col=v>=30?'#22d07a':v>=15?'#c49030':'#ff4d6a';
+    html+=`<span class="rs-b" style="height:${h}px;background:${col}"></span>`;
+  });
+  html+='</span>';
+  return html;
+}
+
+// ─── BUILD TABLE ─────────────────────────────────────────────────────────────
+function buildTable(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML='';
+
+  // AVERAGE row
+  const avgTr=document.createElement('tr');
+  avgTr.className='avg-row';
+  avgTr.innerHTML=`
+    <td class="lc"><div class="cohort-nm"><span style="font-size:9px;font-weight:500;color:var(--accent2)">⊘ AVERAGE</span></div></td>
+    <td class="nc" style="color:var(--muted2)">${Math.round(cohorts.reduce((s,c)=>s+c.players,0)/cohorts.length).toLocaleString()}</td>
+    <td class="base avg-val">100%</td>
+    <td class="early-col avg-val" style="${heatStyle(avgRow[1])}">${fmt(avgRow[1])}</td>
+    <td class="early-col avg-val" style="${heatStyle(avgRow[2])}">${fmt(avgRow[2])}</td>
+    <td class="early-col avg-val" style="${heatStyle(avgRow[3])}">${fmt(avgRow[3])}</td>
+    <td class="delta-col avg-val" style="font-size:9px;color:var(--muted2)">${avgRow[3]?(avgRow[3]-avgRow[1]).toFixed(1)+'pp':'—'}</td>
+    <td class="mid-col avg-val" style="${heatStyle(avgRow[4])}">${fmt(avgRow[4])}</td>
+    <td class="mid-col avg-val" style="${heatStyle(avgRow[5])}">${fmt(avgRow[5])}</td>
+    <td class="mid-col avg-val" style="${heatStyle(avgRow[6])}">${fmt(avgRow[6])}</td>
+    <td class="delta-col avg-val" style="font-size:9px;color:var(--muted2)">${avgRow[6]&&avgRow[3]?(avgRow[6]-avgRow[3]).toFixed(1)+'pp':'—'}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[7])}">${fmt(avgRow[7])}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[8])}">${fmt(avgRow[8])}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[9])}">${fmt(avgRow[9])}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[10])}">${fmt(avgRow[10])}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[11])}">${fmt(avgRow[11])}</td>
+    <td class="long-col avg-val" style="${heatStyle(avgRow[12])}">${fmt(avgRow[12])}</td>
+    <td class="delta-col avg-val" style="font-size:9px;color:var(--muted2)">${avgRow[12]&&avgRow[7]?(avgRow[12]-avgRow[7]).toFixed(1)+'pp':'—'}</td>`;
+  tbody.appendChild(avgTr);
+
+  // COHORT ROWS
+  cohorts.forEach((c,ci)=>{
+    const isSmall = c.players < 300 && !c.verySmall;
+    const isVerySmall = c.verySmall;
+    const rowClass = isVerySmall?'low-n':isSmall?'small-n':'';
+    const expanded = false;
+
+    // tags
+    let tags='';
+    if(c.best) tags+=`<span class="tag tag-best">★ best</span>`;
+    if(c.latest) tags+=`<span class="tag tag-warn">← latest</span>`;
+    if(isVerySmall) tags+=`<span class="tag tag-crit">⚠ n=${c.players}</span>`;
+    else if(isSmall) tags+=`<span class="tag tag-small">⚠ low n</span>`;
+
+    const dE = calcDelta(c,1,3);
+    const dM = calcDelta(c,3,6);
+    const dL = calcDelta(c,7,12);
+
+    const bgRow = c.best?'background:rgba(155,125,255,.04);':c.latest?'background:rgba(245,183,49,.03);':'';
+
+    const tr=document.createElement('tr');
+    tr.className=rowClass;
+    tr.setAttribute('data-id',c.id);
+    tr.style.cssText=bgRow;
+    tr.innerHTML=`
+      <td class="lc">
+        <div class="cohort-nm">
+          <span class="expand-icon" id="exp-${c.id}">▶</span>
+          <span>${c.label}</span>${tags}
+          ${sparkline(c.ret)}
+        </div>
+      </td>
+      <td class="nc" style="${c.players<AVG_PLAYERS*0.5?'color:var(--yellow)':''}">${c.players.toLocaleString()}</td>
+      <td class="base">100%</td>
+      <td class="early-col" style="${heatStyle(c.ret[1])}">${fmt(c.ret[1])}</td>
+      <td class="early-col" style="${heatStyle(c.ret[2])}">${fmt(c.ret[2])}</td>
+      <td class="early-col" style="${heatStyle(c.ret[3])}">${fmt(c.ret[3])}</td>
+      <td class="delta-col delta-cell ${dE?dE>-10?'sml':'neg':''}">
+        ${dE!==null?dE.toFixed(1)+'pp':'<span style="color:var(--border2)">—</span>'}
+      </td>
+      <td class="mid-col" style="${heatStyle(c.ret[4])}">${fmt(c.ret[4])}</td>
+      <td class="mid-col" style="${heatStyle(c.ret[5])}">${fmt(c.ret[5])}</td>
+      <td class="mid-col" style="${heatStyle(c.ret[6])}">${fmt(c.ret[6])}</td>
+      <td class="delta-col delta-cell ${dM?dM>-10?'sml':'neg':''}">
+        ${dM!==null?dM.toFixed(1)+'pp':'<span style="color:var(--border2)">—</span>'}
+      </td>
+      <td class="long-col" style="${heatStyle(c.ret[7])}">${fmt(c.ret[7])}</td>
+      <td class="long-col" style="${heatStyle(c.ret[8])}">${fmt(c.ret[8])}</td>
+      <td class="long-col" style="${heatStyle(c.ret[9])}">${fmt(c.ret[9])}</td>
+      <td class="long-col" style="${heatStyle(c.ret[10])}">${fmt(c.ret[10])}</td>
+      <td class="long-col" style="${heatStyle(c.ret[11])}">${fmt(c.ret[11])}</td>
+      <td class="long-col" style="${heatStyle(c.ret[12])}">${fmt(c.ret[12])}</td>
+      <td class="delta-col delta-cell ${dL?dL>-5?'sml':'neg':''}">
+        ${dL!==null?dL.toFixed(1)+'pp':'<span style="color:var(--border2)">—</span>'}
+      </td>`;
+    tbody.appendChild(tr);
+
+    // DRILL-DOWN brand rows
+    c.brands.forEach(b=>{
+      const btr=document.createElement('tr');
+      btr.className='drill-child';
+      btr.setAttribute('data-parent',c.id);
+      const dE2 = b.r[1]&&b.r[3]?b.r[3]-b.r[1]:null;
+      const dM2 = b.r[3]&&b.r[6]?b.r[6]-b.r[3]:null;
+      const dL2 = b.r[7]&&b.r[12]?b.r[12]-b.r[7]:null;
+      btr.innerHTML=`
+        <td class="lc child-label">
+          <div class="cohort-nm" style="padding-left:4px">
+            <div class="brand-dot" style="background:${b.c}"></div>
+            <span style="color:var(--muted2)">${b.n}</span>
+          </div>
+        </td>
+        <td class="nc" style="font-size:8.5px;color:var(--muted)">—</td>
+        <td class="base" style="font-size:9px;opacity:.7">100%</td>
+        <td class="early-col" style="${heatStyle(b.r[1])};font-size:9px">${fmt(b.r[1])}</td>
+        <td class="early-col" style="${heatStyle(b.r[2])};font-size:9px">${fmt(b.r[2])}</td>
+        <td class="early-col" style="${heatStyle(b.r[3])};font-size:9px">${fmt(b.r[3])}</td>
+        <td class="delta-col delta-cell ${dE2?dE2>-10?'sml':'neg':''}" style="font-size:8.5px">
+          ${dE2!==null?dE2.toFixed(1):'<span style="color:var(--border2)">—</span>'}
+        </td>
+        <td class="mid-col" style="${heatStyle(b.r[4])};font-size:9px">${fmt(b.r[4])}</td>
+        <td class="mid-col" style="${heatStyle(b.r[5])};font-size:9px">${fmt(b.r[5])}</td>
+        <td class="mid-col" style="${heatStyle(b.r[6])};font-size:9px">${fmt(b.r[6])}</td>
+        <td class="delta-col delta-cell ${dM2?dM2>-10?'sml':'neg':''}" style="font-size:8.5px">
+          ${dM2!==null?dM2.toFixed(1):'<span style="color:var(--border2)">—</span>'}
+        </td>
+        <td class="long-col" style="${heatStyle(b.r[7])};font-size:9px">${fmt(b.r[7])}</td>
+        <td class="long-col" style="${heatStyle(b.r[8])};font-size:9px">${fmt(b.r[8])}</td>
+        <td class="long-col" style="${heatStyle(b.r[9])};font-size:9px">${fmt(b.r[9])}</td>
+        <td class="long-col" style="${heatStyle(b.r[10])};font-size:9px">${fmt(b.r[10])}</td>
+        <td class="long-col" style="${heatStyle(b.r[11])};font-size:9px">${fmt(b.r[11])}</td>
+        <td class="long-col" style="${heatStyle(b.r[12])};font-size:9px">${fmt(b.r[12])}</td>
+        <td class="delta-col delta-cell ${dL2?dL2>-5?'sml':'neg':''}" style="font-size:8.5px">
+          ${dL2!==null?dL2.toFixed(1):'<span style="color:var(--border2)">—</span>'}
+        </td>`;
+      tbody.appendChild(btr);
+    });
+
+    // click to expand
+    tr.addEventListener('click',()=>toggleDrill(c.id, tr));
+
+    // tooltip on hover cells
+    tr.querySelectorAll('td[style*="background"]').forEach(td=>{
+      td.addEventListener('mouseenter',e=>showTip(e,c,td));
+      td.addEventListener('mouseleave',hideTip);
+    });
+  });
+}
+
+// ─── DRILL DOWN ──────────────────────────────────────────────────────────────
+function toggleDrill(id, parentTr){
+  const children = document.querySelectorAll(`[data-parent="${id}"]`);
+  const icon = document.getElementById(`exp-${id}`);
+  const isOpen = icon.classList.contains('open');
+  children.forEach(c=>{ isOpen?c.classList.remove('open'):c.classList.add('open'); });
+  icon.classList.toggle('open', !isOpen);
+  parentTr.classList.toggle('expanded-parent', !isOpen);
+}
+
+// ─── GROUP TOGGLE ─────────────────────────────────────────────────────────────
+const groupState = {early:true, mid:true, long:true};
+function toggleGroup(grp){
+  groupState[grp]=!groupState[grp];
+  const show=groupState[grp];
+  document.querySelectorAll(`.${grp}-col`).forEach(el=>{
+    el.style.display=show?'':'none';
+  });
+  const tog=document.getElementById(`tog-${grp}`);
+  tog.classList.toggle('expanded',show);
+}
+
+// ─── THRESHOLD HIGHLIGHT ──────────────────────────────────────────────────────
+function applyThreshold(){
+  const thr=parseFloat(document.getElementById('thr-inp').value)||0;
+  document.querySelectorAll('td[style*="background"]').forEach(td=>{
+    const txt=td.innerText;
+    const val=parseFloat(txt);
+    if(!isNaN(val)&&val>0&&val<100){
+      if(val<thr){td.style.outline='1px solid rgba(255,77,106,.6)'; td.style.outlineOffset='-1px';}
+      else{td.style.outline='';}
+    }
+  });
+}
+
+// ─── TOOLTIP ──────────────────────────────────────────────────────────────────
+function showTip(e, cohort, td){
+  const tip=document.getElementById('tip');
+  const colIdx=td.cellIndex;
+  const periods=['M0','M1','M2','M3','ΔE','M4','M5','M6','ΔM','M7','M8','M9','M10','M11','M12','ΔL'];
+  const per=periods[colIdx]||'';
+  const val=parseFloat(td.innerText)||null;
+  const avgV=avgRow[colIdx]||null;
+  const delta=val&&avgV?(val-avgV):null;
+
+  document.getElementById('tip-title').textContent=`${cohort.label} · ${per}`;
+  document.getElementById('tip-body').innerHTML=`
+    <div class="tooltip-row"><span class="tooltip-lbl">Retention</span><span class="tooltip-val" style="${val>avgV?'color:var(--green)':'color:var(--red)'}">${val?val.toFixed(1)+'%':'—'}</span></div>
+    <div class="tooltip-row"><span class="tooltip-lbl">Average</span><span class="tooltip-val">${avgV?avgV.toFixed(1)+'%':'—'}</span></div>
+    <div class="tooltip-row"><span class="tooltip-lbl">vs avg</span><span class="tooltip-val" style="${delta>0?'color:var(--green)':'color:var(--red)'}">${delta?(delta>0?'+':'')+delta.toFixed(1)+' pp':'—'}</span></div>
+    <div class="tooltip-row"><span class="tooltip-lbl">Cohort n</span><span class="tooltip-val">${cohort.players.toLocaleString()}</span></div>
+  `;
+  tip.style.display='block';
+  tip.style.left=(e.clientX+14)+'px';
+  tip.style.top=(e.clientY-8)+'px';
+}
+function hideTip(){document.getElementById('tip').style.display='none';}
+document.addEventListener('mousemove',e=>{
+  const tip=document.getElementById('tip');
+  if(tip.style.display==='block'){tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-8)+'px';}
+});
+
+buildTable();
+applyThreshold();
+</script>
+</body>
+</html>

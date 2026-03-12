@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DataJarvis — Payment Performance Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;
+    --border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;
+    --accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;
+    --yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;
+    --mono:'DM Mono',monospace;--sans:'Syne',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;min-height:100vh;overflow:hidden;}
+  .sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+  .logo{padding:28px 24px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .logo-name{font-family:var(--sans);font-weight:800;font-size:17px;letter-spacing:-.02em;}
+  .logo-name span{color:var(--accent2);}
+  .nav{flex:1;padding:16px 0;}
+  .nav-section{padding:8px 16px 4px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:8px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;}
+  .nav-item:hover{color:var(--text);background:var(--surface2);}
+  .nav-item.active{color:var(--text);background:rgba(61,127,255,.08);border-left-color:var(--teal);font-weight:600;}
+  .nav-item .dot{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.4;flex-shrink:0;}
+  .nav-item.active .dot{opacity:1;background:var(--teal);}
+  .sidebar-bottom{padding:16px;border-top:1px solid var(--border);}
+  .user-pill{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;cursor:pointer;}
+  .avatar{width:28px;height:28px;background:linear-gradient(135deg,var(--purple),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+  .user-info{flex:1;overflow:hidden;}
+  .user-name{font-size:12px;font-weight:600;}
+  .user-role{font-size:10px;color:var(--muted);font-family:var(--mono);}
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}
+  .topbar{height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;flex-shrink:0;}
+  .breadcrumb{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .breadcrumb span{color:var(--text);font-weight:600;}
+  .update-badge{font-family:var(--mono);font-size:10px;color:var(--green);background:rgba(34,208,122,.1);border:1px solid rgba(34,208,122,.2);padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;}
+  .update-dot{width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .spacer{flex:1;}
+  .btn{height:30px;padding:0 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;font-size:11px;font-family:var(--sans);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+  .btn:hover{border-color:var(--accent);}
+  .btn.primary{background:rgba(61,127,255,.15);border-color:var(--accent);color:var(--accent2);}
+  .btn-icon{width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
+  .section-tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:0;padding:0 24px;flex-shrink:0;}
+  .tab{padding:0 16px;height:40px;display:flex;align-items:center;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;gap:6px;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:600;}
+  .filter-bar{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;flex-shrink:0;height:48px;overflow-x:auto;}
+  .filter-bar::-webkit-scrollbar{height:3px;}
+  .filter-bar::-webkit-scrollbar-thumb{background:var(--border2);}
+  .filter-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .filter-chip{display:flex;align-items:center;gap:5px;height:26px;padding:0 10px;background:var(--surface2);border:1px solid var(--border2);border-radius:5px;font-size:11px;color:var(--text);cursor:pointer;white-space:nowrap;}
+  .filter-chip:hover{border-color:var(--accent);}
+  .filter-chip.active{border-color:var(--accent);background:rgba(61,127,255,.1);color:var(--accent2);}
+  .filter-chip .cv{font-size:8px;opacity:.5;}
+  .filter-sep{width:1px;height:20px;background:var(--border);margin:0 2px;flex-shrink:0;}
+  .radio-chip{display:flex;align-items:center;gap:4px;height:26px;padding:0 10px;border-radius:5px;font-size:11px;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);}
+  .radio-chip.sel{border-color:var(--teal);color:var(--teal);background:rgba(0,201,177,.08);}
+  .rdot{width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;}
+  .rdot.on::after{content:'';width:3px;height:3px;border-radius:50%;background:var(--teal);}
+  .groupby-row{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:8px;height:38px;flex-shrink:0;}
+  .gb-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .gb-tab{height:24px;padding:0 10px;border-radius:4px;font-size:10px;font-family:var(--mono);color:var(--muted);cursor:pointer;display:flex;align-items:center;}
+  .gb-tab:hover{color:var(--text);background:var(--surface2);}
+  .gb-tab.active{color:var(--text);background:var(--surface2);border:1px solid var(--border2);}
+  .kpi-wrap{padding:14px 24px 0;flex-shrink:0;background:var(--bg);}
+  .row-tag{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:3px;margin-bottom:7px;}
+  .row-tag.total{color:var(--accent2);background:rgba(61,127,255,.12);border:1px solid rgba(61,127,255,.2);}
+  .row-tag.ftd{color:var(--green);background:rgba(34,208,122,.1);border:1px solid rgba(34,208,122,.2);}
+  .row-tag.std{color:var(--yellow);background:rgba(245,183,49,.1);border:1px solid rgba(245,183,49,.2);}
+  .kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:8px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px 13px 9px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .kpi-card.cb::before{background:var(--accent);}
+  .kpi-card.cg::before{background:var(--green);}
+  .kpi-card.ct::before{background:var(--teal);}
+  .kpi-card.cy::before{background:var(--yellow);}
+  .kpi-card.cp::before{background:var(--purple);}
+  .kpi-card.co::before{background:var(--orange);}
+  .kc-label{font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+  .kc-val{font-family:var(--mono);font-size:17px;font-weight:500;line-height:1.1;}
+  .kc-prev{font-family:var(--mono);font-size:10.5px;color:var(--muted2);margin-top:2px;}
+  .kc-delta{font-family:var(--mono);font-size:9.5px;margin-top:4px;}
+  .kc-delta.up{color:var(--green);}
+  .kc-delta.dn{color:var(--red);}
+  .mini-bars{margin-top:7px;display:flex;align-items:flex-end;gap:2px;height:18px;}
+  .mini-bars .b{flex:1;border-radius:1px 1px 0 0;opacity:.55;}
+  .sub-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+  .sub-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px 6px;}
+  .sc-label{font-family:var(--mono);font-size:7px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+  .sc-val{font-family:var(--mono);font-size:12.5px;color:var(--text);}
+  .sc-delta{font-family:var(--mono);font-size:8.5px;}
+  .sc-delta.up{color:var(--green);}
+  .sc-delta.dn{color:var(--red);}
+  .table-section{flex:1;display:flex;flex-direction:column;overflow:hidden;margin-top:10px;}
+  .table-wrap{flex:1;overflow:auto;}
+  .table-wrap::-webkit-scrollbar{width:5px;height:5px;}
+  .table-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+  table{border-collapse:collapse;min-width:100%;table-layout:fixed;}
+  thead{position:sticky;top:0;z-index:20;}
+  .th-group{background:var(--surface2);border-bottom:1px solid var(--border);}
+  .th-group th{padding:5px 0;text-align:center;font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;border-right:1px solid var(--border);white-space:nowrap;}
+  .th-group th.gt{color:var(--accent2);background:rgba(61,127,255,.06);}
+  .th-group th.gf{color:var(--green);background:rgba(34,208,122,.06);}
+  .th-group th.gs{color:var(--yellow);background:rgba(245,183,49,.05);}
+  .th-cols{background:var(--surface2);border-bottom:2px solid var(--border2);}
+  .th-cols th{padding:0 8px;height:29px;text-align:right;font-family:var(--mono);font-size:8.5px;color:var(--muted2);font-weight:400;border-right:1px solid var(--border);white-space:nowrap;cursor:pointer;vertical-align:middle;}
+  .th-cols th:hover{color:var(--text);background:var(--surface3);}
+  .th-cols th.sc{text-align:left;position:sticky;left:0;z-index:10;background:var(--surface2);}
+  .th-cols th.sc2{text-align:left;position:sticky;left:120px;z-index:10;background:var(--surface2);}
+  .th-cols th.sorted{color:var(--accent2);}
+  .col-sep{border-left:2px solid var(--border2)!important;}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+  tbody tr:hover{background:var(--surface2);}
+  tbody tr.gtotal{background:rgba(61,127,255,.04);}
+  td{padding:0 8px;height:32px;font-family:var(--mono);font-size:10px;color:var(--muted2);text-align:right;border-right:1px solid var(--border);white-space:nowrap;vertical-align:middle;}
+  td.sc{text-align:left;position:sticky;left:0;z-index:5;background:var(--surface);min-width:120px;}
+  td.sc2{text-align:left;position:sticky;left:120px;z-index:5;background:var(--surface);min-width:220px;}
+  tbody tr:hover td.sc,tbody tr:hover td.sc2{background:var(--surface2);}
+  tbody tr.gtotal td.sc,tbody tr.gtotal td.sc2{background:rgba(61,127,255,.04);}
+  td.n{color:var(--text);}
+  td.arg{color:var(--green);}
+  td.arb{color:var(--red);}
+  td.arm{color:var(--teal);}
+  td.eur{color:var(--yellow);}
+  .agg{font-size:8.5px;padding:1px 5px;border-radius:3px;background:var(--surface3);color:var(--muted2);font-family:var(--mono);}
+  .pm{display:inline-flex;align-items:center;gap:5px;}
+  .pmdot{width:16px;height:16px;border-radius:3px;font-size:7.5px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+  .tfoot{height:36px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;flex-shrink:0;}
+  .fstat{font-family:var(--mono);font-size:9.5px;color:var(--muted);}
+  .fstat span{color:var(--text);}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">Data<span>Jarvis</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Platform</div>
+    <a class="nav-item " href="../index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V9h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Hub
+    </a>
+
+    <div class="nav-section">Reports</div>
+    <a class="nav-item " href="dashboard.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item " href="daily-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Daily Performance
+    </a>
+    <a class="nav-item active" href="payment-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="10.5" r="1" fill="currentColor"/></svg>
+      Payment
+    </a>
+    <a class="nav-item " href="churn-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 7l3 3 2.5-4 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn Rate
+    </a>
+    <a class="nav-item " href="inout-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      In / Out
+    </a>
+    <a class="nav-item " href="affiliate-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="3" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v2M6 10L4.5 10.5M10 10l1.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Affiliate
+    </a>
+
+    <div class="nav-section">Resources</div>
+    <a class="nav-item" href="../docs/index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Documentation
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Anna K.</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="topbar">
+    <span class="breadcrumb">Reports / <span>Payment Report</span></span>
+    <div class="update-badge"><div class="update-dot"></div>Updated 2 min ago</div>
+    <div class="spacer"></div>
+    <div class="btn">📊 Columns</div>
+    <div class="btn">🔗 Share view</div>
+    <div class="btn primary">↓ Export</div>
+    <div class="btn-icon">↻</div>
+  </div>
+
+  <div class="section-tabs">
+    <div class="tab">⚡ Overview</div>
+    <div class="tab active">💳 Payments</div>
+    <div class="tab">🎮 Gamifications</div>
+    <div class="tab">🏛️ Providers</div>
+  </div>
+
+  <div class="filter-bar">
+    <span class="filter-label">Period</span>
+    <div class="filter-chip active">📅 12 Mar 2026 <span class="cv">▾</span></div>
+    <div class="filter-sep"></div>
+    <div class="filter-chip">Brand <span class="cv">▾</span></div>
+    <div class="filter-chip">Country <span class="cv">▾</span></div>
+    <div class="filter-chip">Currency <span class="cv">▾</span></div>
+    <div class="filter-chip">Aggregator <span class="cv">▾</span></div>
+    <div class="filter-chip">Child System <span class="cv">▾</span></div>
+    <div class="filter-chip">Device <span class="cv">▾</span></div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">Action</span>
+    <div class="radio-chip sel"><div class="rdot on"></div>Deposit</div>
+    <div class="radio-chip"><div class="rdot"></div>Cashout</div>
+    <div class="filter-sep"></div>
+    <span class="filter-label">User</span>
+    <div class="radio-chip sel"><div class="rdot on"></div>Player</div>
+    <div class="radio-chip"><div class="rdot"></div>Partner</div>
+    <div class="spacer"></div>
+    <div class="filter-chip">🔍 Search</div>
+  </div>
+
+  <div class="groupby-row">
+    <span class="gb-label">Group by</span>
+    <div class="gb-tab active">By Child System</div>
+    <div class="gb-tab">+ Device</div>
+    <div class="gb-tab">+ Country</div>
+    <div class="gb-tab">By Country + Device</div>
+    <div class="gb-tab">By Device</div>
+    <div class="gb-tab">By Aggregator + Device</div>
+    <div class="spacer"></div>
+    <span style="font-family:var(--mono);font-size:9.5px;color:var(--muted)">Showing <span style="color:var(--text)">28</span> methods</span>
+  </div>
+
+  <!-- KPI SECTION -->
+  <div class="kpi-wrap">
+
+    <div style="margin-bottom:6px"><span class="row-tag total">● TOTAL</span></div>
+    <div class="kpi-grid" style="margin-bottom:8px">
+      <div class="kpi-card cb">
+        <div class="kc-label">Count Attempts</div>
+        <div class="kc-val">1 999</div>
+        <div class="kc-prev">5 851 prev period</div>
+        <div class="kc-delta dn">▼ −3 852  −65.83%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:65%;background:var(--accent)"></div><div class="b" style="height:80%;background:var(--accent)"></div><div class="b" style="height:55%;background:var(--accent)"></div><div class="b" style="height:72%;background:var(--accent)"></div><div class="b" style="height:100%;background:var(--accent)"></div><div class="b" style="height:42%;background:var(--accent)"></div><div class="b" style="height:34%;background:var(--accent)"></div>
+        </div>
+      </div>
+      <div class="kpi-card cg">
+        <div class="kc-label">Count Success</div>
+        <div class="kc-val">1 487</div>
+        <div class="kc-prev">4 222 prev period</div>
+        <div class="kc-delta dn">▼ −2 735  −64.78%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:66%;background:var(--green)"></div><div class="b" style="height:82%;background:var(--green)"></div><div class="b" style="height:58%;background:var(--green)"></div><div class="b" style="height:74%;background:var(--green)"></div><div class="b" style="height:100%;background:var(--green)"></div><div class="b" style="height:44%;background:var(--green)"></div><div class="b" style="height:35%;background:var(--green)"></div>
+        </div>
+      </div>
+      <div class="kpi-card ct">
+        <div class="kc-label">AR %</div>
+        <div class="kc-val" style="color:var(--teal)">74.39</div>
+        <div class="kc-prev">72.16 prev period</div>
+        <div class="kc-delta up">▲ +2.23  +3.09%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:70%;background:var(--teal)"></div><div class="b" style="height:76%;background:var(--teal)"></div><div class="b" style="height:68%;background:var(--teal)"></div><div class="b" style="height:79%;background:var(--teal)"></div><div class="b" style="height:74%;background:var(--teal)"></div><div class="b" style="height:82%;background:var(--teal)"></div><div class="b" style="height:100%;background:var(--teal)"></div>
+        </div>
+      </div>
+      <div class="kpi-card cp">
+        <div class="kc-label">Players Success</div>
+        <div class="kc-val">756</div>
+        <div class="kc-prev">1 865 prev period</div>
+        <div class="kc-delta dn">▼ −1 109  −59.46%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:62%;background:var(--purple)"></div><div class="b" style="height:80%;background:var(--purple)"></div><div class="b" style="height:55%;background:var(--purple)"></div><div class="b" style="height:70%;background:var(--purple)"></div><div class="b" style="height:100%;background:var(--purple)"></div><div class="b" style="height:50%;background:var(--purple)"></div><div class="b" style="height:40%;background:var(--purple)"></div>
+        </div>
+      </div>
+      <div class="kpi-card co">
+        <div class="kc-label">AR Players %</div>
+        <div class="kc-val" style="color:var(--teal)">84.09</div>
+        <div class="kc-prev">84.7 prev period</div>
+        <div class="kc-delta dn">▼ −0.61  −0.72%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:82%;background:var(--orange)"></div><div class="b" style="height:85%;background:var(--orange)"></div><div class="b" style="height:80%;background:var(--orange)"></div><div class="b" style="height:88%;background:var(--orange)"></div><div class="b" style="height:90%;background:var(--orange)"></div><div class="b" style="height:86%;background:var(--orange)"></div><div class="b" style="height:100%;background:var(--orange)"></div>
+        </div>
+      </div>
+      <div class="kpi-card cy">
+        <div class="kc-label">Amount Succ. EUR</div>
+        <div class="kc-val" style="color:var(--yellow)">€ 53 473</div>
+        <div class="kc-prev">€ 151 311 prev</div>
+        <div class="kc-delta dn">▼ −97 838  −64.66%</div>
+        <div class="mini-bars">
+          <div class="b" style="height:60%;background:var(--yellow)"></div><div class="b" style="height:80%;background:var(--yellow)"></div><div class="b" style="height:56%;background:var(--yellow)"></div><div class="b" style="height:72%;background:var(--yellow)"></div><div class="b" style="height:100%;background:var(--yellow)"></div><div class="b" style="height:42%;background:var(--yellow)"></div><div class="b" style="height:35%;background:var(--yellow)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:12px">
+      <div>
+        <div style="margin-bottom:5px"><span class="row-tag ftd">● FTD — First Time Deposit</span></div>
+        <div class="sub-grid">
+          <div class="sub-card"><div class="sc-label">Count Att.</div><div class="sc-val">253</div><div class="sc-delta dn">▼ −457  −64%</div></div>
+          <div class="sub-card"><div class="sc-label">Count Succ.</div><div class="sc-val">81</div><div class="sc-delta dn">▼ −176  −68%</div></div>
+          <div class="sub-card"><div class="sc-label">AR %</div><div class="sc-val" style="color:var(--teal)">32.02</div><div class="sc-delta dn">▼ −4.18  −11%</div></div>
+          <div class="sub-card"><div class="sc-label">Players Succ.</div><div class="sc-val">81</div><div class="sc-delta dn">▼ −176  −68%</div></div>
+          <div class="sub-card"><div class="sc-label">AR Players %</div><div class="sc-val" style="color:var(--teal)">48.8</div><div class="sc-delta dn">▼ −4.08  −7%</div></div>
+          <div class="sub-card"><div class="sc-label">Amount EUR</div><div class="sc-val" style="color:var(--yellow)">€ 3 079</div><div class="sc-delta dn">▼ −5 000  −62%</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="margin-bottom:5px"><span class="row-tag std">● STD — Standard (Returning)</span></div>
+        <div class="sub-grid">
+          <div class="sub-card"><div class="sc-label">Count Att.</div><div class="sc-val">1 746</div><div class="sc-delta dn">▼ −3 395  −66%</div></div>
+          <div class="sub-card"><div class="sc-label">Count Succ.</div><div class="sc-val">1 406</div><div class="sc-delta dn">▼ −2 559  −64%</div></div>
+          <div class="sub-card"><div class="sc-label">AR %</div><div class="sc-val" style="color:var(--teal)">80.53</div><div class="sc-delta up">▲ +3.4  +4%</div></div>
+          <div class="sub-card"><div class="sc-label">Players Succ.</div><div class="sc-val">697</div><div class="sc-delta dn">▼ −990  −58%</div></div>
+          <div class="sub-card"><div class="sc-label">AR Players %</div><div class="sc-val" style="color:var(--teal)">91.95</div><div class="sc-delta dn">▼ −1.56  −1.6%</div></div>
+          <div class="sub-card"><div class="sc-label">Amount EUR</div><div class="sc-val" style="color:var(--yellow)">€ 50 394</div><div class="sc-delta dn">▼ −92 838  −64%</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr class="th-group">
+            <th colspan="2" style="border-right:2px solid var(--border2)"></th>
+            <th colspan="6" class="gt">TOTAL</th>
+            <th colspan="6" class="gf">FTD — First Time Deposit</th>
+            <th colspan="6" class="gs">STD — Standard (Returning)</th>
+          </tr>
+          <tr class="th-cols">
+            <th class="sc" style="width:120px">Aggregator</th>
+            <th class="sc2" style="width:220px">Child System / Method</th>
+            <th class="col-sep" style="width:55px">SUC</th>
+            <th style="width:55px">TRY</th>
+            <th style="width:62px">AR%</th>
+            <th style="width:64px">SUC PLR</th>
+            <th style="width:64px">TRY PLR</th>
+            <th style="width:68px">PLR AR%</th>
+            <th class="col-sep" style="width:50px">SUC</th>
+            <th style="width:50px">TRY</th>
+            <th style="width:62px">AR%</th>
+            <th style="width:64px">SUC PLR</th>
+            <th style="width:64px">TRY PLR</th>
+            <th style="width:68px">PLR AR%</th>
+            <th class="col-sep" style="width:55px">SUC</th>
+            <th style="width:55px">TRY</th>
+            <th style="width:62px">AR%</th>
+            <th style="width:64px">SUC PLR</th>
+            <th style="width:64px">TRY PLR</th>
+            <th class="sorted" style="width:68px">PLR AR% ↓</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="gtotal"><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2" style="font-weight:600;color:var(--text)"><span class="pm"><span class="pmdot" style="background:#1e3a6e;color:#7eb8ff">C</span>card-acquirer</span></td><td class="n col-sep">337</td><td class="n">460</td><td class="arm">73.26%</td><td class="n">170</td><td class="n">198</td><td class="arg">85.86%</td><td class="n col-sep">16</td><td class="n">31</td><td class="arb">51.61%</td><td class="n">16</td><td class="n">27</td><td class="arm">—</td><td class="n col-sep">321</td><td class="n">429</td><td class="arg">74.83%</td><td class="n">155</td><td class="n">172</td><td class="arg">90.12%</td></tr>
+<tr><td class="sc"><span class="agg">A-pay</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#1a3a6b;color:#7eb8ff">N</span>Nagad IN_OUT STD/FTD Planbet A-pay</span></td><td class="n col-sep">74</td><td class="n">89</td><td class="arg">83.15%</td><td class="n">51</td><td class="n">57</td><td class="arg">89.47%</td><td class="n col-sep">0</td><td class="n">0</td><td class="arm">—</td><td class="n">0</td><td class="n">0</td><td class="arm">—</td><td class="n col-sep">74</td><td class="n">89</td><td class="arg">83.15%</td><td class="n">51</td><td class="n">57</td><td class="arg">89.47%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#1c1c1c;color:#ccc">🍎</span>payabl-apple-pay</span></td><td class="n col-sep">48</td><td class="n">61</td><td class="arm">78.69%</td><td class="n">24</td><td class="n">31</td><td class="arm">77.42%</td><td class="n col-sep">1</td><td class="n">5</td><td class="arb">20%</td><td class="n">1</td><td class="n">2</td><td class="arb">50%</td><td class="n col-sep">47</td><td class="n">56</td><td class="arg">83.93%</td><td class="n">23</td><td class="n">29</td><td class="arm">79.31%</td></tr>
+<tr><td class="sc"><span class="agg">BankTrans</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#0d3b2e;color:#22d07a">B</span>Fahim Planb Bkash Planbet</span></td><td class="n col-sep">55</td><td class="n">58</td><td class="arg">94.83%</td><td class="n">41</td><td class="n">44</td><td class="arg">93.18%</td><td class="n col-sep">6</td><td class="n">6</td><td class="arg">83.33%</td><td class="n">5</td><td class="n">6</td><td class="arg">83.33%</td><td class="n col-sep">50</td><td class="n">52</td><td class="arg">96.15%</td><td class="n">38</td><td class="n">40</td><td class="arg">95%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#003520;color:#22d07a">C</span>colibrix-apple-pay</span></td><td class="n col-sep">50</td><td class="n">56</td><td class="arg">89.29%</td><td class="n">13</td><td class="n">14</td><td class="arg">92.86%</td><td class="n col-sep">0</td><td class="n">2</td><td class="arb">0%</td><td class="n">0</td><td class="n">1</td><td class="arm">—</td><td class="n col-sep">50</td><td class="n">54</td><td class="arg">92.59%</td><td class="n">13</td><td class="n">13</td><td class="arg">100%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#2d1b00;color:#f5b731">G</span>rastpay-google-pay</span></td><td class="n col-sep">16</td><td class="n">53</td><td class="arb">30.19%</td><td class="n">8</td><td class="n">24</td><td class="arb">33.33%</td><td class="n col-sep">1</td><td class="n">9</td><td class="arb">11.11%</td><td class="n">1</td><td class="n">6</td><td class="arm">—</td><td class="n col-sep">15</td><td class="n">44</td><td class="arb">34.09%</td><td class="n">7</td><td class="n">18</td><td class="arb">38.89%</td></tr>
+<tr><td class="sc"><span class="agg">BankTrans</span></td><td class="sc2">Fahim Planb Bkash merchant Planbet</td><td class="n col-sep">49</td><td class="n">52</td><td class="arg">94.23%</td><td class="n">25</td><td class="n">27</td><td class="arg">92.59%</td><td class="n col-sep">3</td><td class="n">5</td><td class="arm">60%</td><td class="n">3</td><td class="n">4</td><td class="arm">75%</td><td class="n col-sep">46</td><td class="n">47</td><td class="arg">97.87%</td><td class="n">22</td><td class="n">23</td><td class="arg">95.65%</td></tr>
+<tr><td class="sc"><span class="agg">BankTrans</span></td><td class="sc2">Rayhan Planb Bkash Planbet</td><td class="n col-sep">42</td><td class="n">45</td><td class="arg">93.33%</td><td class="n">34</td><td class="n">35</td><td class="arg">97.14%</td><td class="n col-sep">3</td><td class="n">4</td><td class="arm">75%</td><td class="n">3</td><td class="n">4</td><td class="arm">75%</td><td class="n col-sep">39</td><td class="n">41</td><td class="arg">95.12%</td><td class="n">32</td><td class="n">32</td><td class="arg">100%</td></tr>
+<tr><td class="sc"><span class="agg">Exactly</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#001a3a;color:#5b92ff">M</span>MBway IN STD EUR Edjowa Gaming</span></td><td class="n col-sep">36</td><td class="n">41</td><td class="arm">87.8%</td><td class="n">21</td><td class="n">21</td><td class="arg">100%</td><td class="n col-sep">0</td><td class="n">0</td><td class="arm">—</td><td class="n">0</td><td class="n">0</td><td class="arm">—</td><td class="n col-sep">36</td><td class="n">41</td><td class="arm">87.8%</td><td class="n">21</td><td class="n">21</td><td class="arg">100%</td></tr>
+<tr><td class="sc"><span class="agg">BankTrans</span></td><td class="sc2">Zaker Planb Bkash Merchant</td><td class="n col-sep">33</td><td class="n">38</td><td class="arg">86.84%</td><td class="n">25</td><td class="n">28</td><td class="arg">89.29%</td><td class="n col-sep">1</td><td class="n">5</td><td class="arb">20%</td><td class="n">1</td><td class="n">3</td><td class="arb">33.33%</td><td class="n col-sep">32</td><td class="n">33</td><td class="arg">96.97%</td><td class="n">24</td><td class="n">25</td><td class="arg">96%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2">siti-siti-iban</td><td class="n col-sep">30</td><td class="n">37</td><td class="arm">81.08%</td><td class="n">9</td><td class="n">12</td><td class="arm">75%</td><td class="n col-sep">0</td><td class="n">0</td><td class="arm">—</td><td class="n">0</td><td class="n">0</td><td class="arm">—</td><td class="n col-sep">30</td><td class="n">37</td><td class="arm">81.08%</td><td class="n">9</td><td class="n">12</td><td class="arm">75%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2">spoynt-open-banking-sepa</td><td class="n col-sep">31</td><td class="n">36</td><td class="arg">86.11%</td><td class="n">9</td><td class="n">9</td><td class="arg">100%</td><td class="n col-sep">1</td><td class="n">1</td><td class="arg">100%</td><td class="n">1</td><td class="n">1</td><td class="arg">100%</td><td class="n col-sep">30</td><td class="n">35</td><td class="arg">85.71%</td><td class="n">8</td><td class="n">8</td><td class="arg">100%</td></tr>
+<tr><td class="sc"><span class="agg">MobCash</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#1a1a2e;color:#9b7dff">L</span>lancelot_direct</span></td><td class="n col-sep">28</td><td class="n">33</td><td class="arm">84.85%</td><td class="n">1</td><td class="n">3</td><td class="arb">33.33%</td><td class="n col-sep">0</td><td class="n">0</td><td class="arm">—</td><td class="n">0</td><td class="n">0</td><td class="arm">—</td><td class="n col-sep">28</td><td class="n">33</td><td class="arm">84.85%</td><td class="n">1</td><td class="n">3</td><td class="arb">33.33%</td></tr>
+<tr><td class="sc"><span class="agg">MobCash</span></td><td class="sc2">corefy</td><td class="n col-sep">21</td><td class="n">32</td><td class="arb">65.63%</td><td class="n">11</td><td class="n">15</td><td class="arm">73.33%</td><td class="n col-sep">0</td><td class="n">4</td><td class="arb">0%</td><td class="n">0</td><td class="n">2</td><td class="arb">0%</td><td class="n col-sep">21</td><td class="n">28</td><td class="arm">75%</td><td class="n">11</td><td class="n">13</td><td class="arg">84.62%</td></tr>
+<tr><td class="sc"><span class="agg">FYST</span></td><td class="sc2"><span class="pm"><span class="pmdot" style="background:#2a0a00;color:#ff8c42">F</span>Credit Card FTD_STD EUR FYST Vertex</span></td><td class="n col-sep">20</td><td class="n">21</td><td class="arg">95.24%</td><td class="n">10</td><td class="n">10</td><td class="arg">100%</td><td class="n col-sep">20</td><td class="n">21</td><td class="arg">95.24%</td><td class="n">10</td><td class="n">10</td><td class="arg">100%</td><td class="n col-sep">0</td><td class="n">0</td><td class="arm">—</td><td class="n">0</td><td class="n">0</td><td class="arm">—</td></tr>
+<tr><td class="sc"><span class="agg">Cards 4</span></td><td class="sc2">Cards 4</td><td class="n col-sep">16</td><td class="n">22</td><td class="arm">72.73%</td><td class="n">8</td><td class="n">12</td><td class="arb">66.67%</td><td class="n col-sep">1</td><td class="n">4</td><td class="arb">25%</td><td class="n">1</td><td class="n">3</td><td class="arb">33.33%</td><td class="n col-sep">15</td><td class="n">18</td><td class="arg">83.33%</td><td class="n">8</td><td class="n">10</td><td class="arm">80%</td></tr>
+<tr><td class="sc"><span class="agg">finteqhub</span></td><td class="sc2">utorg-utorg-paysafecard</td><td class="n col-sep">15</td><td class="n">24</td><td class="arb">62.5%</td><td class="n">8</td><td class="n">15</td><td class="arb">53.33%</td><td class="n col-sep">2</td><td class="n">3</td><td class="arb">66.67%</td><td class="n">2</td><td class="n">3</td><td class="arb">66.67%</td><td class="n col-sep">13</td><td class="n">21</td><td class="arb">61.9%</td><td class="n">7</td><td class="n">13</td><td class="arb">53.85%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tfoot">
+      <span class="fstat">Showing <span>28</span> methods</span>
+      <span class="fstat">Period: <span>12 Mar 2026</span></span>
+      <span class="fstat">Action: <span>Deposit</span></span>
+      <span class="fstat">User: <span>Player</span></span>
+      <span class="fstat">Updated: <span>12 Mar 2026, 14:51</span></span>
+      <div class="spacer"></div>
+      <div class="btn primary" style="font-family:var(--mono);font-size:10px">↓ Export .xlsx</div>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

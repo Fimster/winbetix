@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>DataJarvis — Analytics Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0a0b0d;
+  --surface:  #111318;
+  --surface2: #181c22;
+  --surface3: #1e2330;
+  --border:   #1f2530;
+  --border2:  #2a3040;
+  --text:     #e8eaf0;
+  --muted:    #5a6478;
+  --muted2:   #8892a4;
+  --accent:   #3d7fff;
+  --accent2:  #5b92ff;
+  --green:    #22d07a;
+  --red:      #ff4d6a;
+  --yellow:   #f5b731;
+  --purple:   #9b7dff;
+  --orange:   #ff8c42;
+  --teal:     #00c9b1;
+  --mono:     'DM Mono', monospace;
+  --sans:     'Syne', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── GRID NOISE BG ─── */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(61,127,255,.08) 0%, transparent 60%),
+                    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,125,255,.06) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ─── HEADER ─── */
+header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(10,11,13,.8);
+  backdrop-filter: blur(16px);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 0 24px rgba(61,127,255,.4);
+}
+
+.logo-name {
+  font-family: var(--sans);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.logo-name span { color: var(--accent2); }
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  letter-spacing: 0.06em;
+}
+
+.badge.green { color: var(--green); border-color: rgba(34,208,122,.3); background: rgba(34,208,122,.08); }
+.badge.blue  { color: var(--accent2); border-color: rgba(91,146,255,.3); background: rgba(61,127,255,.08); }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative;
+  z-index: 10;
+  padding: 80px 48px 64px;
+  max-width: 1200px;
+}
+
+.hero-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-label::before {
+  content:'';
+  width: 24px; height: 1px;
+  background: var(--accent2);
+}
+
+.hero h1 {
+  font-size: clamp(42px, 5vw, 68px);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.0;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--accent2);
+}
+
+.hero p {
+  font-size: 16px;
+  color: var(--muted2);
+  max-width: 560px;
+  line-height: 1.65;
+  font-family: var(--mono);
+  font-weight: 300;
+}
+
+/* ─── STATS ROW ─── */
+.stats-row {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  gap: 1px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--border);
+  margin-bottom: 0;
+}
+
+.stat {
+  flex: 1;
+  background: var(--surface);
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-val {
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.stat-val span { color: var(--accent2); }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── MAIN GRID ─── */
+.main {
+  position: relative;
+  z-index: 10;
+  padding: 48px 48px 80px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ─── SECTION ─── */
+.section-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title::after {
+  content:'';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── REPORT CARDS ─── */
+.reports-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: border-color .2s, background .2s, transform .2s;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.report-card::before {
+  content:'';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-color, var(--accent));
+  opacity: .7;
+  transition: opacity .2s;
+}
+
+.report-card:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+  transform: translateY(-2px);
+}
+
+.report-card:hover::before { opacity: 1; }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.card-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.card-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.card-desc {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
+  line-height: 1.55;
+  font-weight: 300;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--surface3);
+  color: var(--muted2);
+  letter-spacing: 0.06em;
+}
+
+.card-arrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+  transition: color .2s, gap .2s;
+}
+
+.report-card:hover .card-arrow { color: var(--accent2); gap: 10px; }
+
+/* ─── DASHBOARD CARD ─── */
+.report-card.featured {
+  grid-column: span 2;
+  flex-direction: row;
+  align-items: center;
+  gap: 32px;
+  padding: 28px 32px;
+}
+
+.featured-left { flex: 1; }
+.featured-preview {
+  width: 260px;
+  height: 100px;
+  background: var(--surface3);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  gap: 4px;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.mini-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+}
+
+.mini-bar {
+  width: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  opacity: .5;
+  transition: opacity .3s;
+}
+
+.report-card:hover .mini-bar { opacity: .8; }
+
+/* ─── SIDEBAR PANEL ─── */
+.side-panel { display: flex; flex-direction: column; gap: 24px; }
+
+/* ─── DOCS CARD ─── */
+.docs-section { }
+
+.doc-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .2s, background .2s;
+  margin-bottom: 8px;
+}
+
+.doc-link:hover {
+  border-color: var(--border2);
+  background: var(--surface2);
+}
+
+.doc-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--surface3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.doc-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.doc-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ─── TECH STACK ─── */
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stack-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.stack-name {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted2);
+  display: block;
+  margin-top: 4px;
+}
+
+.stack-icon { font-size: 18px; }
+
+/* ─── CHANGELOG MINI ─── */
+.changelog-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.changelog-item:last-child { border-bottom: none; }
+
+.cl-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.cl-version {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent2);
+  letter-spacing: 0.06em;
+}
+
+.cl-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
+  font-weight: 300;
+  line-height: 1.5;
+}
+
+/* ─── FOOTER ─── */
+footer {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid var(--border);
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-left {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.footer-links a:hover { color: var(--accent2); }
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.hero { animation: fadeUp .6s ease both; }
+.stats-row { animation: fadeUp .6s .1s ease both; }
+.main { animation: fadeUp .6s .2s ease both; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    <div class="logo-name">Data<span>Jarvis</span></div>
+  </div>
+  <div class="header-meta">
+    <span class="badge blue">v2.3</span>
+    <span class="badge green">● Live</span>
+    <span class="badge">Analytics Hub</span>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-label">Internal Analytics Platform</div>
+  <h1>Your data,<br><em>unified.</em></h1>
+  <p>DataJarvis — кастомный аналитический микросервис, заменяющий PowerBI. Все отчёты, метрики и инструменты в одном месте.</p>
+</div>
+
+<div class="stats-row">
+  <div class="stat">
+    <div class="stat-val"><span>5</span></div>
+    <div class="stat-label">Live Reports</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val"><span>49</span></div>
+    <div class="stat-label">Daily Metrics</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val"><span>6</span></div>
+    <div class="stat-label">User Roles</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val"><span>&lt;3s</span></div>
+    <div class="stat-label">Load Target (P95)</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val"><span>99.5%</span></div>
+    <div class="stat-label">Uptime SLA</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- LEFT: REPORTS -->
+  <div>
+    <div class="section-title">Reports</div>
+    <div class="reports-grid">
+
+      <!-- DASHBOARD — featured -->
+      <a class="report-card featured" href="reports/dashboard.html" style="--card-color: var(--accent);">
+        <div class="featured-left">
+          <div class="card-header">
+            <div>
+              <div class="card-icon">📊</div>
+            </div>
+            <div class="card-num">00</div>
+          </div>
+          <div class="card-title" style="margin-top:12px;">Dashboard Overview</div>
+          <div class="card-desc">Главный экран с KPI по всей платформе. Real-time обновление данных, алерты и сводка по всем брендам.</div>
+          <div class="card-arrow">
+            Open Dashboard
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+        <div class="featured-preview">
+          <div class="mini-bar-group"><div class="mini-bar" style="height:30%"></div><div class="mini-bar" style="height:60%; opacity:.7"></div><div class="mini-bar" style="height:45%; opacity:.6"></div></div>
+          <div class="mini-bar-group"><div class="mini-bar" style="height:70%; background:var(--green)"></div><div class="mini-bar" style="height:40%; background:var(--green); opacity:.7"></div><div class="mini-bar" style="height:55%; background:var(--green); opacity:.6"></div></div>
+          <div class="mini-bar-group"><div class="mini-bar" style="height:50%; background:var(--purple)"></div><div class="mini-bar" style="height:80%; background:var(--purple); opacity:.7"></div><div class="mini-bar" style="height:35%; background:var(--purple); opacity:.6"></div></div>
+          <div class="mini-bar-group"><div class="mini-bar" style="height:90%; background:var(--yellow)"></div><div class="mini-bar" style="height:55%; background:var(--yellow); opacity:.7"></div><div class="mini-bar" style="height:70%; background:var(--yellow); opacity:.6"></div></div>
+        </div>
+      </a>
+
+      <!-- DAILY PERFORMANCE -->
+      <a class="report-card" href="reports/daily-report.html" style="--card-color: var(--green);">
+        <div class="card-header">
+          <div class="card-icon">📈</div>
+          <div class="card-num">01</div>
+        </div>
+        <div class="card-title">Daily Performance</div>
+        <div class="card-desc">49 метрик по трафику, FTD, депозитам, GGR/NGR, бонусам и ставкам. Группировка по дням, неделям, месяцам.</div>
+        <div class="card-tags">
+          <span class="tag">49 metrics</span>
+          <span class="tag">By Day/Week/Month</span>
+          <span class="tag">Export XLSX</span>
+        </div>
+        <div class="card-arrow">
+          Open Report
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+
+      <!-- PAYMENT PERFORMANCE -->
+      <a class="report-card" href="reports/payment-report.html" style="--card-color: var(--teal);">
+        <div class="card-header">
+          <div class="card-icon">💳</div>
+          <div class="card-num">02</div>
+        </div>
+        <div class="card-title">Payment Performance</div>
+        <div class="card-desc">AR%, Success count, Player metrics по системам оплаты, GEO и устройствам. TOTAL / FTD / STD разбивка.</div>
+        <div class="card-tags">
+          <span class="tag">AR% Heatmap</span>
+          <span class="tag">Child Systems</span>
+          <span class="tag">Device Split</span>
+        </div>
+        <div class="card-arrow">
+          Open Report
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+
+      <!-- CHURN RATE -->
+      <a class="report-card" href="reports/churn-report.html" style="--card-color: var(--yellow);">
+        <div class="card-header">
+          <div class="card-icon">🔄</div>
+          <div class="card-num">03</div>
+        </div>
+        <div class="card-title">Churn Rate (Cohort)</div>
+        <div class="card-desc">Когортный анализ удержания игроков. D0–D30 / W0–W12 / M0–M12. Heatmap retention с drill-down по брендам.</div>
+        <div class="card-tags">
+          <span class="tag">Cohort Heatmap</span>
+          <span class="tag">M0–M12</span>
+          <span class="tag">Retention %</span>
+        </div>
+        <div class="card-arrow">
+          Open Report
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+
+      <!-- IN/OUT -->
+      <a class="report-card" href="reports/inout-report.html" style="--card-color: var(--red);">
+        <div class="card-header">
+          <div class="card-icon">↕️</div>
+          <div class="card-num">04</div>
+        </div>
+        <div class="card-title">In / Out Report</div>
+        <div class="card-desc">Flat list транзакций с hover-профилем игрока, risk flags, hourly heatmap и side panel с историей.</div>
+        <div class="card-tags">
+          <span class="tag">Flat List</span>
+          <span class="tag">Risk Flags</span>
+          <span class="tag">Hourly Heatmap</span>
+        </div>
+        <div class="card-arrow">
+          Open Report
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+
+      <!-- AFFILIATE -->
+      <a class="report-card" href="reports/affiliate-report.html" style="--card-color: var(--purple);">
+        <div class="card-header">
+          <div class="card-icon">🤝</div>
+          <div class="card-num">05</div>
+        </div>
+        <div class="card-title">Affiliate Performance</div>
+        <div class="card-desc">Drill-down Affiliate → Media Item → GEO. ROI, eCPA, R2D%, NET PROFIT с performance flags и side panel.</div>
+        <div class="card-tags">
+          <span class="tag">3-level Drill-down</span>
+          <span class="tag">ROI / eCPA</span>
+          <span class="tag">Performance Flags</span>
+        </div>
+        <div class="card-arrow">
+          Open Report
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: SIDEBAR PANEL -->
+  <div class="side-panel">
+
+    <!-- DOCS -->
+    <div class="docs-section">
+      <div class="section-title">Documentation</div>
+      <a class="doc-link" href="docs/index.html">
+        <div class="doc-icon">📋</div>
+        <div>
+          <div class="doc-title">Project Overview</div>
+          <div class="doc-sub">General description & requirements</div>
+        </div>
+      </a>
+      <a class="doc-link" href="docs/reports.html">
+        <div class="doc-icon">📈</div>
+        <div>
+          <div class="doc-title">Reports Specs</div>
+          <div class="doc-sub">Technical specs for all 5 reports</div>
+        </div>
+      </a>
+      <a class="doc-link" href="docs/architecture.html">
+        <div class="doc-icon">⚙️</div>
+        <div>
+          <div class="doc-title">Architecture Brief</div>
+          <div class="doc-sub">Engineering decisions & guidelines</div>
+        </div>
+      </a>
+      <a class="doc-link" href="docs/vocabulary.html">
+        <div class="doc-icon">📖</div>
+        <div>
+          <div class="doc-title">Vocabulary</div>
+          <div class="doc-sub">Definitions of all metrics & terms</div>
+        </div>
+      </a>
+      <a class="doc-link" href="docs/changelog.html">
+        <div class="doc-icon">🔖</div>
+        <div>
+          <div class="doc-title">Changelog</div>
+          <div class="doc-sub">Version history & updates</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- CHANGELOG MINI -->
+    <div>
+      <div class="section-title">Recent Changes</div>
+      <div class="changelog-item">
+        <div class="cl-dot" style="background:var(--green)"></div>
+        <div>
+          <div class="cl-version">v2.3 — Mar 2026</div>
+          <div class="cl-text">Affiliate Report v1.0 · Architecture Brief · Notion полный аудит</div>
+        </div>
+      </div>
+      <div class="changelog-item">
+        <div class="cl-dot" style="background:var(--accent)"></div>
+        <div>
+          <div class="cl-version">v2.2 — Mar 2026</div>
+          <div class="cl-text">In/Out Report v1.1 · Hover tooltip · Side panel</div>
+        </div>
+      </div>
+      <div class="changelog-item">
+        <div class="cl-dot" style="background:var(--purple)"></div>
+        <div>
+          <div class="cl-version">v2.0 — Mar 2026</div>
+          <div class="cl-text">Churn Rate v2.0 · 7 KPI cards · Collapse groups</div>
+        </div>
+      </div>
+      <div class="changelog-item">
+        <div class="cl-dot" style="background:var(--muted)"></div>
+        <div>
+          <div class="cl-version">v1.0 — Mar 2026</div>
+          <div class="cl-text">Initial release: Daily + Payment Reports</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TECH STACK -->
+    <div>
+      <div class="section-title">Design System</div>
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="stack-icon">🎨</div>
+          <span class="stack-name">Dark Theme</span>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🔠</div>
+          <span class="stack-name">Syne + DM Mono</span>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">📱</div>
+          <span class="stack-name">Responsive</span>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">⚡</div>
+          <span class="stack-name">No Framework</span>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">♿</div>
+          <span class="stack-name">Accessible</span>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🚀</div>
+          <span class="stack-name">Pure HTML/CSS</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-left">
+    DataJarvis Analytics Platform · v2.3 · March 2026 · Internal use only
+  </div>
+  <div class="footer-links">
+    <a href="docs/index.html">Docs</a>
+    <a href="docs/architecture.html">Architecture</a>
+    <a href="docs/changelog.html">Changelog</a>
+  </div>
+</footer>
+
+</body>
+</html>

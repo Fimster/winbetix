@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>DataJarvis — Reports Specifications</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;--border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;--accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;--mono:"DM Mono",monospace;--sans:"Syne",sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "foot foot";}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 15%,rgba(61,127,255,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
+.topbar{grid-area:nav;position:sticky;top:0;z-index:100;background:rgba(10,11,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;height:52px;}
+.topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);margin-right:24px;}
+.tl-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.tl-name{font-weight:900;font-size:15px;letter-spacing:-.03em;} .tl-name span{color:var(--accent2);}
+.topbar-sep{width:1px;height:18px;background:var(--border);margin-right:24px;}
+.topbar-crumb{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.topbar-crumb a{color:var(--muted2);text-decoration:none;transition:.15s;} .topbar-crumb a:hover{color:var(--accent2);}
+.topbar-crumb .cur{color:var(--text);}
+.toc{grid-area:toc;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;border-right:1px solid var(--border);padding:28px 0;z-index:10;}
+.toc::-webkit-scrollbar{width:4px;} .toc::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.toc-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 24px 10px;}
+.toc-link{display:block;padding:6px 24px;font-family:var(--mono);font-size:11px;color:var(--muted2);text-decoration:none;transition:.15s;border-left:2px solid transparent;}
+.toc-link:hover{color:var(--text);background:var(--surface);} .toc-link.active{color:var(--accent2);border-color:var(--accent2);background:rgba(61,127,255,.06);}
+.toc-sep{height:1px;background:var(--border);margin:12px 24px;}
+.toc-link.sub{padding-left:36px;font-size:10px;}
+.doc-main{grid-area:main;padding:48px 60px 80px;position:relative;z-index:10;max-width:960px;}
+.doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.doc-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.doc-label::before{content:"";width:20px;height:1px;background:var(--accent2);}
+.doc-header h1{font-size:36px;font-weight:900;letter-spacing:-.04em;margin-bottom:12px;}
+.doc-header p{font-family:var(--mono);font-size:12px;color:var(--muted2);font-weight:300;line-height:1.65;}
+.doc-meta-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;}
+.meta-pill{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border2);color:var(--muted2);}
+
+/* REPORT SECTION */
+.report-section{margin-bottom:64px;padding-bottom:48px;border-bottom:2px solid var(--border);}
+.report-header{display:flex;align-items:flex-start;gap:20px;margin-bottom:28px;}
+.report-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.report-title-block h2{font-size:24px;font-weight:900;letter-spacing:-.04em;margin-bottom:6px;}
+.report-title-block .version{font-family:var(--mono);font-size:10px;color:var(--muted2);}
+.report-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.rpill{font-family:var(--mono);font-size:9px;padding:3px 10px;border-radius:4px;background:var(--surface2);color:var(--muted2);}
+.rpill.accent{background:rgba(61,127,255,.12);color:var(--accent2);}
+
+/* SUBSECTIONS */
+.sub-section{margin-bottom:28px;}
+.sub-title{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.sub-title::after{content:"";flex:1;height:1px;background:var(--border);}
+p{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:10px;}
+ul{padding-left:18px;} li{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;margin-bottom:5px;font-weight:300;}
+strong{color:var(--text);font-weight:500;}
+
+/* METRICS GRID */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin:12px 0;}
+.metric-chip{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;}
+.mc-name{font-family:var(--mono);font-size:10px;color:var(--text);font-weight:500;}
+.mc-desc{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* KPI CARDS PREVIEW */
+.kpi-preview{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}
+.kpi-chip{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:8px 14px;font-family:var(--mono);font-size:10px;color:var(--muted2);}
+
+/* FILTER LIST */
+.filter-list{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;}
+.filter-tag{background:var(--surface3);border:1px solid var(--border2);border-radius:4px;padding:4px 10px;font-family:var(--mono);font-size:10px;color:var(--muted2);}
+
+/* TABLE */
+.doc-table{width:100%;border-collapse:collapse;margin:12px 0;}
+.doc-table th{background:var(--surface2);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border2);}
+.doc-table td{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:8px 12px;border-bottom:1px solid var(--border);}
+.doc-table tr:hover td{background:var(--surface);color:var(--text);}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:14px 18px;margin:14px 0;border-left:3px solid var(--accent);background:rgba(61,127,255,.06);}
+.callout.warning{border-color:var(--yellow);background:rgba(245,183,49,.06);}
+.callout p{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;font-weight:300;margin:0;}
+.callout-title{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;font-weight:500;}
+.callout.warning .callout-title{color:var(--yellow);}
+
+footer{grid-area:foot;border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10;position:relative;}
+.f-left{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.f-links{display:flex;gap:20px;} .f-links a{font-family:var(--mono);font-size:10px;color:var(--muted);text-decoration:none;transition:.15s;} .f-links a:hover{color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="../index.html"><div class="tl-mark">⚡</div><div class="tl-name">Data<span>Jarvis</span></div></a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-crumb"><a href="index.html">Docs</a><span style="color:var(--border2)">/</span><span class="cur">Reports Specs</span></div>
+</div>
+
+<nav class="toc">
+  <div class="toc-title">Reports</div>
+  <a class="toc-link active" href="#r01">01 Daily Performance</a>
+  <a class="toc-link sub" href="#r01-filters">Filters</a>
+  <a class="toc-link sub" href="#r01-metrics">Metrics (49)</a>
+  <a class="toc-link" href="#r02">02 Payment Performance</a>
+  <a class="toc-link sub" href="#r02-kpi">KPI Cards</a>
+  <a class="toc-link sub" href="#r02-table">Table</a>
+  <a class="toc-link" href="#r03">03 Churn Rate Cohort</a>
+  <a class="toc-link sub" href="#r03-cohort">Cohort Logic</a>
+  <a class="toc-link sub" href="#r03-export">Export</a>
+  <a class="toc-link" href="#r04">04 In/Out Report</a>
+  <a class="toc-link sub" href="#r04-flags">Risk Flags</a>
+  <a class="toc-link sub" href="#r04-heatmap">Heatmap</a>
+  <a class="toc-link" href="#r05">05 Affiliate Performance</a>
+  <a class="toc-link sub" href="#r05-drill">Drill-down</a>
+  <a class="toc-link sub" href="#r05-flags">Perf Flags</a>
+</nav>
+
+<main class="doc-main">
+
+<div class="doc-header">
+  <div class="doc-label">02 — Reports</div>
+  <h1>Reports Specifications</h1>
+  <p>Технические спецификации всех 5 отчётов: фильтры, метрики, KPI карточки, группировки, экспорт и UI требования.</p>
+  <div class="doc-meta-row">
+    <span class="meta-pill">5 Reports</span>
+    <span class="meta-pill">March 2026</span>
+  </div>
+</div>
+
+<!-- ══ R01 ══ -->
+<div class="report-section" id="r01">
+  <div class="report-header">
+    <div class="report-icon" style="background:rgba(34,208,122,.1);">📈</div>
+    <div class="report-title-block">
+      <h2>Daily Performance Report</h2>
+      <div class="version">Report #01 · v1.0 · 49 Metrics</div>
+      <div class="report-pills">
+        <span class="rpill accent">Live</span>
+        <span class="rpill">By Day / Week / Month / Quarter / Year</span>
+        <span class="rpill">Export XLSX</span>
+        <span class="rpill">Multi-brand</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r01-filters">
+    <div class="sub-title">Filters</div>
+    <div class="filter-list">
+      <span class="filter-tag">Period (Date Range)</span>
+      <span class="filter-tag">Brand</span>
+      <span class="filter-tag">Media Item</span>
+      <span class="filter-tag">Country / GEO</span>
+      <span class="filter-tag">Currency</span>
+      <span class="filter-tag">Affiliate</span>
+      <span class="filter-tag">Company</span>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Group By</div>
+    <div class="filter-list">
+      <span class="filter-tag">By Day</span>
+      <span class="filter-tag">By Week</span>
+      <span class="filter-tag">By Month</span>
+      <span class="filter-tag">By Quarter</span>
+      <span class="filter-tag">By Year</span>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r01-metrics">
+    <div class="sub-title">Metric Categories (49 total)</div>
+    <table class="doc-table">
+      <thead><tr><th>Группа</th><th>Метрики</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Traffic</strong></td><td>Visits, Regs, Reg%</td></tr>
+        <tr><td><strong>FTD</strong></td><td>FTDs, FTD Amount, Avg FTD, R2D%</td></tr>
+        <tr><td><strong>Deposits</strong></td><td>Dep Count, Dep Amount, Dep Players, Avg Dep, Dep/Player</td></tr>
+        <tr><td><strong>Cashouts</strong></td><td>Cashout Count, Cashout Amount, Cashout Players, Net Cash</td></tr>
+        <tr><td><strong>GGR / NGR</strong></td><td>GGR, Bonus, NGR, NGR%</td></tr>
+        <tr><td><strong>Bets</strong></td><td>Bets Count, Bets Amount, Wins Amount, Win%, RTP%</td></tr>
+        <tr><td><strong>P&L</strong></td><td>Marketing Cost, NET PROFIT, ROI%</td></tr>
+        <tr><td><strong>Retention</strong></td><td>Ret.NEW%, Ret.OLD%, Ret.Tot%, Active Players</td></tr>
+        <tr><td><strong>Chargebacks</strong></td><td>CB Count, CB Amount, CB%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">UI Requirements</div>
+    <ul>
+      <li>Sticky первая колонка (дата/период) при горизонтальном скролле</li>
+      <li>Цветные группы заголовков (th-groups) для каждой категории метрик</li>
+      <li>Сортировка по любой колонке (asc/desc)</li>
+      <li>TOTAL строка закреплена снизу или сверху таблицы</li>
+      <li>Числа в DM Mono с non-breaking пробелом как разделителем тысяч</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ R02 ══ -->
+<div class="report-section" id="r02">
+  <div class="report-header">
+    <div class="report-icon" style="background:rgba(0,201,177,.1);">💳</div>
+    <div class="report-title-block">
+      <h2>Payment Performance Report</h2>
+      <div class="version">Report #02 · v1.0 · 20 Columns</div>
+      <div class="report-pills">
+        <span class="rpill accent">Live</span>
+        <span class="rpill">TOTAL / FTD / STD</span>
+        <span class="rpill">AR% Heatmap</span>
+        <span class="rpill">Child Systems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r02-kpi">
+    <div class="sub-title">KPI Strip (6 карточек × 3 уровня)</div>
+    <div class="kpi-preview">
+      <div class="kpi-chip" style="border-color:var(--teal)">AR% Overall</div>
+      <div class="kpi-chip" style="border-color:var(--green)">Success Count</div>
+      <div class="kpi-chip" style="border-color:var(--accent)">Attempt Count</div>
+      <div class="kpi-chip" style="border-color:var(--yellow)">Success Amount</div>
+      <div class="kpi-chip" style="border-color:var(--purple)">Players Success</div>
+      <div class="kpi-chip" style="border-color:var(--orange)">Avg Success Amt</div>
+    </div>
+    <p>Каждая карточка показывает значения на трёх уровнях: <strong>TOTAL</strong> (все депозиты) · <strong>FTD</strong> (первые депозиты) · <strong>STD</strong> (повторные).</p>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Filters</div>
+    <div class="filter-list">
+      <span class="filter-tag">Period</span>
+      <span class="filter-tag">Brand</span>
+      <span class="filter-tag">Child System</span>
+      <span class="filter-tag">Aggregator</span>
+      <span class="filter-tag">Country</span>
+      <span class="filter-tag">Device Type</span>
+      <span class="filter-tag">Transaction Type</span>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Group By</div>
+    <div class="filter-list">
+      <span class="filter-tag">Child System</span>
+      <span class="filter-tag">Device</span>
+      <span class="filter-tag">Country</span>
+      <span class="filter-tag">Aggregator</span>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r02-table">
+    <div class="sub-title">AR% Color Coding</div>
+    <table class="doc-table">
+      <thead><tr><th>Значение AR%</th><th>Цвет</th><th>CSS переменная</th></tr></thead>
+      <tbody>
+        <tr><td>&gt; 80%</td><td>Зелёный</td><td><code style="font-family:var(--mono)">--green</code></td></tr>
+        <tr><td>60% – 80%</td><td>Тиловый</td><td><code style="font-family:var(--mono)">--teal</code></td></tr>
+        <tr><td>&lt; 60%</td><td>Красный</td><td><code style="font-family:var(--mono)">--red</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ R03 ══ -->
+<div class="report-section" id="r03">
+  <div class="report-header">
+    <div class="report-icon" style="background:rgba(245,183,49,.1);">🔄</div>
+    <div class="report-title-block">
+      <h2>Churn Rate Report (Cohort)</h2>
+      <div class="version">Report #03 · v2.0 · Cohort Heatmap</div>
+      <div class="report-pills">
+        <span class="rpill accent">Live</span>
+        <span class="rpill">Daily / Weekly / Monthly</span>
+        <span class="rpill">7 KPI Cards</span>
+        <span class="rpill">Brand Drill-down</span>
+        <span class="rpill">4-sheet Export</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r03-cohort">
+    <div class="sub-title">Cohort Granularity</div>
+    <table class="doc-table">
+      <thead><tr><th>Режим</th><th>Базовый период</th><th>Depth</th></tr></thead>
+      <tbody>
+        <tr><td>Daily</td><td>День FTD</td><td>D0 – D30</td></tr>
+        <tr><td>Weekly</td><td>Неделя FTD (ISO Mon-Sun)</td><td>W0 – W12</td></tr>
+        <tr><td>Monthly</td><td>Месяц FTD</td><td>M0 – M12</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <div class="callout-title">Инвариант</div>
+      <p>M0 (D0, W0) всегда = 100%. Это базовый период когорты. Если значение ≠ 100% — ошибка в ETL.</p>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">KPI Cards (7)</div>
+    <div class="kpi-preview">
+      <div class="kpi-chip" style="border-color:var(--green)">Avg M1 Ret%</div>
+      <div class="kpi-chip" style="border-color:var(--accent)">Avg M3 Ret%</div>
+      <div class="kpi-chip" style="border-color:var(--purple)">Avg M6 Ret%</div>
+      <div class="kpi-chip" style="border-color:var(--yellow)">Total Cohorts</div>
+      <div class="kpi-chip" style="border-color:var(--teal)">Avg Cohort Size</div>
+      <div class="kpi-chip" style="border-color:var(--orange)">Best Cohort</div>
+      <div class="kpi-chip" style="border-color:var(--red)">Worst Cohort</div>
+    </div>
+    <p>Каждая KPI-карточка содержит спарклайн последних 7 когорт для визуализации тренда.</p>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Table Features</div>
+    <ul>
+      <li><strong>AVERAGE строка</strong> — закреплена сверху, показывает среднее по всем когортам</li>
+      <li><strong>Группировки:</strong> Early (первые 3 мес) · Mid (4–6 мес) · Long (7–12 мес) — сворачиваемые</li>
+      <li><strong>Threshold highlight</strong> — ячейки ниже установленного порога подсвечиваются красным</li>
+      <li><strong>Δ-колонки</strong> — изменение vs предыдущий период (опционально)</li>
+      <li><strong>Small sample flag</strong> — когорты с &lt;100 игроками помечаются ⚠</li>
+      <li><strong>Drill-down по брендам</strong> — раскрытие когорты до уровня бренда</li>
+    </ul>
+  </div>
+
+  <div class="sub-section" id="r03-export">
+    <div class="sub-title">Export: 4 листа XLSX</div>
+    <table class="doc-table">
+      <thead><tr><th>Лист</th><th>Содержимое</th></tr></thead>
+      <tbody>
+        <tr><td>1. Heatmap %</td><td>Retention % с цветовым кодированием</td></tr>
+        <tr><td>2. Absolute</td><td>Абсолютные числа активных игроков</td></tr>
+        <tr><td>3. Brand Comparison</td><td>Retention по брендам side-by-side</td></tr>
+        <tr><td>4. KPI Summary</td><td>Сводка KPI по всем когортам</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══ R04 ══ -->
+<div class="report-section" id="r04">
+  <div class="report-header">
+    <div class="report-icon" style="background:rgba(255,77,106,.1);">↕️</div>
+    <div class="report-title-block">
+      <h2>In / Out Report</h2>
+      <div class="version">Report #04 · v1.1 · Flat List</div>
+      <div class="report-pills">
+        <span class="rpill accent">Live</span>
+        <span class="rpill">Flat List (1 row = 1 TX)</span>
+        <span class="rpill">Risk Flags</span>
+        <span class="rpill">Hourly Heatmap</span>
+        <span class="rpill">4 Tabs</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Tabs</div>
+    <div class="filter-list">
+      <span class="filter-tag">All Transactions</span>
+      <span class="filter-tag">Deposits</span>
+      <span class="filter-tag">Cashouts</span>
+      <span class="filter-tag">Pending / Failed</span>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Filters (11)</div>
+    <div class="filter-list">
+      <span class="filter-tag">Period</span>
+      <span class="filter-tag">Brand</span>
+      <span class="filter-tag">Transaction Type</span>
+      <span class="filter-tag">Status</span>
+      <span class="filter-tag">Amount Range</span>
+      <span class="filter-tag">Country</span>
+      <span class="filter-tag">Payment Method</span>
+      <span class="filter-tag">Player ID</span>
+      <span class="filter-tag">Affiliate</span>
+      <span class="filter-tag">Risk Flag</span>
+      <span class="filter-tag">FTD Only</span>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r04-flags">
+    <div class="sub-title">Risk Flags</div>
+    <table class="doc-table">
+      <thead><tr><th>Флаг</th><th>Триггер</th><th>Цвет</th></tr></thead>
+      <tbody>
+        <tr><td>LARGE TX</td><td>Сумма &gt; threshold (configurable)</td><td><span style="color:var(--red)">Red</span></td></tr>
+        <tr><td>MULTI</td><td>Несколько транзакций одного игрока за короткое время</td><td><span style="color:var(--yellow)">Yellow</span></td></tr>
+        <tr><td>FAILED</td><td>Статус = failed</td><td><span style="color:var(--red)">Red</span></td></tr>
+        <tr><td>NEW PLAYER</td><td>FTD транзакция</td><td><span style="color:var(--green)">Green</span></td></tr>
+        <tr><td>VIP</td><td>VIP-игрок (определяется сегментом)</td><td><span style="color:var(--purple)">Purple</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-section" id="r04-heatmap">
+    <div class="sub-title">Hourly Heatmap</div>
+    <p>Матрица 24×7 (часы × дни недели) показывает интенсивность транзакций. Помогает идентифицировать пиковые часы и аномалии. Цвет: от тёмного (мало) до зелёного (много).</p>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Hover Tooltip & Side Panel</div>
+    <ul>
+      <li><strong>Hover Tooltip</strong> — при наведении на строку транзакции показывает: Player ID, имя, бренд, страну, total deposits, FTD date, risk level. Следует за курсором.</li>
+      <li><strong>Side Panel</strong> (по клику) — полный профиль игрока: Player Journey (timeline), Today's Transactions, история последних 30 дней, KPI карточки игрока.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══ R05 ══ -->
+<div class="report-section" id="r05" style="border-bottom:none;padding-bottom:0;">
+  <div class="report-header">
+    <div class="report-icon" style="background:rgba(155,125,255,.1);">🤝</div>
+    <div class="report-title-block">
+      <h2>Affiliate Performance Report</h2>
+      <div class="version">Report #05 · v1.0 · 21 Columns</div>
+      <div class="report-pills">
+        <span class="rpill accent">Live</span>
+        <span class="rpill">3-level Drill-down</span>
+        <span class="rpill">Performance Flags</span>
+        <span class="rpill">Side Panel</span>
+        <span class="rpill">4-sheet Export</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r05-drill">
+    <div class="sub-title">Drill-down Hierarchy</div>
+    <p><strong>L1: Affiliate</strong> → <strong>L2: Media Item</strong> → <strong>L3: GEO (Country)</strong></p>
+    <p>На каждом уровне доступны все 21 метрика. Drill-down открывается по клику на строку (expand inline) или через отдельный экран.</p>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">KPI Cards (9)</div>
+    <div class="kpi-preview">
+      <div class="kpi-chip" style="border-color:var(--green)">Total FTDs</div>
+      <div class="kpi-chip" style="border-color:var(--accent)">NGR</div>
+      <div class="kpi-chip" style="border-color:var(--purple)">NET PROFIT</div>
+      <div class="kpi-chip" style="border-color:var(--yellow)">Marketing Cost</div>
+      <div class="kpi-chip" style="border-color:var(--teal)">ROI %</div>
+      <div class="kpi-chip" style="border-color:var(--orange)">eCPA</div>
+      <div class="kpi-chip" style="border-color:var(--accent2)">R2D %</div>
+      <div class="kpi-chip" style="border-color:var(--red)">Active Affiliates</div>
+      <div class="kpi-chip" style="border-color:var(--green)">Ret.Tot %</div>
+    </div>
+  </div>
+
+  <div class="sub-section" id="r05-flags">
+    <div class="sub-title">Performance Flags</div>
+    <table class="doc-table">
+      <thead><tr><th>Флаг</th><th>Условие</th><th>Значение</th></tr></thead>
+      <tbody>
+        <tr><td><span style="color:var(--red);font-family:var(--mono);font-size:10px;">LOSS</span></td><td>NET PROFIT &lt; 0</td><td>Аффилиат убыточен</td></tr>
+        <tr><td><span style="color:var(--yellow);font-family:var(--mono);font-size:10px;">HIGH CPA</span></td><td>eCPA &gt; threshold</td><td>Дорогой трафик</td></tr>
+        <tr><td><span style="color:var(--orange);font-family:var(--mono);font-size:10px;">LOW R2D</span></td><td>R2D% &lt; 15%</td><td>Плохая конверсия</td></tr>
+        <tr><td><span style="color:var(--red);font-family:var(--mono);font-size:10px;">LOW RET</span></td><td>Ret.Tot% &lt; 20%</td><td>Плохое удержание</td></tr>
+        <tr><td><span style="color:var(--green);font-family:var(--mono);font-size:10px;">★ TOP</span></td><td>ROI &gt; 200% + R2D &gt; 25%</td><td>Топ аффилиат</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Filters (7)</div>
+    <div class="filter-list">
+      <span class="filter-tag">Period</span>
+      <span class="filter-tag">Brand</span>
+      <span class="filter-tag">Affiliate</span>
+      <span class="filter-tag">Media Item</span>
+      <span class="filter-tag">GEO</span>
+      <span class="filter-tag">Performance Flag</span>
+      <span class="filter-tag">Deal Type (CPA / RevShare)</span>
+    </div>
+  </div>
+
+  <div class="sub-section">
+    <div class="sub-title">Export: 4 листа XLSX</div>
+    <table class="doc-table">
+      <thead><tr><th>Лист</th><th>Содержимое</th></tr></thead>
+      <tbody>
+        <tr><td>1. Summary</td><td>Текущий вид — все аффилиаты с метриками</td></tr>
+        <tr><td>2. Media Items</td><td>Все Media Items с раскрытыми GEO</td></tr>
+        <tr><td>3. GEO Breakdown</td><td>Все комбинации Affiliate × MI × GEO</td></tr>
+        <tr><td>4. KPI Summary</td><td>Сводные KPI + топ-10 аффилиатов</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  <div class="f-left">DataJarvis · Reports Specifications · v1.0 · March 2026</div>
+  <div class="f-links">
+    <a href="../index.html">← Hub</a>
+    <a href="index.html">Docs Home</a>
+    <a href="architecture.html">Architecture →</a>
+  </div>
+</footer>
+</body>
+</html>

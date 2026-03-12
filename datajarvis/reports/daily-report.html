@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>DataJarvis — Daily Performance Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0a0b0d;
+    --surface:   #111318;
+    --surface2:  #181c22;
+    --surface3:  #1e2330;
+    --border:    #1f2530;
+    --border2:   #2a3040;
+    --text:      #e8eaf0;
+    --muted:     #5a6478;
+    --muted2:    #8892a4;
+    --accent:    #3d7fff;
+    --accent2:   #5b92ff;
+    --green:     #22d07a;
+    --red:       #ff4d6a;
+    --yellow:    #f5b731;
+    --purple:    #9b7dff;
+    --mono:      'DM Mono', monospace;
+    --sans:      'Syne', sans-serif;
+    --row-h:     34px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    display: flex;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ─── SIDEBAR (same as dashboard) ─── */
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .logo {
+    padding: 28px 24px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon { width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px; }
+  .logo-name { font-family:var(--sans);font-weight:800;font-size:17px;letter-spacing:-0.02em; }
+  .logo-name span { color:var(--accent2); }
+  .nav { flex:1; padding:16px 0; }
+  .nav-section { padding:8px 16px 4px;font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:8px; }
+  .nav-item { display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--muted);cursor:pointer;border-left:2px solid transparent;text-decoration:none; }
+  .nav-item:hover { color:var(--text);background:var(--surface2); }
+  .nav-item.active { color:var(--text);background:rgba(61,127,255,0.08);border-left-color:var(--accent);font-weight:600; }
+  .nav-item .icon { width:16px;height:16px;opacity:.7;flex-shrink:0; }
+  .nav-item.active .icon { opacity:1; }
+  .nav-badge { margin-left:auto;background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;padding:2px 5px;border-radius:3px; }
+  .sidebar-bottom { padding:16px;border-top:1px solid var(--border); }
+  .user-pill { display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:8px;cursor:pointer; }
+  .avatar { width:28px;height:28px;background:linear-gradient(135deg,var(--purple),var(--accent));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0; }
+  .user-info { flex:1;overflow:hidden; }
+  .user-name { font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .user-role { font-size:10px;color:var(--muted);font-family:var(--mono); }
+
+  /* ─── MAIN ─── */
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+
+  /* TOPBAR */
+  .topbar {
+    height: 60px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 14px;
+    flex-shrink: 0;
+  }
+  .topbar-left { display:flex;align-items:center;gap:8px; }
+  .breadcrumb { font-family:var(--mono);font-size:11px;color:var(--muted); }
+  .breadcrumb span { color:var(--text);font-weight:600; }
+  .topbar-title { font-size:15px;font-weight:700;letter-spacing:-0.02em; }
+
+  .update-badge {
+    font-family:var(--mono);font-size:10px;color:var(--green);
+    background:rgba(34,208,122,0.1);border:1px solid rgba(34,208,122,0.2);
+    padding:3px 8px;border-radius:4px;display:flex;align-items:center;gap:5px;
+  }
+  .update-dot { width:5px;height:5px;background:var(--green);border-radius:50%;animation:pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+  .topbar-actions { display:flex;gap:6px;align-items:center; }
+  .btn {
+    height: 30px; padding: 0 12px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; font-size: 11px; font-family:var(--sans);
+    color: var(--text); cursor: pointer; display:flex;align-items:center;gap:5px;
+    white-space:nowrap;
+  }
+  .btn:hover { border-color:var(--accent); }
+  .btn.primary { background:rgba(61,127,255,0.15);border-color:var(--accent);color:var(--accent2); }
+  .btn-icon { width:30px;height:30px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:13px; }
+  .btn-icon:hover { border-color:var(--accent);color:var(--accent); }
+
+  /* FILTER BAR */
+  .filter-bar {
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 8px;
+    flex-shrink: 0;
+  }
+  .filter-label { font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-right:4px; }
+  .filter-chip {
+    display:flex;align-items:center;gap:5px;height:26px;padding:0 10px;
+    background:var(--surface2);border:1px solid var(--border2);border-radius:5px;
+    font-size:11px;color:var(--text);cursor:pointer;font-family:var(--sans);white-space:nowrap;
+  }
+  .filter-chip:hover { border-color:var(--accent); }
+  .filter-chip.active { border-color:var(--accent);background:rgba(61,127,255,0.1);color:var(--accent2); }
+  .filter-chip .caret { font-size:8px;opacity:.5; }
+  .filter-sep { width:1px;height:20px;background:var(--border);margin:0 4px; }
+
+  /* GROUPING TABS */
+  .group-tabs {
+    display:flex;gap:2px;
+  }
+  .group-tab {
+    height:26px;padding:0 10px;
+    border-radius:5px;font-size:11px;font-family:var(--mono);
+    color:var(--muted);cursor:pointer;display:flex;align-items:center;
+  }
+  .group-tab:hover { color:var(--text);background:var(--surface2); }
+  .group-tab.active { color:var(--text);background:var(--surface2);border:1px solid var(--border2); }
+
+  .spacer { flex:1; }
+
+  /* SUMMARY ROW (pinned above table) */
+  .summary-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 28px;
+    height: 44px;
+    flex-shrink: 0;
+  }
+  .sum-item { display:flex;flex-direction:column;gap:1px; }
+  .sum-label { font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted); }
+  .sum-val { font-family:var(--mono);font-size:13px;font-weight:500; }
+  .sum-val.up { color:var(--green); }
+  .sum-val.down { color:var(--red); }
+  .sum-sep { width:1px;height:28px;background:var(--border); }
+
+  /* TABLE WRAPPER */
+  .table-wrap {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+  }
+
+  table {
+    border-collapse: collapse;
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  /* HEADER */
+  thead {
+    position: sticky; top: 0; z-index: 20;
+  }
+
+  .th-group {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .th-group th {
+    padding: 5px 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 8px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .th-group th.g-traffic { color: var(--accent2); background: rgba(61,127,255,.06); }
+  .th-group th.g-ftd     { color: var(--green);   background: rgba(34,208,122,.06); }
+  .th-group th.g-dep     { color: #60b8ff;         background: rgba(96,184,255,.04); }
+  .th-group th.g-wd      { color: var(--yellow);   background: rgba(245,183,49,.05); }
+  .th-group th.g-ar      { color: var(--purple);   background: rgba(155,125,255,.05); }
+  .th-group th.g-bonus   { color: #ff9f6a;         background: rgba(255,159,106,.05); }
+  .th-group th.g-bet     { color: var(--muted2);   background: rgba(136,146,164,.04); }
+  .th-group th.g-ggr     { color: var(--yellow);   background: rgba(245,183,49,.06); }
+  .th-group th.g-seg     { color: var(--muted2);   background: rgba(136,146,164,.04); }
+
+  .th-cols {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border2);
+  }
+
+  .th-cols th {
+    padding: 0 8px;
+    height: 30px;
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: .02em;
+    color: var(--muted2);
+    font-weight: 400;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+  }
+  .th-cols th:hover { color: var(--text); background: var(--surface3); }
+  .th-cols th.sticky-col { text-align: left; position: sticky; left: 0; z-index: 10; background: var(--surface2); }
+  .th-cols th.sorted { color: var(--accent2); }
+  .sort-arrow { margin-left:3px;font-size:8px; }
+
+  /* ROWS */
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background .1s;
+  }
+  tbody tr:hover { background: var(--surface2); }
+  tbody tr.total-row {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--border2);
+    border-top: 2px solid var(--border2);
+    font-weight: 600;
+  }
+  tbody tr.total-row td { color: var(--text); font-weight: 600; }
+
+  td {
+    padding: 0 8px;
+    height: var(--row-h);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted2);
+    text-align: right;
+    border-right: 1px solid var(--border);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  td.sticky-col {
+    text-align: left;
+    position: sticky; left: 0; z-index: 5;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    min-width: 110px;
+  }
+  tbody tr:hover td.sticky-col { background: var(--surface2); }
+  tbody tr.total-row td.sticky-col { background: var(--surface2); }
+
+  td.num { color: var(--text); }
+  td.up  { color: var(--green); }
+  td.down { color: var(--red); }
+  td.accent { color: var(--accent2); }
+  td.yellow { color: var(--yellow); }
+  td.purple { color: var(--purple); }
+
+  /* group separator */
+  .col-sep { border-left: 2px solid var(--border2) !important; }
+
+  /* scrollbar */
+  .table-wrap::-webkit-scrollbar { width:6px;height:6px; }
+  .table-wrap::-webkit-scrollbar-track { background:transparent; }
+  .table-wrap::-webkit-scrollbar-thumb { background:var(--border2);border-radius:3px; }
+  .table-wrap::-webkit-scrollbar-corner { background:transparent; }
+
+  /* row count */
+  .table-footer {
+    height: 36px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 16px;
+    flex-shrink: 0;
+  }
+  .footer-stat { font-family:var(--mono);font-size:10px;color:var(--muted); }
+  .footer-stat span { color:var(--text); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-name">Data<span>Jarvis</span></span>
+  </div>
+
+  <nav class="nav">
+    <div class="nav-section">Platform</div>
+    <a class="nav-item " href="../index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2l6 4.5V14a1 1 0 01-1 1H3a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.5"/><path d="M6 15V9h4v6" stroke="currentColor" stroke-width="1.5"/></svg>
+      Hub
+    </a>
+
+    <div class="nav-section">Reports</div>
+    <a class="nav-item " href="dashboard.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="daily-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h8M2 12h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Daily Performance
+    </a>
+    <a class="nav-item " href="payment-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M1 7h14" stroke="currentColor" stroke-width="1.5"/><circle cx="4.5" cy="10.5" r="1" fill="currentColor"/></svg>
+      Payment
+    </a>
+    <a class="nav-item " href="churn-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 12L5 7l3 3 2.5-4 3 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Churn Rate
+    </a>
+    <a class="nav-item " href="inout-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M4 6l4-4 4 4M4 10l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      In / Out
+    </a>
+    <a class="nav-item " href="affiliate-report.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="3" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="13" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M8 6v2M6 10L4.5 10.5M10 10l1.5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Affiliate
+    </a>
+
+    <div class="nav-section">Resources</div>
+    <a class="nav-item" href="../docs/index.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M4 2h6l3 3v9a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v3h3M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Documentation
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="user-pill">
+      <div class="avatar">AK</div>
+      <div class="user-info">
+        <div class="user-name">Anna K.</div>
+        <div class="user-role">Super Admin</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="breadcrumb">Reports / <span>Daily Performance</span></span>
+    </div>
+    <div class="update-badge">
+      <div class="update-dot"></div>
+      Updated 3 min ago
+    </div>
+    <div style="flex:1"></div>
+    <div class="topbar-actions">
+      <div class="btn">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Columns
+      </div>
+      <div class="btn">
+        🔗 Share view
+      </div>
+      <div class="btn primary">
+        ↓ Export
+      </div>
+      <div class="btn-icon">↻</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Period</span>
+    <div class="filter-chip active">📅 01 Mar – 12 Mar 2026 <span class="caret">▾</span></div>
+
+    <div class="filter-sep"></div>
+    <span class="filter-label">Group by</span>
+    <div class="group-tabs">
+      <div class="group-tab">Day</div>
+      <div class="group-tab active">Week</div>
+      <div class="group-tab">Month</div>
+      <div class="group-tab">Quarter</div>
+      <div class="group-tab">Year</div>
+    </div>
+
+    <div class="filter-sep"></div>
+    <div class="filter-chip">All Brands <span class="caret">▾</span></div>
+    <div class="filter-chip">All Countries <span class="caret">▾</span></div>
+    <div class="filter-chip">All Affiliates <span class="caret">▾</span></div>
+
+    <div class="spacer"></div>
+    <div class="filter-chip">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="4.5" cy="4.5" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 7.5L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Search
+    </div>
+  </div>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar">
+    <div class="sum-item">
+      <span class="sum-label">Total Visitors</span>
+      <span class="sum-val">336,840</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">Total Regs</span>
+      <span class="sum-val">12,904</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">Total FTDs</span>
+      <span class="sum-val up">2,183</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">Deposits €</span>
+      <span class="sum-val up">€ 1,988,570</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">Withdrawals €</span>
+      <span class="sum-val">€ 843,210</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">Net Cash €</span>
+      <span class="sum-val up">€ 1,145,360</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">GGR €</span>
+      <span class="sum-val">€ 497,140</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">NGR €</span>
+      <span class="sum-val down">€ 391,820</span>
+    </div>
+    <div class="sum-sep"></div>
+    <div class="sum-item">
+      <span class="sum-label">FTD AR%</span>
+      <span class="sum-val">73.8%</span>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <!-- GROUP ROW -->
+        <tr class="th-group">
+          <th colspan="1" style="border-right:2px solid var(--border2)"><!-- date --></th>
+          <!-- Traffic: 4 -->
+          <th colspan="4" class="g-traffic">Traffic &amp; Regs</th>
+          <!-- FTD: 7 -->
+          <th colspan="7" class="g-ftd">First Time Deposits</th>
+          <!-- Deposits: 6 -->
+          <th colspan="6" class="g-dep">Deposits</th>
+          <!-- Withdrawals: 7 -->
+          <th colspan="7" class="g-wd">Withdrawals &amp; Net Cash</th>
+          <!-- AR: 4 -->
+          <th colspan="4" class="g-ar">Approval Rates</th>
+          <!-- Bonus: 3 -->
+          <th colspan="3" class="g-bonus">Bonuses</th>
+          <!-- Bets: 7 -->
+          <th colspan="7" class="g-bet">Bets &amp; Wins</th>
+          <!-- GGR/NGR: 4 -->
+          <th colspan="4" class="g-ggr">GGR / NGR</th>
+          <!-- Segments: 6 -->
+          <th colspan="6" class="g-seg">Depositor Segments</th>
+        </tr>
+
+        <!-- COLUMN ROW -->
+        <tr class="th-cols">
+          <!-- Date sticky -->
+          <th class="sticky-col" style="width:110px;min-width:110px">Period ↕</th>
+
+          <!-- Traffic -->
+          <th class="col-sep" style="width:74px">Visitors</th>
+          <th style="width:64px">Regs</th>
+          <th style="width:74px">Reg2Try%</th>
+          <th style="width:80px">Visitor2Reg%</th>
+
+          <!-- FTD -->
+          <th class="col-sep" style="width:60px">FTDs</th>
+          <th style="width:74px">Attempts</th>
+          <th style="width:66px">Success</th>
+          <th style="width:90px">€ 1st Tx</th>
+          <th style="width:90px">€ 1st Day</th>
+          <th style="width:92px">avg €1stTx</th>
+          <th style="width:92px">avg €1stDay</th>
+
+          <!-- Deposits -->
+          <th class="col-sep" style="width:90px">Deposits €</th>
+          <th style="width:72px">Dep Count</th>
+          <th style="width:78px">Uniq Dep</th>
+          <th style="width:88px">Avg/Player</th>
+          <th style="width:76px">New Dep</th>
+          <th style="width:68px">Old Dep</th>
+
+          <!-- W & Net -->
+          <th class="col-sep" style="width:86px">Withdr €</th>
+          <th style="width:68px">Withdr%</th>
+          <th style="width:72px">W Count</th>
+          <th style="width:88px">Net Cash €</th>
+          <th style="width:90px">Avg Net/Pl</th>
+          <th style="width:84px">Net FTDs €</th>
+          <th style="width:80px">Net Old €</th>
+
+          <!-- AR -->
+          <th class="col-sep" style="width:74px">FTD AR%</th>
+          <th style="width:88px">Uniq FTD AR%</th>
+          <th style="width:74px">Dep AR%</th>
+          <th style="width:88px">Uniq Dep AR%</th>
+
+          <!-- Bonus -->
+          <th class="col-sep" style="width:86px">Credited €</th>
+          <th style="width:84px">Released €</th>
+          <th style="width:72px">Bonus Cnt</th>
+
+          <!-- Bets -->
+          <th class="col-sep" style="width:72px">avg Bet €</th>
+          <th style="width:82px">Bet Amt €</th>
+          <th style="width:80px">Win Amt €</th>
+          <th style="width:80px">RM Bet €</th>
+          <th style="width:80px">RM Win €</th>
+          <th style="width:80px">BM Bet €</th>
+          <th style="width:78px">BM Win €</th>
+
+          <!-- GGR -->
+          <th class="col-sep" style="width:80px">GGR €</th>
+          <th style="width:80px">Real GGR €</th>
+          <th style="width:82px">Bonus GGR €</th>
+          <th class="sorted" style="width:80px">NGR € <span class="sort-arrow">↑</span></th>
+
+          <!-- Segments -->
+          <th class="col-sep" style="width:72px">&lt;€20</th>
+          <th style="width:72px">&lt;€30</th>
+          <th style="width:72px">&lt;€50</th>
+          <th style="width:72px">&lt;€100</th>
+          <th style="width:72px">&lt;€200</th>
+          <th style="width:72px">&gt;€500</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- TOTAL ROW -->
+        <tr class="total-row">
+          <td class="sticky-col">📊 Total</td>
+          <td class="num col-sep">336,840</td><td class="num">12,904</td><td class="num">16.9%</td><td class="num">3.8%</td>
+          <td class="up col-sep">2,183</td><td>2,958</td><td>2,183</td><td>€ 218,300</td><td>€ 284,190</td><td>€ 99.9</td><td>€ 130.2</td>
+          <td class="accent col-sep">€ 1,988,570</td><td>24,107</td><td>13,842</td><td>€ 143.7</td><td>2,183</td><td>11,659</td>
+          <td class="col-sep">€ 843,210</td><td class="yellow">42.4%</td><td>9,814</td><td class="up">€ 1,145,360</td><td>€ 82.8</td><td>€ 218,300</td><td>€ 927,060</td>
+          <td class="purple col-sep">73.8%</td><td class="purple">71.2%</td><td class="up">88.4%</td><td class="up">85.9%</td>
+          <td class="col-sep">€ 89,486</td><td>€ 41,220</td><td>3,841</td>
+          <td class="col-sep">€ 18.4</td><td>€ 6,841,200</td><td>€ 6,343,960</td><td>€ 5,472,960</td><td>€ 5,075,168</td><td>€ 1,368,240</td><td>€ 1,268,792</td>
+          <td class="yellow col-sep">€ 497,240</td><td>€ 397,792</td><td>€ 99,448</td><td class="up">€ 391,820</td>
+          <td class="col-sep">5,890</td><td>4,369</td><td>3,411</td><td>2,478</td><td>1,652</td><td>826</td>
+        </tr>
+
+        <!-- WEEK 1 -->
+        <tr>
+          <td class="sticky-col">W10 · 03–09 Mar</td>
+          <td class="num col-sep">189,410</td><td class="num">7,241</td><td>15.7%</td><td>3.8%</td>
+          <td class="up col-sep">1,138</td><td>1,620</td><td>1,138</td><td>€ 113,800</td><td>€ 148,000</td><td>€ 100.0</td><td>€ 130.1</td>
+          <td class="col-sep">€ 1,084,200</td><td>13,211</td><td>7,560</td><td>€ 143.4</td><td>1,138</td><td>6,422</td>
+          <td class="col-sep">€ 451,700</td><td class="yellow">41.7%</td><td>5,240</td><td class="up">€ 632,500</td><td>€ 83.7</td><td>€ 113,800</td><td>€ 518,700</td>
+          <td class="purple col-sep">70.2%</td><td class="purple">68.4%</td><td class="up">87.9%</td><td class="up">85.1%</td>
+          <td class="col-sep">€ 48,690</td><td>€ 22,400</td><td>2,080</td>
+          <td class="col-sep">€ 18.2</td><td>€ 3,724,800</td><td>€ 3,452,400</td><td>€ 2,979,840</td><td>€ 2,761,920</td><td>€ 744,960</td><td>€ 690,480</td>
+          <td class="yellow col-sep">€ 272,400</td><td>€ 217,920</td><td>€ 54,480</td><td class="up">€ 213,710</td>
+          <td class="col-sep">3,204</td><td>2,376</td><td>1,854</td><td>1,348</td><td>898</td><td>449</td>
+        </tr>
+
+        <!-- WEEK 2 (partial) -->
+        <tr>
+          <td class="sticky-col">W11 · 10–12 Mar</td>
+          <td class="num col-sep">147,430</td><td class="num">5,663</td><td>18.5%</td><td>3.8%</td>
+          <td class="up col-sep">1,045</td><td>1,338</td><td>1,045</td><td>€ 104,500</td><td>€ 136,190</td><td>€ 100.0</td><td>€ 130.3</td>
+          <td class="col-sep">€ 904,370</td><td>10,896</td><td>6,282</td><td>€ 144.0</td><td>1,045</td><td>5,237</td>
+          <td class="col-sep">€ 391,510</td><td class="yellow">43.3%</td><td>4,574</td><td class="up">€ 512,860</td><td>€ 81.6</td><td>€ 104,500</td><td>€ 408,360</td>
+          <td class="purple col-sep">78.1%</td><td class="purple">74.3%</td><td class="up">89.0%</td><td class="up">86.8%</td>
+          <td class="col-sep">€ 40,796</td><td>€ 18,820</td><td>1,761</td>
+          <td class="col-sep">€ 18.6</td><td>€ 3,116,400</td><td>€ 2,891,560</td><td>€ 2,493,120</td><td>€ 2,313,248</td><td>€ 623,280</td><td>€ 578,312</td>
+          <td class="yellow col-sep">€ 224,840</td><td>€ 179,872</td><td>€ 44,968</td><td class="up">€ 178,110</td>
+          <td class="col-sep">2,686</td><td>1,993</td><td>1,557</td><td>1,130</td><td>754</td><td>377</td>
+        </tr>
+
+        <!-- DAILY ROWS (days of week 1) -->
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Mon 03 Mar</td>
+          <td class="col-sep">28,140</td><td>1,041</td><td>15.3%</td><td>3.7%</td>
+          <td class="col-sep">163</td><td>231</td><td>163</td><td>€ 16,300</td><td>€ 21,200</td><td>€ 100.0</td><td>€ 130.1</td>
+          <td class="col-sep">€ 154,900</td><td>1,887</td><td>1,080</td><td>€ 143.4</td><td>163</td><td>917</td>
+          <td class="col-sep">€ 64,540</td><td>41.7%</td><td>748</td><td>€ 90,360</td><td>€ 83.7</td><td>€ 16,300</td><td>€ 74,060</td>
+          <td class="col-sep">70.6%</td><td>68.8%</td><td>87.9%</td><td>85.1%</td>
+          <td class="col-sep">€ 6,956</td><td>€ 3,200</td><td>297</td>
+          <td class="col-sep">€ 18.2</td><td>€ 532,114</td><td>€ 493,200</td><td>€ 425,691</td><td>€ 394,560</td><td>€ 106,423</td><td>€ 98,640</td>
+          <td class="col-sep">€ 38,914</td><td>€ 31,131</td><td>€ 7,783</td><td>€ 30,530</td>
+          <td class="col-sep">457</td><td>339</td><td>265</td><td>192</td><td>128</td><td>64</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Tue 04 Mar</td>
+          <td class="col-sep">27,640</td><td>1,021</td><td>16.0%</td><td>3.7%</td>
+          <td class="col-sep">163</td><td>230</td><td>163</td><td>€ 16,300</td><td>€ 21,200</td><td>€ 100.0</td><td>€ 130.1</td>
+          <td class="col-sep">€ 152,300</td><td>1,854</td><td>1,061</td><td>€ 143.5</td><td>163</td><td>898</td>
+          <td class="col-sep">€ 63,440</td><td>41.7%</td><td>736</td><td>€ 88,860</td><td>€ 83.8</td><td>€ 16,300</td><td>€ 72,560</td>
+          <td class="col-sep">70.9%</td><td>69.1%</td><td>88.0%</td><td>85.2%</td>
+          <td class="col-sep">€ 6,853</td><td>€ 3,140</td><td>291</td>
+          <td class="col-sep">€ 18.3</td><td>€ 523,270</td><td>€ 484,680</td><td>€ 418,616</td><td>€ 387,744</td><td>€ 104,654</td><td>€ 96,936</td>
+          <td class="col-sep">€ 38,590</td><td>€ 30,872</td><td>€ 7,718</td><td>€ 30,190</td>
+          <td class="col-sep">449</td><td>333</td><td>260</td><td>189</td><td>126</td><td>63</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Wed 05 Mar</td>
+          <td class="col-sep">25,900</td><td>958</td><td>14.9%</td><td>3.7%</td>
+          <td class="col-sep">143</td><td>203</td><td>143</td><td>€ 14,300</td><td>€ 18,590</td><td>€ 100.0</td><td>€ 130.0</td>
+          <td class="col-sep">€ 143,600</td><td>1,748</td><td>1,000</td><td>€ 143.6</td><td>143</td><td>857</td>
+          <td class="col-sep">€ 59,820</td><td>41.7%</td><td>694</td><td>€ 83,780</td><td>€ 83.8</td><td>€ 14,300</td><td>€ 69,480</td>
+          <td class="col-sep">70.4%</td><td>68.5%</td><td>87.8%</td><td>85.0%</td>
+          <td class="col-sep">€ 6,462</td><td>€ 2,970</td><td>275</td>
+          <td class="col-sep">€ 18.1</td><td>€ 493,382</td><td>€ 456,960</td><td>€ 394,706</td><td>€ 365,568</td><td>€ 98,676</td><td>€ 91,392</td>
+          <td class="col-sep">€ 36,422</td><td>€ 29,138</td><td>€ 7,284</td><td>€ 28,470</td>
+          <td class="col-sep">423</td><td>314</td><td>245</td><td>178</td><td>119</td><td>59</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Thu 06 Mar</td>
+          <td class="col-sep">27,840</td><td>1,031</td><td>16.3%</td><td>3.7%</td>
+          <td class="col-sep">168</td><td>236</td><td>168</td><td>€ 16,800</td><td>€ 21,800</td><td>€ 100.0</td><td>€ 129.8</td>
+          <td class="col-sep">€ 156,700</td><td>1,908</td><td>1,094</td><td>€ 143.2</td><td>168</td><td>926</td>
+          <td class="col-sep">€ 65,280</td><td>41.7%</td><td>758</td><td>€ 91,420</td><td>€ 83.6</td><td>€ 16,800</td><td>€ 74,620</td>
+          <td class="col-sep">71.2%</td><td>69.4%</td><td>88.2%</td><td>85.4%</td>
+          <td class="col-sep">€ 7,052</td><td>€ 3,240</td><td>300</td>
+          <td class="col-sep">€ 18.2</td><td>€ 538,814</td><td>€ 499,200</td><td>€ 431,051</td><td>€ 399,360</td><td>€ 107,763</td><td>€ 99,840</td>
+          <td class="col-sep">€ 39,614</td><td>€ 31,691</td><td>€ 7,923</td><td>€ 31,120</td>
+          <td class="col-sep">463</td><td>344</td><td>268</td><td>195</td><td>130</td><td>65</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Fri 07 Mar</td>
+          <td class="col-sep">33,920</td><td>1,256</td><td>16.2%</td><td>3.7%</td>
+          <td class="up col-sep">204</td><td>292</td><td>204</td><td>€ 20,400</td><td>€ 26,500</td><td>€ 100.0</td><td>€ 129.9</td>
+          <td class="col-sep">€ 191,200</td><td>2,329</td><td>1,335</td><td>€ 143.2</td><td>204</td><td>1,131</td>
+          <td class="col-sep">€ 79,640</td><td>41.6%</td><td>924</td><td>€ 111,560</td><td>€ 83.6</td><td>€ 20,400</td><td>€ 91,160</td>
+          <td class="col-sep">69.9%</td><td>68.0%</td><td>87.8%</td><td>85.0%</td>
+          <td class="col-sep">€ 8,604</td><td>€ 3,960</td><td>366</td>
+          <td class="col-sep">€ 18.2</td><td>€ 657,414</td><td>€ 609,200</td><td>€ 525,931</td><td>€ 487,360</td><td>€ 131,483</td><td>€ 121,840</td>
+          <td class="col-sep">€ 48,214</td><td>€ 38,571</td><td>€ 9,643</td><td>€ 37,900</td>
+          <td class="col-sep">564</td><td>419</td><td>327</td><td>237</td><td>158</td><td>79</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Sat 08 Mar</td>
+          <td class="col-sep">28,970</td><td>1,072</td><td>14.8%</td><td>3.7%</td>
+          <td class="col-sep">149</td><td>212</td><td>149</td><td>€ 14,900</td><td>€ 19,400</td><td>€ 100.0</td><td>€ 130.2</td>
+          <td class="col-sep">€ 163,400</td><td>1,990</td><td>1,139</td><td>€ 143.5</td><td>149</td><td>990</td>
+          <td class="col-sep">€ 68,060</td><td>41.6%</td><td>790</td><td>€ 95,340</td><td>€ 83.7</td><td>€ 14,900</td><td>€ 80,440</td>
+          <td class="col-sep">70.3%</td><td>68.4%</td><td>87.8%</td><td>85.1%</td>
+          <td class="col-sep">€ 7,353</td><td>€ 3,380</td><td>313</td>
+          <td class="col-sep">€ 18.3</td><td>€ 561,762</td><td>€ 520,200</td><td>€ 449,410</td><td>€ 416,160</td><td>€ 112,352</td><td>€ 104,040</td>
+          <td class="col-sep">€ 41,562</td><td>€ 33,250</td><td>€ 8,312</td><td>€ 32,700</td>
+          <td class="col-sep">483</td><td>358</td><td>280</td><td>203</td><td>135</td><td>68</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Sun 09 Mar</td>
+          <td class="col-sep">17,000</td><td>862</td><td>13.5%</td><td>5.1%</td>
+          <td class="col-sep">148</td><td>216</td><td>148</td><td>€ 14,800</td><td>€ 19,310</td><td>€ 100.0</td><td>€ 130.5</td>
+          <td class="col-sep">€ 122,100</td><td>1,495</td><td>851</td><td>€ 143.5</td><td>148</td><td>703</td>
+          <td class="col-sep">€ 50,920</td><td>41.7%</td><td>590</td><td>€ 71,180</td><td>€ 83.6</td><td>€ 14,800</td><td>€ 56,380</td>
+          <td class="col-sep">68.5%</td><td>66.7%</td><td>87.7%</td><td>84.9%</td>
+          <td class="col-sep">€ 5,510</td><td>€ 2,510</td><td>238</td>
+          <td class="col-sep">€ 18.1</td><td>€ 419,444</td><td>€ 389,040</td><td>€ 335,555</td><td>€ 311,232</td><td>€ 83,889</td><td>€ 77,808</td>
+          <td class="col-sep">€ 30,404</td><td>€ 24,323</td><td>€ 6,081</td><td>€ 23,800</td>
+          <td class="col-sep">365</td><td>271</td><td>211</td><td>154</td><td>102</td><td>51</td>
+        </tr>
+
+        <!-- Partial W11 -->
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Mon 10 Mar</td>
+          <td class="col-sep">49,310</td><td>1,889</td><td>18.2%</td><td>3.8%</td>
+          <td class="up col-sep">344</td><td>440</td><td>344</td><td>€ 34,400</td><td>€ 44,800</td><td>€ 100.0</td><td>€ 130.2</td>
+          <td class="col-sep">€ 301,460</td><td>3,632</td><td>2,094</td><td>€ 143.9</td><td>344</td><td>1,750</td>
+          <td class="col-sep">€ 130,440</td><td>43.3%</td><td>1,524</td><td>€ 171,020</td><td>€ 81.7</td><td>€ 34,400</td><td>€ 136,620</td>
+          <td class="purple col-sep">78.2%</td><td>74.5%</td><td>89.2%</td><td>86.9%</td>
+          <td class="col-sep">€ 13,566</td><td>€ 6,260</td><td>587</td>
+          <td class="col-sep">€ 18.5</td><td>€ 1,038,800</td><td>€ 963,520</td><td>€ 831,040</td><td>€ 770,816</td><td>€ 207,760</td><td>€ 192,704</td>
+          <td class="col-sep">€ 75,280</td><td>€ 60,224</td><td>€ 15,056</td><td>€ 59,370</td>
+          <td class="col-sep">895</td><td>664</td><td>519</td><td>376</td><td>251</td><td>126</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Tue 11 Mar</td>
+          <td class="col-sep">49,280</td><td>1,886</td><td>18.7%</td><td>3.8%</td>
+          <td class="up col-sep">352</td><td>449</td><td>352</td><td>€ 35,200</td><td>€ 45,840</td><td>€ 100.0</td><td>€ 130.2</td>
+          <td class="col-sep">€ 302,940</td><td>3,650</td><td>2,105</td><td>€ 143.9</td><td>352</td><td>1,753</td>
+          <td class="col-sep">€ 130,960</td><td>43.2%</td><td>1,528</td><td>€ 171,980</td><td>€ 81.7</td><td>€ 35,200</td><td>€ 136,780</td>
+          <td class="purple col-sep">78.4%</td><td>74.6%</td><td>89.1%</td><td>86.8%</td>
+          <td class="col-sep">€ 13,631</td><td>€ 6,289</td><td>589</td>
+          <td class="col-sep">€ 18.6</td><td>€ 1,040,880</td><td>€ 965,520</td><td>€ 832,704</td><td>€ 772,416</td><td>€ 208,176</td><td>€ 193,104</td>
+          <td class="col-sep">€ 75,360</td><td>€ 60,288</td><td>€ 15,072</td><td>€ 59,420</td>
+          <td class="col-sep">897</td><td>666</td><td>520</td><td>377</td><td>252</td><td>126</td>
+        </tr>
+        <tr style="opacity:.7">
+          <td class="sticky-col" style="padding-left:22px;color:var(--muted)">Wed 12 Mar</td>
+          <td class="col-sep">48,840</td><td>1,888</td><td>18.5%</td><td>3.9%</td>
+          <td class="up col-sep">349</td><td>449</td><td>349</td><td>€ 34,900</td><td>€ 45,550</td><td>€ 100.0</td><td>€ 130.5</td>
+          <td class="col-sep">€ 299,970</td><td>3,614</td><td>2,083</td><td>€ 144.0</td><td>349</td><td>1,734</td>
+          <td class="col-sep">€ 130,110</td><td>43.4%</td><td>1,522</td><td>€ 169,860</td><td>€ 81.5</td><td>€ 34,900</td><td>€ 134,960</td>
+          <td class="purple col-sep">77.7%</td><td class="purple">74.0%</td><td class="up">88.7%</td><td class="up">86.6%</td>
+          <td class="col-sep">€ 13,599</td><td>€ 6,271</td><td>585</td>
+          <td class="col-sep">€ 18.6</td><td>€ 1,036,720</td><td>€ 962,520</td><td>€ 829,376</td><td>€ 770,016</td><td>€ 207,344</td><td>€ 192,504</td>
+          <td class="col-sep">€ 74,200</td><td>€ 59,360</td><td>€ 14,840</td><td>€ 59,320</td>
+          <td class="col-sep">894</td><td>663</td><td>518</td><td>377</td><td>251</td><td>125</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TABLE FOOTER -->
+  <div class="table-footer">
+    <span class="footer-stat"><span>12</span> rows · 2 weeks</span>
+    <span class="footer-stat">Columns: <span>49 / 49</span> visible</span>
+    <span class="footer-stat">Currency: <span>EUR</span></span>
+    <span class="footer-stat">Last updated: <span>12 Mar 2026, 14:47</span></span>
+    <div style="flex:1"></div>
+    <div class="btn" style="font-family:var(--mono);font-size:10px">← Prev week</div>
+    <div class="btn primary" style="font-family:var(--mono);font-size:10px">Next week →</div>
+  </div>
+
+</main>
+
+</body>
+</html>

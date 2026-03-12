@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>DataJarvis — Design System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;--border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;--accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;--mono:"DM Mono",monospace;--sans:"Syne",sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "nav2 nav2";}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 15%,rgba(61,127,255,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
+.topbar{grid-area:nav;position:sticky;top:0;z-index:100;background:rgba(10,11,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0 32px;height:52px;}
+.topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);margin-right:24px;}
+.tl-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.tl-name{font-weight:900;font-size:15px;letter-spacing:-.03em;}
+.tl-name span{color:var(--accent2);}
+.topbar-sep{width:1px;height:18px;background:var(--border);margin-right:24px;}
+.topbar-crumb{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.topbar-crumb a{color:var(--muted2);text-decoration:none;transition:.15s;}
+.topbar-crumb a:hover{color:var(--accent2);}
+.topbar-crumb .sep{color:var(--border2);}
+.topbar-crumb .cur{color:var(--text);}
+
+/* TOC SIDEBAR */
+.toc{grid-area:toc;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;border-right:1px solid var(--border);padding:32px 0;z-index:10;}
+.toc::-webkit-scrollbar{width:4px;}
+.toc::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.toc-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 24px 12px;}
+.toc-link{display:block;padding:7px 24px;font-family:var(--mono);font-size:11px;color:var(--muted2);text-decoration:none;transition:.15s;border-left:2px solid transparent;}
+.toc-link:hover{color:var(--text);background:var(--surface);}
+.toc-link.active{color:var(--accent2);border-color:var(--accent2);background:rgba(61,127,255,.06);}
+.toc-sep{height:1px;background:var(--border);margin:16px 24px;}
+
+/* MAIN CONTENT */
+.doc-main{grid-area:main;padding:48px 60px 80px;position:relative;z-index:10;max-width:900px;}
+.doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.doc-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.doc-label::before{content:"";width:20px;height:1px;background:var(--accent2);}
+.doc-header h1{font-size:36px;font-weight:900;letter-spacing:-.04em;margin-bottom:12px;}
+.doc-header p{font-family:var(--mono);font-size:12px;color:var(--muted2);font-weight:300;line-height:1.65;max-width:540px;}
+.doc-meta-row{display:flex;gap:16px;margin-top:20px;}
+.meta-pill{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border2);color:var(--muted2);}
+.meta-pill.green{color:var(--green);border-color:rgba(34,208,122,.3);background:rgba(34,208,122,.06);}
+
+/* CONTENT BLOCKS */
+.doc-section{margin-bottom:48px;}
+.doc-section h2{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.doc-section h2::before{content:"";width:4px;height:20px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+.doc-section h3{font-size:14px;font-weight:700;margin-bottom:10px;margin-top:24px;color:var(--muted2);}
+.doc-section p{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:12px;}
+.doc-section ul,.doc-section ol{padding-left:20px;}
+.doc-section li{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:6px;}
+.doc-section strong{color:var(--text);font-weight:500;}
+
+/* TABLE */
+.doc-table{width:100%;border-collapse:collapse;margin:16px 0;}
+.doc-table th{background:var(--surface2);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border2);}
+.doc-table td{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);}
+.doc-table tr:hover td{background:var(--surface);color:var(--text);}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0;border-left:3px solid var(--accent);background:rgba(61,127,255,.06);}
+.callout.warning{border-color:var(--yellow);background:rgba(245,183,49,.06);}
+.callout.danger{border-color:var(--red);background:rgba(255,77,106,.06);}
+.callout.success{border-color:var(--green);background:rgba(34,208,122,.06);}
+.callout-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:500;}
+.callout.warning .callout-title{color:var(--yellow);}
+.callout.danger .callout-title{color:var(--red);}
+.callout.success .callout-title{color:var(--green);}
+.callout p{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;font-weight:300;margin:0;}
+
+/* CODE */
+.code-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;overflow-x:auto;margin:12px 0;}
+
+/* BADGE */
+.badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;display:inline-block;}
+.badge-red{background:rgba(255,77,106,.15);color:var(--red);}
+.badge-green{background:rgba(34,208,122,.15);color:var(--green);}
+.badge-yellow{background:rgba(245,183,49,.15);color:var(--yellow);}
+.badge-blue{background:rgba(61,127,255,.15);color:var(--accent2);}
+
+footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10;position:relative;}
+.f-left{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.f-links{display:flex;gap:20px;}
+.f-links a{font-family:var(--mono);font-size:10px;color:var(--muted);text-decoration:none;transition:.15s;}
+.f-links a:hover{color:var(--accent2);}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a class="topbar-logo" href="../index.html"><div class="tl-mark">⚡</div><div class="tl-name">Data<span>Jarvis</span></div></a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Design System</span></div>
+</div>
+<nav class="toc">
+<div class="toc-title">On This Page</div>
+<a class="toc-link active" href="#colors">Colors</a>
+<a class="toc-link" href="#typography">Typography</a>
+<a class="toc-link" href="#layout">Layout</a>
+<a class="toc-link" href="#kpi">KPI Cards</a>
+<a class="toc-link" href="#tables">Tables</a>
+</nav>
+<main class="doc-main">
+<div class="doc-header">
+  <div class="doc-label">05 — Design System</div>
+  <h1>DataJarvis UI Design System</h1>
+  <p>Полная документация дизайн-системы: CSS-переменные, типографика, компоненты. Единый источник правды для всех разработчиков и дизайнеров.</p>
+  <div class="doc-meta-row">
+    <span class="meta-pill green">Dark Theme Only</span>
+    <span class="meta-pill">v1.0</span>
+  </div>
+</div>
+
+<div class="doc-section" id="colors">
+  <h2>Color Palette</h2>
+  <p>Все цвета определены как CSS-переменные в <code style="font-family:var(--mono);background:var(--surface2);padding:2px 6px;border-radius:4px;">:root</code>. Никаких захардкоженных hex-значений в компонентах.</p>
+  <table class="doc-table">
+    <thead><tr><th>Переменная</th><th>Hex</th><th>Назначение</th></tr></thead>
+    <tbody>
+      <tr><td><code style="font-family:var(--mono)">--bg</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#0a0b0d</span></td><td>Фон страницы</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--surface</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#111318</span></td><td>Sidebar, карточки</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--surface2</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#181c22</span></td><td>Hover состояния</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--surface3</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#1e2330</span></td><td>Вложенные блоки</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--border</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#1f2530</span></td><td>Основные границы</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--text</code></td><td><span style="font-family:var(--mono);color:var(--muted)">#e8eaf0</span></td><td>Основной текст</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--accent</code></td><td><span style="font-family:var(--mono);color:var(--accent)">#3d7fff</span></td><td>Primary accent, ссылки</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--green</code></td><td><span style="font-family:var(--mono);color:var(--green)">#22d07a</span></td><td>Успех, IN, рост</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--red</code></td><td><span style="font-family:var(--mono);color:var(--red)">#ff4d6a</span></td><td>Ошибка, OUT, падение</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--yellow</code></td><td><span style="font-family:var(--mono);color:var(--yellow)">#f5b731</span></td><td>Предупреждение, Costs</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--purple</code></td><td><span style="font-family:var(--mono);color:var(--purple)">#9b7dff</span></td><td>P&L, аффилиаты</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--teal</code></td><td><span style="font-family:var(--mono);color:var(--teal)">#00c9b1</span></td><td>Net, нейтральный</td></tr>
+      <tr><td><code style="font-family:var(--mono)">--orange</code></td><td><span style="font-family:var(--mono);color:var(--orange)">#ff8c42</span></td><td>eCPA, CPA метрики</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="doc-section" id="typography">
+  <h2>Typography</h2>
+  <table class="doc-table">
+    <thead><tr><th>Шрифт</th><th>CSS var</th><th>Применение</th></tr></thead>
+    <tbody>
+      <tr><td>Syne (Google Fonts)</td><td><code style="font-family:var(--mono)">--sans</code></td><td>Заголовки, навигация, лейблы</td></tr>
+      <tr><td>DM Mono (Google Fonts)</td><td><code style="font-family:var(--mono)">--mono</code></td><td>Числа, данные в таблицах, метки, код</td></tr>
+    </tbody>
+  </table>
+  <p>Правило: <strong>все числовые данные</strong> всегда отображаются в DM Mono для равноширинного выравнивания колонок.</p>
+</div>
+
+<div class="doc-section" id="layout">
+  <h2>Layout Structure</h2>
+  <div class="code-block">body (display: flex)
+  ├── .sidebar (220px fixed)
+  │     ├── .logo
+  │     ├── .nav (.nav-section + .nav-item)
+  │     └── .sidebar-bottom (.user-pill)
+  └── .main (flex: 1, flex-direction: column)
+        ├── .topbar (height: 52px, sticky)
+        ├── .section-tabs
+        ├── .filter-bar
+        ├── .groupby-row
+        ├── .kpi-wrap (.kpi-card ×N)
+        └── .table-section (.table-wrap > table)</div>
+</div>
+
+<div class="doc-section" id="kpi">
+  <h2>KPI Cards</h2>
+  <p>Стандартная KPI-карточка содержит:</p>
+  <ul>
+    <li><strong>.kc-label</strong> — название метрики (DM Mono, 10px, uppercase)</li>
+    <li><strong>.kc-val</strong> — основное значение (Syne, 22–28px, bold)</li>
+    <li><strong>.kc-delta</strong> — изменение vs предыдущий период (зелёный/красный)</li>
+    <li><strong>.mini-bars</strong> — спарклайн последних 7 значений (опционально)</li>
+  </ul>
+  <p>Цветная полоска сверху карточки определяется через <code style="font-family:var(--mono)">style="--card-color: var(--green)"</code></p>
+</div>
+
+<div class="doc-section" id="tables">
+  <h2>Table Conventions</h2>
+  <ul>
+    <li><strong>Sticky первая колонка</strong> — всегда зафиксирована при горизонтальном скролле</li>
+    <li><strong>th-group</strong> — цветные группы заголовков (Traffic, FTD, Deposits и т.д.)</li>
+    <li><strong>col-sep</strong> — вертикальный разделитель между группами</li>
+    <li><strong>Числа</strong> — всегда в DM Mono, выровнены по правому краю</li>
+    <li><strong>NULL → "—"</strong> — тире, никогда не пустая ячейка</li>
+    <li><strong>Hover строки</strong> — подсветка row + показ tooltip с деталями</li>
+  </ul>
+</div>
+</main>
+<footer>
+  <div class="f-left">DataJarvis · Design System · v2.3 · March 2026</div>
+  <div class="f-links"><a href="../index.html">← Hub</a><a href="index.html">Docs Home</a></div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>DataJarvis — Architecture Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;--border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;--accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;--mono:"DM Mono",monospace;--sans:"Syne",sans-serif;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "foot foot";}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 15%,rgba(61,127,255,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
+.topbar{grid-area:nav;position:sticky;top:0;z-index:100;background:rgba(10,11,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;height:52px;gap:0;}
+.topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);margin-right:24px;}
+.tl-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.tl-name{font-weight:900;font-size:15px;letter-spacing:-.03em;} .tl-name span{color:var(--accent2);}
+.topbar-sep{width:1px;height:18px;background:var(--border);margin-right:24px;}
+.topbar-crumb{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+.topbar-crumb a{color:var(--muted2);text-decoration:none;transition:.15s;} .topbar-crumb a:hover{color:var(--accent2);}
+.topbar-crumb .cur{color:var(--text);}
+.toc{grid-area:toc;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;border-right:1px solid var(--border);padding:28px 0;z-index:10;}
+.toc::-webkit-scrollbar{width:4px;} .toc::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.toc-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 24px 10px;}
+.toc-link{display:block;padding:6px 24px;font-family:var(--mono);font-size:11px;color:var(--muted2);text-decoration:none;transition:.15s;border-left:2px solid transparent;}
+.toc-link:hover{color:var(--text);background:var(--surface);}
+.toc-link.active{color:var(--accent2);border-color:var(--accent2);background:rgba(61,127,255,.06);}
+.toc-sep{height:1px;background:var(--border);margin:12px 24px;}
+.toc-group{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:12px 24px 4px;}
+.doc-main{grid-area:main;padding:48px 60px 80px;position:relative;z-index:10;max-width:900px;}
+.doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
+.doc-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.doc-label::before{content:"";width:20px;height:1px;background:var(--accent2);}
+.doc-header h1{font-size:36px;font-weight:900;letter-spacing:-.04em;margin-bottom:12px;}
+.doc-header p{font-family:var(--mono);font-size:12px;color:var(--muted2);font-weight:300;line-height:1.65;max-width:540px;}
+.doc-meta-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;}
+.meta-pill{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border2);color:var(--muted2);}
+.meta-pill.green{color:var(--green);border-color:rgba(34,208,122,.3);background:rgba(34,208,122,.06);}
+.meta-pill.yellow{color:var(--yellow);border-color:rgba(245,183,49,.3);background:rgba(245,183,49,.06);}
+.doc-section{margin-bottom:48px;}
+.doc-section h2{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;scroll-margin-top:72px;}
+.doc-section h2::before{content:"";width:4px;height:20px;background:var(--accent);border-radius:2px;flex-shrink:0;}
+.doc-section h3{font-size:13px;font-weight:700;margin-bottom:10px;margin-top:24px;color:var(--muted2);letter-spacing:.02em;}
+.doc-section p{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:12px;}
+.doc-section ul,.doc-section ol{padding-left:20px;}
+.doc-section li{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:6px;}
+.doc-section strong{color:var(--text);font-weight:500;}
+.doc-table{width:100%;border-collapse:collapse;margin:16px 0;}
+.doc-table th{background:var(--surface2);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border2);}
+.doc-table td{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);}
+.doc-table tr:hover td{background:var(--surface);color:var(--text);}
+.callout{border-radius:8px;padding:16px 20px;margin:16px 0;border-left:3px solid var(--accent);background:rgba(61,127,255,.06);}
+.callout.warning{border-color:var(--yellow);background:rgba(245,183,49,.06);}
+.callout.danger{border-color:var(--red);background:rgba(255,77,106,.06);}
+.callout.success{border-color:var(--green);background:rgba(34,208,122,.06);}
+.callout-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:500;color:var(--accent);}
+.callout.warning .callout-title{color:var(--yellow);} .callout.danger .callout-title{color:var(--red);} .callout.success .callout-title{color:var(--green);}
+.callout p{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;font-weight:300;margin:0;}
+.code-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.7;overflow-x:auto;margin:12px 0;white-space:pre;}
+.badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;display:inline-block;}
+.badge-red{background:rgba(255,77,106,.15);color:var(--red);}
+.badge-green{background:rgba(34,208,122,.15);color:var(--green);}
+.badge-yellow{background:rgba(245,183,49,.15);color:var(--yellow);}
+.badge-blue{background:rgba(61,127,255,.15);color:var(--accent2);}
+.pipeline{display:flex;align-items:center;gap:0;margin:20px 0;flex-wrap:wrap;}
+.pipe-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-family:var(--mono);font-size:11px;color:var(--text);text-align:center;min-width:120px;}
+.pipe-arrow{font-size:16px;color:var(--accent);padding:0 8px;font-family:var(--mono);}
+footer{grid-area:foot;border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10;position:relative;}
+.f-left{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.f-links{display:flex;gap:20px;} .f-links a{font-family:var(--mono);font-size:10px;color:var(--muted);text-decoration:none;transition:.15s;} .f-links a:hover{color:var(--accent2);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="topbar-logo" href="../index.html"><div class="tl-mark">⚡</div><div class="tl-name">Data<span>Jarvis</span></div></a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-crumb"><a href="index.html">Docs</a><span style="color:var(--border2)">/</span><span class="cur">Architecture Brief</span></div>
+</div>
+
+<nav class="toc">
+  <div class="toc-title">Contents</div>
+  <div class="toc-group">Part 1</div>
+  <a class="toc-link active" href="#pipeline">Data Pipeline</a>
+  <a class="toc-link" href="#datamodel">Data Model</a>
+  <a class="toc-link" href="#rls">Multi-tenancy & RLS</a>
+  <a class="toc-link" href="#timezones">Timezones</a>
+  <a class="toc-link" href="#currency">Currency</a>
+  <a class="toc-link" href="#caching">Caching TTL</a>
+  <a class="toc-link" href="#etl">Incremental ETL</a>
+  <a class="toc-link" href="#audit">Audit Trail</a>
+  <a class="toc-link" href="#urlstate">URL State</a>
+  <a class="toc-link" href="#infra">Infrastructure</a>
+  <div class="toc-sep"></div>
+  <div class="toc-group">Part 2</div>
+  <a class="toc-link" href="#api">API Contract</a>
+  <a class="toc-link" href="#db-schema">DB Schema</a>
+  <a class="toc-link" href="#idempotency">Idempotency</a>
+  <a class="toc-link" href="#freshness">Data Freshness</a>
+  <a class="toc-link" href="#errors">Error States</a>
+  <a class="toc-link" href="#formatting">Number Format</a>
+  <a class="toc-link" href="#alerts">Alerts</a>
+  <a class="toc-link" href="#retention">Data Retention</a>
+  <a class="toc-link" href="#flags">Feature Flags</a>
+  <a class="toc-link" href="#quality">Data Quality</a>
+  <a class="toc-link" href="#mvp">MVP Definition</a>
+  <a class="toc-link" href="#load">Load Expectations</a>
+  <div class="toc-sep"></div>
+  <a class="toc-link" href="#blockers">Open Questions</a>
+</nav>
+
+<main class="doc-main">
+
+<div class="doc-header">
+  <div class="doc-label">03 — Architecture</div>
+  <h1>Engineering Brief</h1>
+  <p>Критические технические решения для dev-команды. Читать до написания первой строки кода. Содержит Part 1 + Part 2.</p>
+  <div class="doc-meta-row">
+    <span class="meta-pill green">v1.0 Part 1+2</span>
+    <span class="meta-pill yellow">⚠ Read Before Coding</span>
+    <span class="meta-pill">March 2026</span>
+  </div>
+</div>
+
+<!-- ══════════════════ PART 1 ══════════════════ -->
+
+<div class="doc-section" id="pipeline">
+  <h2>1 · Data Pipeline Architecture</h2>
+  <p>Рекомендуемая архитектура потока данных. Все агрегации считаются в Analytical Store — <strong>не на лету в API</strong>.</p>
+
+  <div class="pipeline">
+    <div class="pipe-step">📦<br>Ops DB<br><span style="color:var(--muted);font-size:9px">Source of Truth</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">⚙️<br>ETL / ELT<br><span style="color:var(--muted);font-size:9px">Transform</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">🗄️<br>Analytical Store<br><span style="color:var(--muted);font-size:9px">Pre-aggregated</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">🔌<br>DataJarvis API<br><span style="color:var(--muted);font-size:9px">REST v1</span></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">🖥️<br>Frontend<br><span style="color:var(--muted);font-size:9px">Reports UI</span></div>
+  </div>
+
+  <div class="callout warning">
+    <div class="callout-title">⚠ Critical Decision</div>
+    <p>API никогда не делает агрегации в реальном времени по сырым данным. Только по pre-computed таблицам. Иначе лимит &lt;3 сек недостижим.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="datamodel">
+  <h2>2 · Data Model — Критические Определения</h2>
+
+  <table class="doc-table">
+    <thead><tr><th>Концепция</th><th>Решение</th><th>Примечание</th></tr></thead>
+    <tbody>
+      <tr><td><strong>FTD</strong></td><td>Первый успешный settled депозит <strong>per-brand</strong></td><td>При chargeback статус FTD не пересчитывается</td></tr>
+      <tr><td><strong>Active Player</strong></td><td>≥1 успешный депозит в периоде</td><td>Для когортного анализа retention</td></tr>
+      <tr><td><strong>Global Player ID</strong></td><td>Нужен GID помимо Brand Player ID</td><td>Один игрок = несколько брендов</td></tr>
+      <tr><td><strong>NULL vs 0</strong></td><td>NULL = нет данных; 0 = данные есть, результат нулевой</td><td>В UI: NULL → «—», 0 → «0»</td></tr>
+      <tr><td><strong>Soft Delete</strong></td><td>Поле <code style="font-family:var(--mono)">deleted_at</code> — данные не удаляются</td><td>В UI: затемнение + badge «Inactive»</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="doc-section" id="rls">
+  <h2>3 · Multi-tenancy & Row-Level Security</h2>
+  <p>Фильтрация доступа происходит <strong>на уровне SQL-запроса</strong>, не в коде API-слоя.</p>
+  <table class="doc-table">
+    <thead><tr><th>Роль</th><th>Brand</th><th>GEO</th><th>Affiliate</th><th>Финансы</th></tr></thead>
+    <tbody>
+      <tr><td>Super Admin</td><td>Все</td><td>Все</td><td>Все</td><td>Все</td></tr>
+      <tr><td>Admin</td><td>Назначенные</td><td>Все</td><td>Все</td><td>Все</td></tr>
+      <tr><td>Team Lead</td><td>Назначенные</td><td>Назначенные</td><td>Своей команды</td><td>Все</td></tr>
+      <tr><td>Manager</td><td>Назначенные</td><td>Назначенные</td><td>Свои</td><td>Без P&L</td></tr>
+      <tr><td>Analyst</td><td>Назначенные</td><td>Назначенные</td><td>Все</td><td>Без Costs</td></tr>
+      <tr><td>View Only</td><td>Назначенные</td><td>Назначенные</td><td>Нет</td><td>Только KPI</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <div class="callout-title">🚫 Запрещено</div>
+    <p>Никогда не фильтровать данные после получения из БД. Если данные попали в API-ответ — они уже доступны через curl/Postman. RLS = WHERE clause в SQL.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="timezones">
+  <h2>4 · Timezone Strategy</h2>
+  <ul>
+    <li>Все timestamps в БД хранятся в <strong>UTC</strong></li>
+    <li>Каждый бренд имеет поле <code style="font-family:var(--mono)">reporting_timezone</code></li>
+    <li>Группировки применяют <code style="font-family:var(--mono)">AT TIME ZONE brand.reporting_timezone</code></li>
+    <li>Неделя начинается в <strong>Понедельник</strong> (ISO 8601)</li>
+    <li>UI отображает время в UTC + tooltip с local timezone</li>
+  </ul>
+</div>
+
+<div class="doc-section" id="currency">
+  <h2>5 · Currency Conversion</h2>
+  <p><strong>Rate lock в момент транзакции.</strong> Не пересчитывать исторические данные при изменении курса.</p>
+  <p>Обязательные поля для каждой транзакции:</p>
+  <div class="code-block">original_amount    DECIMAL(18,4)
+original_currency  VARCHAR(3)         -- ISO 4217
+eur_amount         DECIMAL(18,4)
+eur_rate           DECIMAL(18,6)
+rate_date          DATE</div>
+</div>
+
+<div class="doc-section" id="caching">
+  <h2>6 · Caching Strategy (TTL)</h2>
+  <table class="doc-table">
+    <thead><tr><th>Тип данных</th><th>TTL</th><th>Механизм</th></tr></thead>
+    <tbody>
+      <tr><td>Когортные данные (pre-computed)</td><td>24 часа</td><td>Background job</td></tr>
+      <tr><td>Завершённые дни</td><td>1 час</td><td>Redis / materialized view</td></tr>
+      <tr><td>Today's data (real-time)</td><td>1–5 мин</td><td>Redis cache</td></tr>
+      <tr><td>KPI Strip (topbar метрики)</td><td>5 мин</td><td>Materialized view</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="doc-section" id="etl">
+  <h2>7 · Incremental ETL & Late Data</h2>
+  <ul>
+    <li><strong>Today's data</strong> — инкрементальные обновления каждые 1–5 мин</li>
+    <li><strong>Завершённые периоды</strong> — полный пересчёт ночным job (не инкрементально)</li>
+    <li><strong>Late-arriving data</strong> — cashouts, affiliate batch, бонусные корректировки: обрабатываются отдельным reconciliation job</li>
+  </ul>
+</div>
+
+<div class="doc-section" id="audit">
+  <h2>8 · Audit Trail</h2>
+  <p>Write-only лог. Нельзя изменить или удалить запись. Retention: 5 лет.</p>
+  <p>Что логировать: просмотр отчётов · экспорт · изменение фильтров · вход в систему · изменение прав · доступ к финансовым данным</p>
+</div>
+
+<div class="doc-section" id="urlstate">
+  <h2>9 · URL State Management</h2>
+  <ul>
+    <li>Все фильтры, группировки, drill-down уровни сериализуются в <strong>query params</strong></li>
+    <li><code style="font-family:var(--mono)">history.pushState()</code> без перезагрузки страницы</li>
+    <li>Читаемый формат — не base64 blob</li>
+    <li>При шаринге ссылки автоматически применяются ограничения прав получателя</li>
+  </ul>
+  <div class="callout">
+    <div class="callout-title">Example URL</div>
+    <p>/reports/affiliate?brand=brandx&period=2026-03&group=media_item&geo=DE,AT&sort=ngr_desc</p>
+  </div>
+</div>
+
+<div class="doc-section" id="infra">
+  <h2>10 · Infrastructure</h2>
+  <table class="doc-table">
+    <thead><tr><th>Окружение</th><th>Данные</th><th>Назначение</th></tr></thead>
+    <tbody>
+      <tr><td>Production</td><td>Реальные данные</td><td>Живой продукт</td></tr>
+      <tr><td>Staging</td><td>Анонимизированные (PII masked)</td><td>QA, тестирование</td></tr>
+      <tr><td>Dev</td><td>Синтетические / fixture</td><td>Разработка</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Мониторинг:</strong> P50 / P95 / P99 latency по каждому endpoint + alert при деградации.</p>
+  <p><strong>Backup:</strong> Daily snapshot, 30 дней хранения.</p>
+</div>
+
+<!-- ══════════════════ PART 2 ══════════════════ -->
+
+<div class="doc-section" id="api">
+  <h2>11 · API Design Contract</h2>
+  <p><strong>Стиль:</strong> REST, ориентированный на вычисления (не CRUD). Каждый endpoint = один отчёт.</p>
+  <p><strong>URL versioning:</strong> <code style="font-family:var(--mono)">/api/v1/...</code> с первого дня. Breaking changes → <code style="font-family:var(--mono)">/api/v2/</code>. Старый endpoint живёт минимум 3 месяца с header <code style="font-family:var(--mono)">Sunset: &lt;date&gt;</code>.</p>
+  <h3>Response Envelope — единый формат</h3>
+  <div class="code-block">// SUCCESS
+{
+  "data": { ... },
+  "meta": {
+    "generated_at":   "2026-03-12T14:30:00Z",
+    "data_freshness": "2026-03-12T14:28:55Z",
+    "cache_hit":      true,
+    "request_id":     "req_abc123"
+  },
+  "pagination": {
+    "cursor":   "eyJpZCI6MTIzfQ==",
+    "has_more": true,
+    "total":    6957
+  }
+}
+
+// ERROR
+{
+  "error": {
+    "code":       "FILTER_INVALID",
+    "message":    "Brand 'test' not found or access denied",
+    "request_id": "req_abc123"
+  }
+}</div>
+  <div class="callout warning">
+    <div class="callout-title">⚠ Pagination</div>
+    <p>Только cursor-based pagination (<code style="font-family:var(--mono)">after_cursor</code>). Offset-based ломается при real-time данных. Максимум 500 строк на страницу. Больше → async export.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="db-schema">
+  <h2>12 · DB Schema — Partitioning & Indexes</h2>
+  <p>Решение, которое нельзя изменить без миграции после запуска:</p>
+  <h3>Партиционирование</h3>
+  <p>Рекомендация: <code style="font-family:var(--mono)">PARTITION BY (brand_id, created_at::month)</code> для таблиц transactions, deposits, cashouts. Каждый запрос читает один бренд за один месяц — не всю таблицу.</p>
+  <h3>Обязательные индексы (создать вместе со схемой)</h3>
+  <div class="code-block">-- Core transaction queries
+idx_tx_brand_date    ON transactions (brand_id, created_at)
+idx_tx_player        ON transactions (player_id, created_at)
+idx_tx_affiliate     ON transactions (affiliate_id, created_at)
+idx_tx_status_type   ON transactions (status, type, created_at)
+
+-- Cohort analysis
+idx_ftd_cohort       ON players (brand_id, ftd_date)
+
+-- Affiliate report
+idx_aff_mi_geo       ON aff_performance (affiliate_id, media_item_id, geo, period)</div>
+  <div class="callout danger">
+    <div class="callout-title">🚫 Важно</div>
+    <p>Индексы создаются вместе со схемой, а не после наполнения данными. Добавление индексов на заполненную таблицу = блокировка на часы.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="idempotency">
+  <h2>13 · ETL Idempotency</h2>
+  <p>Если ETL запустился дважды (сбой, retry) — данные не должны дублироваться.</p>
+  <ul>
+    <li>Каждая запись в raw-слое хранит <strong>source_id</strong> — уникальный ID в источнике</li>
+    <li>Только <code style="font-family:var(--mono)">UPSERT ON CONFLICT (source_id) DO UPDATE</code> — никогда просто <code style="font-family:var(--mono)">INSERT</code></li>
+    <li>Pre-aggregation jobs: сначала <strong>DELETE</strong>, потом INSERT (не прибавлять к старому)</li>
+    <li>ETL job логирует: job_id, started_at, finished_at, status, rows_processed, error</li>
+  </ul>
+  <p><strong>Ежедневная проверка дублей:</strong> GROUP BY source_id HAVING COUNT(*) &gt; 1 → alert в Slack если найдены.</p>
+</div>
+
+<div class="doc-section" id="freshness">
+  <h2>14 · Data Freshness Indicator</h2>
+  <p>Пользователь всегда должен знать, насколько свежие данные на экране.</p>
+  <table class="doc-table">
+    <thead><tr><th>Состояние</th><th>Индикатор в UI</th><th>Trigger</th></tr></thead>
+    <tbody>
+      <tr><td>Свежие (&lt;5 мин)</td><td>Зелёная точка + «Data as of 14:28»</td><td>—</td></tr>
+      <tr><td>Устаревшие (5–15 мин)</td><td>Жёлтая точка + «Updating...»</td><td>—</td></tr>
+      <tr><td>Неактуальные (&gt;15 мин)</td><td>Красный баннер + «Data may be stale»</td><td>Alert в Slack</td></tr>
+    </tbody>
+  </table>
+  <p>API: каждый ответ содержит <code style="font-family:var(--mono)">meta.data_freshness</code>. Frontend считает разницу с <strong>сервером</strong>, не с browser clock.</p>
+  <p>Health endpoint: <code style="font-family:var(--mono)">GET /api/v1/health</code> → последняя успешная синхронизация по каждому бренду.</p>
+</div>
+
+<div class="doc-section" id="errors">
+  <h2>15 · Loading & Error States</h2>
+  <table class="doc-table">
+    <thead><tr><th>Состояние</th><th>Что показывать</th></tr></thead>
+    <tbody>
+      <tr><td>Skeleton loading</td><td>KPI-карточки и таблица сразу (до получения данных)</td></tr>
+      <tr><td>Partial data</td><td>KPI загрузились, таблица ещё идёт — показать частичный результат</td></tr>
+      <tr><td>Empty state</td><td>Чёткий экран с объяснением, не пустая таблица</td></tr>
+      <tr><td>API error (500)</td><td>Toast с request_id + кнопка Retry</td></tr>
+      <tr><td>Access denied (403)</td><td>Объяснение без технических деталей</td></tr>
+      <tr><td>Stale cache</td><td>Banner «Showing data from 14:15. Refresh?»</td></tr>
+      <tr><td>Export в очереди</td><td>Progress bar + уведомление по готовности</td></tr>
+    </tbody>
+  </table>
+  <div class="callout danger">
+    <div class="callout-title">🚫 Запрещено</div>
+    <p>Никогда не показывать stack trace пользователю. Только request_id для обращения в поддержку.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="formatting">
+  <h2>16 · Number Formatting</h2>
+  <table class="doc-table">
+    <thead><tr><th>Тип</th><th>Формат</th><th>Пример</th></tr></thead>
+    <tbody>
+      <tr><td>Деньги (целые)</td><td>Non-breaking пробел как разделитель тысяч</td><td>1 234 567 €</td></tr>
+      <tr><td>Деньги (дробные)</td><td>Точка как десятичный разделитель</td><td>1 234.57 €</td></tr>
+      <tr><td>Проценты</td><td>1 знак после запятой</td><td>87.3%</td></tr>
+      <tr><td>Большие числа в KPI</td><td>K / M / B суффикс</td><td>2.4M</td></tr>
+      <tr><td>Даты</td><td>12 Mar 2026 (English)</td><td>—</td></tr>
+      <tr><td>Timestamps</td><td>UTC в UI, local в tooltip</td><td>14:28 UTC</td></tr>
+      <tr><td>NULL значения</td><td>Тире (—), никогда не 0 или пустая строка</td><td>—</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="doc-section" id="alerts">
+  <h2>17 · Alert Architecture</h2>
+  <p><strong>Цепочка:</strong> Data Source → Metric Evaluator (job each 5 min) → Alert Rule Engine → Notification Dispatcher → Email / Telegram / In-app</p>
+  <table class="doc-table">
+    <thead><tr><th>Требование</th><th>Описание</th></tr></thead>
+    <tbody>
+      <tr><td>Дедупликация</td><td>Если AR% ниже порога 30 минут подряд — один alert, не шесть</td></tr>
+      <tr><td>Cooldown</td><td>Минимум 30 мин до следующего (configurable per rule)</td></tr>
+      <tr><td>История</td><td>Таблица alert_history: кто получил, когда, значение метрики в момент триггера</td></tr>
+      <tr><td>Acknowledge</td><td>In-app alert можно отметить как прочитанный</td></tr>
+      <tr><td>Маршрутизация</td><td>По отделу, бренду, роли</td></tr>
+    </tbody>
+  </table>
+  <h3>Alert Rule Structure</h3>
+  <div class="code-block">metric:          "ar_percent"
+scope:           {brand: "brandx", child_system: "*"}
+condition:       "< 60"
+window:          "15min"
+channels:        ["telegram", "in-app"]
+recipients:      ["role:payment_team"]
+cooldown_minutes: 30</div>
+</div>
+
+<div class="doc-section" id="retention">
+  <h2>18 · Data Retention Policy</h2>
+  <table class="doc-table">
+    <thead><tr><th>Слой данных</th><th>TTL</th></tr></thead>
+    <tbody>
+      <tr><td>Raw events (транзакции, ставки)</td><td>3 года</td></tr>
+      <tr><td>Aggregated daily snapshots</td><td>Навсегда</td></tr>
+      <tr><td>Cohort data</td><td>Навсегда</td></tr>
+      <tr><td>Audit log</td><td>5 лет</td></tr>
+      <tr><td>Export файлы (.xlsx на S3)</td><td>24 часа</td></tr>
+      <tr><td>JWT session tokens</td><td>8 часов</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning">
+    <div class="callout-title">GDPR</div>
+    <p>Если продукт работает с EU/UK пользователями — retention должен соответствовать GDPR. Необходимо уточнить у legal до начала разработки.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="flags">
+  <h2>19 · Feature Flags</h2>
+  <p>Новые отчёты нельзя выкатывать сразу всем. Feature flags решают это без деплоя.</p>
+  <ul>
+    <li>Новый отчёт добавляется в код за <code style="font-family:var(--mono)">feature_flag: "affiliate_report"</code></li>
+    <li>Super Admin включает flag в UI-панели без деплоя</li>
+    <li>Отчёт виден только выбранным пользователям/брендам</li>
+    <li>После полного rollout — flag удаляется из кода</li>
+  </ul>
+  <h3>Table: feature_flags</h3>
+  <div class="code-block">flag_key     VARCHAR PRIMARY KEY  -- 'affiliate_report', 'churn_v2'
+enabled      BOOLEAN DEFAULT FALSE
+enabled_for  JSONB                -- {"brand_ids": [1,2], "user_ids": [99]}
+rollout_pct  INT DEFAULT 0        -- % пользователей
+created_at   TIMESTAMPTZ
+updated_by   INT                  -- user_id</div>
+</div>
+
+<div class="doc-section" id="quality">
+  <h2>20 · Data Quality Checks</h2>
+  <p>Ошибка в агрегации может быть незаметна неделями. Автоматические проверки — обязательны.</p>
+  <table class="doc-table">
+    <thead><tr><th>Проверка</th><th>Правило</th><th>Периодичность</th></tr></thead>
+    <tbody>
+      <tr><td>Transactions total совпадает с источником</td><td>±1% погрешность</td><td>Ежедневно</td></tr>
+      <tr><td>FTD count > 0 если Regs > 0</td><td>Логическая проверка</td><td>После каждого ETL</td></tr>
+      <tr><td>NET PROFIT = NGR − Marketing Cost</td><td>Кросс-проверка</td><td>Ежедневно</td></tr>
+      <tr><td>Retention M0 = 100% всегда</td><td>Основной инвариант</td><td>После каждого ETL</td></tr>
+      <tr><td>Нет транзакций в будущем</td><td>created_at ≤ now()</td><td>Постоянно</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Reconciliation Report:</strong> Еженедельно DataJarvis vs source system по ключевым метрикам. Расхождение &gt;1% → alert DevOps.</p>
+</div>
+
+<div class="doc-section" id="mvp">
+  <h2>21 · MVP Definition</h2>
+  <table class="doc-table">
+    <thead><tr><th>Блок</th><th>Содержимое</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Инфра (must-have)</strong></td><td>Auth (SSO), Row-Level Security, API v1, ETL pipeline, Кэш (Redis), Audit log</td></tr>
+      <tr><td><strong>Отчёт #1 (MVP)</strong></td><td>Daily Performance Report — самодостаточный, все 49 метрик</td></tr>
+      <tr><td><strong>Отчёт #2 (MVP)</strong></td><td>In/Out Report — платёжная команда нуждается в первую очередь</td></tr>
+      <tr><td><strong>Post-MVP</strong></td><td>Payment Report, Churn Cohort, Affiliate, Alert System</td></tr>
+    </tbody>
+  </table>
+  <div class="callout success">
+    <div class="callout-title">✓ MVP ≠ упрощённая архитектура</div>
+    <p>MVP — самый узкий scope при полной (правильной) архитектуре. Кэш, RLS и audit log — обязательны даже для первого релиза.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="load">
+  <h2>22 · Load Expectations</h2>
+  <p>Без этих цифр невозможно подобрать размер инфраструктуры.</p>
+  <table class="doc-table">
+    <thead><tr><th>Параметр</th><th>Ожидаемое значение</th></tr></thead>
+    <tbody>
+      <tr><td>Активных пользователей в час пика</td><td>~50–100 (уточнить)</td></tr>
+      <tr><td>Пик одновременных запросов</td><td>~200 req/sec</td></tr>
+      <tr><td>Объём таблицы transactions</td><td>~10M строк/год</td></tr>
+      <tr><td>Рост данных</td><td>~3× в год</td></tr>
+    </tbody>
+  </table>
+  <div class="callout warning">
+    <div class="callout-title">DB Choice</div>
+    <p>При ~10M строк/год + 3× рост — обычный PostgreSQL достаточен на 1–2 года. Если цифры выше — <strong>ClickHouse</strong> или <strong>TimescaleDB</strong> обязательны с первого дня.</p>
+  </div>
+</div>
+
+<div class="doc-section" id="blockers">
+  <h2>Open Questions — Blockers</h2>
+  <p>Эти вопросы блокируют разработку. Ответить до kickoff.</p>
+  <table class="doc-table">
+    <thead><tr><th>#</th><th>Вопрос</th><th>Критичность</th><th>Влияет на</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Тип операционной БД?</td><td><span class="badge badge-red">Блокер</span></td><td>ETL архитектура</td></tr>
+      <tr><td>2</td><td>Есть ли DWH или только Ops DB?</td><td><span class="badge badge-red">Блокер</span></td><td>Analytical store</td></tr>
+      <tr><td>3</td><td>FTD: per-brand или global?</td><td><span class="badge badge-red">Блокер</span></td><td>Все метрики конверсии</td></tr>
+      <tr><td>4</td><td>Что входит в NGR (Royalty, Provider fees)?</td><td><span class="badge badge-red">Блокер</span></td><td>Все GGR/NGR метрики</td></tr>
+      <tr><td>5</td><td>REST или GraphQL?</td><td><span class="badge badge-red">Блокер</span></td><td>Frontend архитектура</td></tr>
+      <tr><td>6</td><td>Сколько активных пользователей одновременно?</td><td><span class="badge badge-red">Блокер</span></td><td>Размер инфры</td></tr>
+      <tr><td>7</td><td>Какой Telegram bot для алертов?</td><td><span class="badge badge-yellow">Важно</span></td><td>Alert система</td></tr>
+      <tr><td>8</td><td>Есть SSO-провайдер (Okta, Azure AD)?</td><td><span class="badge badge-yellow">Важно</span></td><td>Auth модуль</td></tr>
+      <tr><td>9</td><td>GDPR требования? EU пользователи?</td><td><span class="badge badge-yellow">Важно</span></td><td>Data retention, PII</td></tr>
+      <tr><td>10</td><td>Нужен ли публичный API для партнёров?</td><td><span class="badge badge-green">До MVP</span></td><td>API design</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</main>
+
+<footer>
+  <div class="f-left">DataJarvis · Architecture Brief v1.0 · March 2026</div>
+  <div class="f-links">
+    <a href="../index.html">← Hub</a>
+    <a href="index.html">Docs Home</a>
+    <a href="reports.html">Reports Specs →</a>
+  </div>
+</footer>
+</body>
+</html>
