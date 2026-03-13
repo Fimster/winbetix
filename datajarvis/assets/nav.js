@@ -60,6 +60,13 @@
       ]
     },
     {
+      type: 'link',
+      href: '../docs/roadmap.html',
+      file: 'roadmap.html',
+      label: 'Roadmap',
+      icon: '<svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h3l2 3-2 3H2V4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 7h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    },
+    {
       type: 'group',
       id: 'affiliate',
       label: 'Affiliate',
