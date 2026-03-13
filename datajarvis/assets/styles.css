@@ -1,0 +1,405 @@
+/* ═══════════════════════════════════════════════════════════
+   WinBetix Analytics — Shared Stylesheet
+   All pages link this file. Page-specific <style> tags
+   come after this link and can override any rule here.
+   ═══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap');
+
+/* ─── DESIGN TOKENS ─── */
+:root {
+  --bg:       #0a0b0d;
+  --surface:  #111318;
+  --surface2: #181c22;
+  --surface3: #1e2330;
+  --border:   #1f2530;
+  --border2:  #2a3040;
+  --text:     #e8eaf0;
+  --muted:    #5a6478;
+  --muted2:   #8892a4;
+  --accent:   #3d7fff;
+  --accent2:  #5b92ff;
+  --green:    #22d07a;
+  --red:      #ff4d6a;
+  --yellow:   #f5b731;
+  --purple:   #9b7dff;
+  --cyan:     #00d4ff;
+  --orange:   #ff8c42;
+  --teal:     #00c9b1;
+  --mono:     'DM Mono', monospace;
+  --sans:     'Syne', sans-serif;
+}
+
+/* ─── RESET ─── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR NAVIGATION
+   ═══════════════════════════════════════════════════════════ */
+
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 0.22s ease, opacity 0.22s ease, border-color 0.22s ease;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  border-right-color: transparent;
+  opacity: 0;
+}
+
+/* ─── SIDEBAR EXPAND BUTTON (shown when collapsed) ─── */
+.sidebar-expand-btn {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  z-index: 200;
+  transition: all 0.15s;
+}
+.sidebar-expand-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+.sidebar-expand-btn.visible { display: flex; }
+.sidebar-expand-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--surface2); }
+
+.logo {
+  padding: 16px 14px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo-img {
+  height: 26px;
+  width: auto;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ─── SIDEBAR COLLAPSE BUTTON ─── */
+.sidebar-collapse-btn {
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.sidebar-collapse-btn svg { width: 13px; height: 13px; }
+.sidebar-collapse-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Fallback text logo shown if image fails to load */
+.logo-text {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+.logo-text span { color: var(--accent2); }
+
+.nav { flex: 1; padding: 16px 0; }
+
+.nav-section {
+  padding: 8px 16px 4px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+.nav-item:hover { color: var(--text); background: var(--surface2); }
+.nav-item.active {
+  color: var(--text);
+  background: rgba(61,127,255, 0.08);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* SVG icon variant */
+.nav-item .icon,
+.nav-group-hd .icon { width: 16px; height: 16px; opacity: .6; flex-shrink: 0; }
+.nav-item.active .icon { opacity: 1; }
+.nav-group.open > .nav-group-hd .icon { opacity: 0.85; }
+
+/* Dot indicator variant (some pages) */
+.nav-item .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .4; flex-shrink: 0; }
+.nav-item.active .dot { opacity: 1; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+
+/* ─── NAV GROUPS (ACCORDION) ─── */
+.nav-group-hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.nav-group-hd:hover { color: var(--text); background: var(--surface2); }
+.nav-group.open > .nav-group-hd { color: var(--muted2); }
+
+.nav-group-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+
+.nav-chevron {
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: transform 0.2s ease, opacity 0.2s;
+}
+.nav-group.open > .nav-group-hd .nav-chevron { transform: rotate(180deg); opacity: 0.7; }
+
+/* Smooth accordion using CSS grid trick */
+.nav-group-items {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease;
+}
+.nav-group.open > .nav-group-items { grid-template-rows: 1fr; }
+.nav-group-inner { overflow: hidden; }
+
+/* Child nav items — indented */
+.nav-item.nav-child {
+  padding-left: 34px;
+  font-size: 12px;
+}
+.nav-item.nav-child .icon { width: 13px; height: 13px; }
+
+.sidebar-bottom { padding: 16px; border-top: 1px solid var(--border); }
+
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.avatar {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--purple), var(--accent));
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.user-info { flex: 1; overflow: hidden; }
+.user-name { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-role { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+
+/* ═══════════════════════════════════════════════════════════
+   REPORT LAYOUT
+   ═══════════════════════════════════════════════════════════ */
+
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ─── TOPBAR ─── */
+/* height / padding / gap are set per-page since they vary */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 52px;
+  padding: 0 24px;
+  gap: 12px;
+}
+
+.breadcrumb { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.breadcrumb span { color: var(--text); font-weight: 600; }
+
+/* ─── LIVE / UPDATE BADGE ─── */
+.update-badge, .live-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  background: rgba(34,208,122, 0.1);
+  border: 1px solid rgba(34,208,122, 0.2);
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.update-dot, .live-dot {
+  width: 5px; height: 5px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.spacer { flex: 1; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  height: 30px;
+  padding: 0 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: var(--sans);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  white-space: nowrap;
+  transition: border-color 0.15s;
+}
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: rgba(61,127,255, 0.15); border-color: var(--accent); color: var(--accent2); }
+
+.btn-icon {
+  width: 30px; height: 30px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── FILTER BAR & CHIPS ─── */
+.filter-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 8px;
+  height: 48px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+.filter-bar::-webkit-scrollbar { height: 3px; }
+.filter-bar::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* .fl is the alias used in some report pages */
+.filter-label, .fl {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* .chip is the alias used in some report pages */
+.filter-chip, .chip {
+  display: flex; align-items: center; gap: 5px;
+  height: 26px;
+  padding: 0 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--sans);
+  transition: border-color 0.15s;
+}
+.filter-chip:hover, .chip:hover { border-color: var(--accent); }
+.filter-chip.active, .chip.on {
+  border-color: var(--accent);
+  background: rgba(61,127,255, 0.1);
+  color: var(--accent2);
+}
+.filter-chip .cv,
+.filter-chip .caret,
+.chip .cv { font-size: 8px; opacity: 0.5; }
+
+/* .fsep is the alias used in some report pages */
+.filter-sep, .fsep {
+  width: 1px; height: 18px;
+  background: var(--border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+/* ─── GLOBAL SCROLLBARS ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-corner { background: transparent; }

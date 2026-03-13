@@ -1,4 +1,4 @@
-# ⚡ DataJarvis — Analytics Hub
+# WinBetix — Analytics Hub
 
 > Internal analytics & reporting platform replacing PowerBI. Custom microservice with real-time data, role-based access control, and 5 specialized reports.
 
@@ -7,6 +7,10 @@
 ```
 datajarvis/
 ├── index.html                    # Hub — main entry point
+├── assets/
+│   ├── styles.css                # Shared stylesheet (design tokens, sidebar, layout)
+│   ├── nav.js                    # Shared sidebar navigation (edit once, updates all reports)
+│   └── logo.png                  # WinBetix logo
 ├── reports/
 │   ├── dashboard.html            # Dashboard Overview
 │   ├── daily-report.html         # Daily Performance Report (49 metrics)
@@ -70,4 +74,4 @@ https://www.notion.so/321d6e1c654b81de8b01dad3e427dd15
 
 ---
 
-*DataJarvis Internal Analytics Platform — confidential, internal use only.*
+*WinBetix Internal Analytics Platform — confidential, internal use only.*

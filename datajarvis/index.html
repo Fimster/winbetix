@@ -3,40 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280">
-<title>DataJarvis — Analytics Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<title>WinBetix — Analytics Hub</title>
+<link rel="stylesheet" href="assets/styles.css">
 <style>
-:root {
-  --bg:       #0a0b0d;
-  --surface:  #111318;
-  --surface2: #181c22;
-  --surface3: #1e2330;
-  --border:   #1f2530;
-  --border2:  #2a3040;
-  --text:     #e8eaf0;
-  --muted:    #5a6478;
-  --muted2:   #8892a4;
-  --accent:   #3d7fff;
-  --accent2:  #5b92ff;
-  --green:    #22d07a;
-  --red:      #ff4d6a;
-  --yellow:   #f5b731;
-  --purple:   #9b7dff;
-  --orange:   #ff8c42;
-  --teal:     #00c9b1;
-  --mono:     'DM Mono', monospace;
-  --sans:     'Syne', sans-serif;
-}
-
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+body { overflow-x: hidden; }
 
 /* ─── GRID NOISE BG ─── */
 body::before {
@@ -68,23 +38,7 @@ header {
   gap: 12px;
 }
 
-.logo-mark {
-  width: 36px; height: 36px;
-  background: var(--accent);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  box-shadow: 0 0 24px rgba(61,127,255,.4);
-}
-
-.logo-name {
-  font-family: var(--sans);
-  font-weight: 900;
-  font-size: 20px;
-  letter-spacing: -0.03em;
-}
-
-.logo-name span { color: var(--accent2); }
+.logo-img { height: 36px; width: auto; display: block; }
 
 .header-meta {
   display: flex;
@@ -526,8 +480,7 @@ footer {
 
 <header>
   <div class="logo">
-    <div class="logo-mark">⚡</div>
-    <div class="logo-name">Data<span>Jarvis</span></div>
+    <img class="logo-img" src="assets/logo.png" alt="WinBetix">
   </div>
   <div class="header-meta">
     <span class="badge blue">v2.3</span>
@@ -539,7 +492,7 @@ footer {
 <div class="hero">
   <div class="hero-label">Internal Analytics Platform</div>
   <h1>Your data,<br><em>unified.</em></h1>
-  <p>DataJarvis — кастомный аналитический микросервис, заменяющий PowerBI. Все отчёты, метрики и инструменты в одном месте.</p>
+  <p>WinBetix — кастомный аналитический микросервис, заменяющий PowerBI. Все отчёты, метрики и инструменты в одном месте.</p>
 </div>
 
 <div class="stats-row">
@@ -805,7 +758,7 @@ footer {
 
 <footer>
   <div class="footer-left">
-    DataJarvis Analytics Platform · v2.3 · March 2026 · Internal use only
+    WinBetix Analytics Platform · v2.3 · March 2026 · Internal use only
   </div>
   <div class="footer-links">
     <a href="docs/index.html">Docs</a>

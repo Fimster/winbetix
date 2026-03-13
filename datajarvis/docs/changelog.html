@@ -3,18 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280">
-<title>DataJarvis — Changelog v2.3</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<title>WinBetix — Changelog v2.4</title>
+<link rel="stylesheet" href="../assets/styles.css">
 <style>
-:root{--bg:#0a0b0d;--surface:#111318;--surface2:#181c22;--surface3:#1e2330;--border:#1f2530;--border2:#2a3040;--text:#e8eaf0;--muted:#5a6478;--muted2:#8892a4;--accent:#3d7fff;--accent2:#5b92ff;--green:#22d07a;--red:#ff4d6a;--yellow:#f5b731;--purple:#9b7dff;--orange:#ff8c42;--teal:#00c9b1;--mono:"DM Mono",monospace;--sans:"Syne",sans-serif;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "nav2 nav2";}
+body{display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "nav2 nav2";}
 body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 15%,rgba(61,127,255,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
 .topbar{grid-area:nav;position:sticky;top:0;z-index:100;background:rgba(10,11,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0 32px;height:52px;}
 .topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);margin-right:24px;}
-.tl-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;}
-.tl-name{font-weight:900;font-size:15px;letter-spacing:-.03em;}
-.tl-name span{color:var(--accent2);}
 .topbar-sep{width:1px;height:18px;background:var(--border);margin-right:24px;}
 .topbar-crumb{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
 .topbar-crumb a{color:var(--muted2);text-decoration:none;transition:.15s;}
@@ -89,13 +84,14 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
 </head>
 <body>
 <div class="topbar">
-  <a class="topbar-logo" href="../index.html"><div class="tl-mark">⚡</div><div class="tl-name">Data<span>Jarvis</span></div></a>
+  <a class="topbar-logo" href="../index.html"><img class="logo-img" src="../assets/logo.png" alt="WinBetix"></a>
   <div class="topbar-sep"></div>
-  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Changelog v2.3</span></div>
+  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Changelog v2.4</span></div>
 </div>
 <nav class="toc">
 <div class="toc-title">Versions</div>
-<a class="toc-link active" href="#v23">v2.3 Latest</a>
+<a class="toc-link active" href="#v24">v2.4 Latest</a>
+<a class="toc-link" href="#v23">v2.3</a>
 <a class="toc-link" href="#v22">v2.2</a>
 <a class="toc-link" href="#v21">v2.1</a>
 <a class="toc-link" href="#v20">v2.0</a>
@@ -105,12 +101,34 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
 <main class="doc-main">
 <div class="doc-header">
   <div class="doc-label">06 — Changelog</div>
-  <h1>Changelog v2.3</h1>
-  <p>История версий DataJarvis. Все изменения в спецификациях, прототипах и архитектурных решениях.</p>
+  <h1>Changelog v2.4</h1>
+  <p>История версий WinBetix. Все изменения в спецификациях, прототипах и архитектурных решениях.</p>
   <div class="doc-meta-row">
-    <span class="meta-pill green">Latest: v2.3</span>
+    <span class="meta-pill green">Latest: v2.4</span>
     <span class="meta-pill">March 2026</span>
   </div>
+</div>
+
+<div class="doc-section" id="v24">
+  <h2>v2.4 — March 13, 2026</h2>
+  <h3>Rebranding</h3>
+  <ul>
+    <li><strong>DataJarvis → WinBetix</strong> — переименование платформы во всех HTML-прототипах, заголовках страниц и футерах</li>
+    <li><strong>Логотип</strong> — заменён emoji-плейсхолдер на реальный <code>logo.png</code> во всех страницах</li>
+  </ul>
+  <h3>Shared Asset System</h3>
+  <ul>
+    <li><strong>assets/styles.css</strong> — единый CSS для всех страниц: design tokens, reset, sidebar, topbar, badges, scrollbars. Дублирование CSS-переменных и reset-кода удалено из всех 6 report-страниц и index.html</li>
+    <li><strong>assets/nav.js</strong> — общий sidebar-навигатор, инжектируемый в runtime. Правки навигации теперь в одном файле</li>
+    <li><strong>assets/logo.png</strong> — логотип платформы, используемый всеми страницами</li>
+  </ul>
+  <h3>Refactoring</h3>
+  <ul>
+    <li>Все 6 report-страниц переведены на <code>href="../assets/styles.css"</code> и <code>src="../assets/nav.js"</code></li>
+    <li><code>index.html</code> переведён на <code>href="assets/styles.css"</code></li>
+    <li>Удалено ~1100 строк дублирующегося CSS/JS кода из report-страниц</li>
+    <li>Обновлены все документационные страницы (architecture, design-system, overview, reports, vocabulary)</li>
+  </ul>
 </div>
 
 <div class="doc-section" id="v23">
@@ -146,8 +164,8 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
   <h2>v2.1 — March 10, 2026</h2>
   <h3>New</h3>
   <ul>
-    <li><strong>DataJarvis TZ.docx</strong> — полное Word ТЗ с дизайном и таблицами</li>
-    <li><strong>DataJarvis Presentation.pptx</strong> — 14 слайдов для stakeholders</li>
+    <li><strong>WinBetix TZ.docx</strong> — полное Word ТЗ с дизайном и таблицами</li>
+    <li><strong>WinBetix Presentation.pptx</strong> — 14 слайдов для stakeholders</li>
     <li><strong>Payment Report HTML Prototype</strong> — AR% heatmap, 3-уровневые метрики</li>
     <li><strong>Payment Report Notion ТЗ</strong> — страница #02</li>
   </ul>
@@ -192,7 +210,7 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
 </div>
 </main>
 <footer>
-  <div class="f-left">DataJarvis · Changelog v2.3 · v2.3 · March 2026</div>
+  <div class="f-left">WinBetix · Changelog v2.4 · v2.4 · March 2026</div>
   <div class="f-links"><a href="../index.html">← Hub</a><a href="index.html">Docs Home</a></div>
 </footer>
 </body>
