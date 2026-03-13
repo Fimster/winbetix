@@ -3,47 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280">
-<title>WinBetix — Analytics Hub</title>
+<title>WinBetix — Home</title>
 <link rel="stylesheet" href="assets/styles.css">
 <style>
 body { overflow-x: hidden; }
 
-/* ─── GRID NOISE BG ─── */
+/* ─── AMBIENT BACKGROUND ─── */
 body::before {
   content:'';
   position:fixed;
   inset:0;
-  background-image: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(61,127,255,.08) 0%, transparent 60%),
-                    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(155,125,255,.06) 0%, transparent 50%);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(61,127,255,.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 85%, rgba(155,125,255,.05) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(34,208,122,.03) 0%, transparent 60%);
   pointer-events:none;
   z-index:0;
 }
 
 /* ─── HEADER ─── */
 header {
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 48px;
+  padding: 0 48px;
+  height: 60px;
   border-bottom: 1px solid var(--border);
-  background: rgba(10,11,13,.8);
-  backdrop-filter: blur(16px);
+  background: rgba(10,11,13,.92);
+  backdrop-filter: blur(20px);
 }
 
-.logo {
+.logo { display: flex; align-items: center; }
+.logo-img { height: 32px; width: auto; display: block; }
+
+.header-nav {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
 }
 
-.logo-img { height: 36px; width: auto; display: block; }
+.hnav {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: all .15s;
+  letter-spacing: .04em;
+}
+.hnav:hover { color: var(--text); background: var(--surface2); }
 
 .header-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
 }
 
 .badge {
@@ -56,381 +73,416 @@ header {
   color: var(--muted2);
   letter-spacing: 0.06em;
 }
-
-.badge.green { color: var(--green); border-color: rgba(34,208,122,.3); background: rgba(34,208,122,.08); }
-.badge.blue  { color: var(--accent2); border-color: rgba(91,146,255,.3); background: rgba(61,127,255,.08); }
+.badge.green { color: var(--green); border-color: rgba(34,208,122,.3); background: rgba(34,208,122,.07); }
+.badge.blue  { color: var(--accent2); border-color: rgba(91,146,255,.3); background: rgba(61,127,255,.07); }
 
 /* ─── HERO ─── */
 .hero {
   position: relative;
   z-index: 10;
-  padding: 80px 48px 64px;
-  max-width: 1200px;
+  padding: 96px 48px 72px;
+  max-width: 880px;
+  animation: fadeUp .5s ease both;
 }
 
 .hero-label {
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent2);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-
 .hero-label::before {
   content:'';
-  width: 24px; height: 1px;
+  width: 28px; height: 1px;
   background: var(--accent2);
 }
 
 .hero h1 {
-  font-size: clamp(42px, 5vw, 68px);
+  font-size: clamp(44px, 5.5vw, 72px);
   font-weight: 900;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
   line-height: 1.0;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   color: var(--text);
 }
-
 .hero h1 em {
   font-style: normal;
   color: transparent;
-  -webkit-text-stroke: 1px var(--accent2);
+  -webkit-text-stroke: 1.5px var(--accent2);
 }
 
-.hero p {
-  font-size: 16px;
+.hero-desc {
+  font-family: var(--mono);
+  font-size: 14px;
   color: var(--muted2);
   max-width: 560px;
-  line-height: 1.65;
-  font-family: var(--mono);
+  line-height: 1.75;
   font-weight: 300;
+  margin-bottom: 40px;
 }
 
-/* ─── STATS ROW ─── */
-.stats-row {
+.hero-pills {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  letter-spacing: .06em;
+}
+.hero-pill.accent { color: var(--accent2); border-color: rgba(61,127,255,.3); background: rgba(61,127,255,.06); }
+.hero-pill.green  { color: var(--green);   border-color: rgba(34,208,122,.3);  background: rgba(34,208,122,.06); }
+
+/* ─── STATS BAR ─── */
+.stats-bar {
   position: relative;
   z-index: 10;
   display: flex;
   gap: 1px;
+  background: var(--border);
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
-  background: var(--border);
-  margin-bottom: 0;
+  animation: fadeUp .5s .08s ease both;
 }
-
 .stat {
   flex: 1;
   background: var(--surface);
-  padding: 24px 32px;
+  padding: 22px 32px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
-
 .stat-val {
   font-family: var(--mono);
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 500;
   color: var(--text);
 }
-
 .stat-val span { color: var(--accent2); }
+.stat-val .g   { color: var(--green); }
 .stat-label {
   font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 9px;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-/* ─── MAIN GRID ─── */
-.main {
+/* ─── MODULES SECTION ─── */
+.modules-wrap {
   position: relative;
   z-index: 10;
-  padding: 48px 48px 80px;
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 64px 48px 0;
+  animation: fadeUp .5s .16s ease both;
 }
 
-/* ─── SECTION ─── */
-.section-title {
+.section-label {
   font-family: var(--mono);
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 16px;
+  margin-bottom: 24px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
-
-.section-title::after {
-  content:'';
+.section-label::after {
+  content: '';
   flex: 1;
   height: 1px;
   background: var(--border);
 }
 
-/* ─── REPORT CARDS ─── */
-.reports-grid {
+.modules-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
-.report-card {
+/* ─── MODULE CARD ─── */
+.module-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 32px 28px 28px;
   text-decoration: none;
   color: var(--text);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  transition: border-color .2s, background .2s, transform .2s;
-  position: relative;
+  gap: 0;
   overflow: hidden;
+  transition: border-color .2s, background .2s, transform .22s;
   cursor: pointer;
 }
 
-.report-card::before {
-  content:'';
+.module-card::before {
+  content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--card-color, var(--accent));
-  opacity: .7;
+  height: 3px;
+  background: var(--mc-color, var(--accent));
+  opacity: .6;
+  transition: opacity .2s, height .2s;
+}
+
+.module-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,.025) 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0;
   transition: opacity .2s;
 }
 
-.report-card:hover {
-  border-color: var(--border2);
+.module-card:hover {
+  border-color: var(--mc-color, var(--accent));
   background: var(--surface2);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+}
+.module-card:hover::before { opacity: 1; height: 4px; }
+.module-card:hover::after  { opacity: 1; }
+
+.mc-icon {
+  font-size: 36px;
+  margin-bottom: 20px;
+  display: block;
+  line-height: 1;
+  filter: drop-shadow(0 0 16px var(--mc-color, var(--accent)));
+  opacity: .85;
+  transition: opacity .2s, filter .2s;
+}
+.module-card:hover .mc-icon {
+  opacity: 1;
+  filter: drop-shadow(0 0 24px var(--mc-color, var(--accent)));
 }
 
-.report-card:hover::before { opacity: 1; }
-
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-.card-icon {
-  width: 40px; height: 40px;
-  border-radius: 10px;
-  background: rgba(255,255,255,.04);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-
-.card-num {
+.mc-tag {
   font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-  margin-top: 4px;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--mc-color, var(--accent));
+  margin-bottom: 10px;
+  opacity: .8;
 }
 
-.card-title {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
+.mc-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+  line-height: 1.1;
 }
 
-.card-desc {
+.mc-desc {
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted2);
-  line-height: 1.55;
+  line-height: 1.65;
   font-weight: 300;
+  flex: 1;
 }
 
-.card-tags {
+.mc-footer {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: auto;
-  padding-top: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 28px;
+  padding-top: 16px;
   border-top: 1px solid var(--border);
 }
 
-.tag {
+.mc-cta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color .15s, gap .15s;
+}
+.module-card:hover .mc-cta { color: var(--mc-color, var(--accent)); gap: 10px; }
+
+.mc-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--border2);
+  letter-spacing: .06em;
+}
+
+/* ─── QUICK ACCESS ─── */
+.quick-wrap {
+  position: relative;
+  z-index: 10;
+  padding: 56px 48px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  animation: fadeUp .5s .24s ease both;
+}
+
+.quick-block {}
+
+.quick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quick-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color .15s, background .15s;
+}
+.quick-item:hover { border-color: var(--border2); background: var(--surface2); }
+
+.qi-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  transition: border-color .15s;
+}
+.quick-item:hover .qi-icon { border-color: var(--border2); }
+
+.qi-info { flex: 1; min-width: 0; }
+.qi-name {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  margin-bottom: 2px;
+}
+.qi-sub {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.qi-badge {
   font-family: var(--mono);
   font-size: 9px;
   padding: 3px 8px;
   border-radius: 4px;
   background: var(--surface3);
-  color: var(--muted2);
-  letter-spacing: 0.06em;
-}
-
-.card-arrow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-size: 10px;
   color: var(--muted);
-  margin-top: 4px;
-  transition: color .2s, gap .2s;
-}
-
-.report-card:hover .card-arrow { color: var(--accent2); gap: 10px; }
-
-/* ─── DASHBOARD CARD ─── */
-.report-card.featured {
-  grid-column: span 2;
-  flex-direction: row;
-  align-items: center;
-  gap: 32px;
-  padding: 28px 32px;
-}
-
-.featured-left { flex: 1; }
-.featured-preview {
-  width: 260px;
-  height: 100px;
-  background: var(--surface3);
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  gap: 4px;
-  padding: 10px;
+  letter-spacing: .04em;
   flex-shrink: 0;
 }
+.qi-badge.live { color: var(--green); background: rgba(34,208,122,.1); }
+.qi-badge.new  { color: var(--accent2); background: rgba(61,127,255,.1); }
 
-.mini-bar-group {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 2px;
+/* ─── ABOUT BLOCK ─── */
+.about-wrap {
+  position: relative;
+  z-index: 10;
+  padding: 56px 48px 80px;
+  animation: fadeUp .5s .32s ease both;
 }
 
-.mini-bar {
-  width: 100%;
-  border-radius: 2px;
-  background: var(--accent);
-  opacity: .5;
-  transition: opacity .3s;
-}
-
-.report-card:hover .mini-bar { opacity: .8; }
-
-/* ─── SIDEBAR PANEL ─── */
-.side-panel { display: flex; flex-direction: column; gap: 24px; }
-
-/* ─── DOCS CARD ─── */
-.docs-section { }
-
-.doc-link {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 8px;
+.about-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color .2s, background .2s;
-  margin-bottom: 8px;
-}
-
-.doc-link:hover {
-  border-color: var(--border2);
-  background: var(--surface2);
-}
-
-.doc-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: var(--surface3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.doc-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-
-.doc-sub {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted);
-}
-
-/* ─── TECH STACK ─── */
-.stack-grid {
+  border-radius: 16px;
+  padding: 40px 48px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.about-block-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+.about-text {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+.about-text strong { color: var(--text); font-weight: 500; }
+
+.about-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.about-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: color .15s;
+  font-weight: 300;
+}
+.about-link:hover { color: var(--accent2); }
+.about-link::before {
+  content: '→';
+  color: var(--muted);
+  font-size: 10px;
+  transition: color .15s;
+}
+.about-link:hover::before { color: var(--accent2); }
+
+.about-principles {
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-.stack-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-}
-
-.stack-name {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--muted2);
-  display: block;
-  margin-top: 4px;
-}
-
-.stack-icon { font-size: 18px; }
-
-/* ─── CHANGELOG MINI ─── */
-.changelog-item {
+.principle {
   display: flex;
-  gap: 14px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.changelog-item:last-child { border-bottom: none; }
-
-.cl-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-top: 5px;
-  flex-shrink: 0;
-}
-
-.cl-version {
-  font-family: var(--mono);
-  font-size: 10px;
-  color: var(--accent2);
-  letter-spacing: 0.06em;
-}
-
-.cl-text {
+  align-items: flex-start;
+  gap: 10px;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted2);
   font-weight: 300;
   line-height: 1.5;
+}
+.principle-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-top: 6px;
+  flex-shrink: 0;
 }
 
 /* ─── FOOTER ─── */
@@ -438,7 +490,7 @@ footer {
   position: relative;
   z-index: 10;
   border-top: 1px solid var(--border);
-  padding: 24px 48px;
+  padding: 20px 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -446,7 +498,7 @@ footer {
 
 .footer-left {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
 }
 
@@ -454,26 +506,20 @@ footer {
   display: flex;
   gap: 24px;
 }
-
 .footer-links a {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   text-decoration: none;
   transition: color .15s;
 }
-
 .footer-links a:hover { color: var(--accent2); }
 
-/* ─── ANIMATIONS ─── */
+/* ─── ANIMATION ─── */
 @keyframes fadeUp {
-  from { opacity:0; transform: translateY(20px); }
+  from { opacity:0; transform: translateY(18px); }
   to   { opacity:1; transform: translateY(0); }
 }
-
-.hero { animation: fadeUp .6s ease both; }
-.stats-row { animation: fadeUp .6s .1s ease both; }
-.main { animation: fadeUp .6s .2s ease both; }
 </style>
 </head>
 <body>
@@ -482,22 +528,36 @@ footer {
   <div class="logo">
     <img class="logo-img" src="assets/logo.png" alt="WinBetix">
   </div>
+  <nav class="header-nav">
+    <a class="hnav" href="reports/dashboard.html">Analytics</a>
+    <a class="hnav" href="docs/index.html">Wiki</a>
+    <a class="hnav" href="docs/roadmap.html">Roadmap</a>
+    <a class="hnav" href="docs/changelog.html">Changelog</a>
+  </nav>
   <div class="header-meta">
-    <span class="badge blue">v2.3</span>
+    <span class="badge blue">v2.4</span>
     <span class="badge green">● Live</span>
-    <span class="badge">Analytics Hub</span>
   </div>
 </header>
 
+<!-- ─── HERO ─── -->
 <div class="hero">
   <div class="hero-label">Internal Analytics Platform</div>
-  <h1>Your data,<br><em>unified.</em></h1>
-  <p>WinBetix — кастомный аналитический микросервис, заменяющий PowerBI. Все отчёты, метрики и инструменты в одном месте.</p>
+  <h1>Data, decisions,<br><em>delivered.</em></h1>
+  <p class="hero-desc">WinBetix — кастомный аналитический микросервис, созданный для замены PowerBI. Единая платформа для всех брендов, регионов и команд. Реальные данные, понятные отчёты, без лишних инструментов.</p>
+  <div class="hero-pills">
+    <span class="hero-pill accent">6 Reports Ready</span>
+    <span class="hero-pill green">● Prototypes Live</span>
+    <span class="hero-pill">Multi-brand</span>
+    <span class="hero-pill">Role-based Access</span>
+    <span class="hero-pill">&lt;3s Load SLA</span>
+  </div>
 </div>
 
-<div class="stats-row">
+<!-- ─── STATS BAR ─── -->
+<div class="stats-bar">
   <div class="stat">
-    <div class="stat-val"><span>5</span></div>
+    <div class="stat-val"><span>6</span></div>
     <div class="stat-label">Live Reports</div>
   </div>
   <div class="stat">
@@ -509,247 +569,235 @@ footer {
     <div class="stat-label">User Roles</div>
   </div>
   <div class="stat">
-    <div class="stat-val"><span>&lt;3s</span></div>
-    <div class="stat-label">Load Target (P95)</div>
+    <div class="stat-val"><span class="g">11</span></div>
+    <div class="stat-label">Reports Target</div>
   </div>
   <div class="stat">
-    <div class="stat-val"><span>99.5%</span></div>
-    <div class="stat-label">Uptime SLA</div>
+    <div class="stat-val"><span>&lt;3s</span></div>
+    <div class="stat-label">Load Target P95</div>
   </div>
 </div>
 
-<div class="main">
-  <!-- LEFT: REPORTS -->
-  <div>
-    <div class="section-title">Reports</div>
-    <div class="reports-grid">
+<!-- ─── MODULES ─── -->
+<div class="modules-wrap">
+  <div class="section-label">Platform Modules</div>
+  <div class="modules-grid">
 
-      <!-- DASHBOARD — featured -->
-      <a class="report-card featured" href="reports/dashboard.html" style="--card-color: var(--accent);">
-        <div class="featured-left">
-          <div class="card-header">
-            <div>
-              <div class="card-icon">📊</div>
-            </div>
-            <div class="card-num">00</div>
-          </div>
-          <div class="card-title" style="margin-top:12px;">Dashboard Overview</div>
-          <div class="card-desc">Главный экран с KPI по всей платформе. Real-time обновление данных, алерты и сводка по всем брендам.</div>
-          <div class="card-arrow">
-            Open Dashboard
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </div>
+    <!-- ANALYTICS -->
+    <a class="module-card" href="reports/dashboard.html" style="--mc-color: var(--accent);">
+      <span class="mc-icon">📊</span>
+      <div class="mc-tag">Analytics</div>
+      <div class="mc-name">Data &amp;<br>Reports</div>
+      <div class="mc-desc">Все аналитические отчёты платформы — Dashboard, Daily KPI, Payment, Churn, In/Out, Affiliate. Данные по всем брендам в реальном времени.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          Open Dashboard
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="featured-preview">
-          <div class="mini-bar-group"><div class="mini-bar" style="height:30%"></div><div class="mini-bar" style="height:60%; opacity:.7"></div><div class="mini-bar" style="height:45%; opacity:.6"></div></div>
-          <div class="mini-bar-group"><div class="mini-bar" style="height:70%; background:var(--green)"></div><div class="mini-bar" style="height:40%; background:var(--green); opacity:.7"></div><div class="mini-bar" style="height:55%; background:var(--green); opacity:.6"></div></div>
-          <div class="mini-bar-group"><div class="mini-bar" style="height:50%; background:var(--purple)"></div><div class="mini-bar" style="height:80%; background:var(--purple); opacity:.7"></div><div class="mini-bar" style="height:35%; background:var(--purple); opacity:.6"></div></div>
-          <div class="mini-bar-group"><div class="mini-bar" style="height:90%; background:var(--yellow)"></div><div class="mini-bar" style="height:55%; background:var(--yellow); opacity:.7"></div><div class="mini-bar" style="height:70%; background:var(--yellow); opacity:.6"></div></div>
+        <div class="mc-num">01</div>
+      </div>
+    </a>
+
+    <!-- WIKI -->
+    <a class="module-card" href="docs/index.html" style="--mc-color: var(--green);">
+      <span class="mc-icon">📚</span>
+      <div class="mc-tag">Documentation</div>
+      <div class="mc-name">Wiki &amp;<br>Knowledge Base</div>
+      <div class="mc-desc">Полная документация проекта — архитектура, спецификации отчётов, дизайн-система, словарь терминов и технические требования.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          Open Wiki
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
+        <div class="mc-num">02</div>
+      </div>
+    </a>
+
+    <!-- ROADMAP -->
+    <a class="module-card" href="docs/roadmap.html" style="--mc-color: var(--purple);">
+      <span class="mc-icon">🗺️</span>
+      <div class="mc-tag">Planning</div>
+      <div class="mc-name">Project<br>Roadmap</div>
+      <div class="mc-desc">Приоритеты разработки: 6 отчётов готовы к разработке, 5 запланированы. Фичи в работе, фазы релизов и статус задач.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          View Roadmap
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="mc-num">03</div>
+      </div>
+    </a>
+
+    <!-- CHANGELOG -->
+    <a class="module-card" href="docs/changelog.html" style="--mc-color: var(--yellow);">
+      <span class="mc-icon">🔖</span>
+      <div class="mc-tag">Releases</div>
+      <div class="mc-name">Change<br>Log</div>
+      <div class="mc-desc">История всех версий WinBetix — изменения в спецификациях, новые отчёты, обновления архитектуры и прототипов.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          View Changelog
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="mc-num">04</div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ─── QUICK ACCESS ─── -->
+<div class="quick-wrap">
+
+  <!-- REPORTS -->
+  <div class="quick-block">
+    <div class="section-label">Reports</div>
+    <div class="quick-list">
+      <a class="quick-item" href="reports/dashboard.html">
+        <div class="qi-icon">📊</div>
+        <div class="qi-info">
+          <div class="qi-name">Dashboard Overview</div>
+          <div class="qi-sub">Real-time KPI summary · all brands</div>
+        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
-      <!-- DAILY PERFORMANCE -->
-      <a class="report-card" href="reports/daily-report.html" style="--card-color: var(--green);">
-        <div class="card-header">
-          <div class="card-icon">📈</div>
-          <div class="card-num">01</div>
+      <a class="quick-item" href="reports/daily-report.html">
+        <div class="qi-icon">📈</div>
+        <div class="qi-info">
+          <div class="qi-name">Daily Performance KPI</div>
+          <div class="qi-sub">49 metrics · Day / Week / Month</div>
         </div>
-        <div class="card-title">Daily Performance</div>
-        <div class="card-desc">49 метрик по трафику, FTD, депозитам, GGR/NGR, бонусам и ставкам. Группировка по дням, неделям, месяцам.</div>
-        <div class="card-tags">
-          <span class="tag">49 metrics</span>
-          <span class="tag">By Day/Week/Month</span>
-          <span class="tag">Export XLSX</span>
-        </div>
-        <div class="card-arrow">
-          Open Report
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
-      <!-- PAYMENT PERFORMANCE -->
-      <a class="report-card" href="reports/payment-report.html" style="--card-color: var(--teal);">
-        <div class="card-header">
-          <div class="card-icon">💳</div>
-          <div class="card-num">02</div>
+      <a class="quick-item" href="reports/payment-report.html">
+        <div class="qi-icon">💳</div>
+        <div class="qi-info">
+          <div class="qi-name">Payment Performance</div>
+          <div class="qi-sub">AR% heatmap · FTD / STD split</div>
         </div>
-        <div class="card-title">Payment Performance</div>
-        <div class="card-desc">AR%, Success count, Player metrics по системам оплаты, GEO и устройствам. TOTAL / FTD / STD разбивка.</div>
-        <div class="card-tags">
-          <span class="tag">AR% Heatmap</span>
-          <span class="tag">Child Systems</span>
-          <span class="tag">Device Split</span>
-        </div>
-        <div class="card-arrow">
-          Open Report
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
-      <!-- CHURN RATE -->
-      <a class="report-card" href="reports/churn-report.html" style="--card-color: var(--yellow);">
-        <div class="card-header">
-          <div class="card-icon">🔄</div>
-          <div class="card-num">03</div>
+      <a class="quick-item" href="reports/inout-report.html">
+        <div class="qi-icon">↕️</div>
+        <div class="qi-info">
+          <div class="qi-name">In / Out Report</div>
+          <div class="qi-sub">Flat list · risk flags · player panel</div>
         </div>
-        <div class="card-title">Churn Rate (Cohort)</div>
-        <div class="card-desc">Когортный анализ удержания игроков. D0–D30 / W0–W12 / M0–M12. Heatmap retention с drill-down по брендам.</div>
-        <div class="card-tags">
-          <span class="tag">Cohort Heatmap</span>
-          <span class="tag">M0–M12</span>
-          <span class="tag">Retention %</span>
-        </div>
-        <div class="card-arrow">
-          Open Report
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
-      <!-- IN/OUT -->
-      <a class="report-card" href="reports/inout-report.html" style="--card-color: var(--red);">
-        <div class="card-header">
-          <div class="card-icon">↕️</div>
-          <div class="card-num">04</div>
+      <a class="quick-item" href="reports/churn-report.html">
+        <div class="qi-icon">🔄</div>
+        <div class="qi-info">
+          <div class="qi-name">Churn Rate (Cohort)</div>
+          <div class="qi-sub">D0–D30 · retention heatmap</div>
         </div>
-        <div class="card-title">In / Out Report</div>
-        <div class="card-desc">Flat list транзакций с hover-профилем игрока, risk flags, hourly heatmap и side panel с историей.</div>
-        <div class="card-tags">
-          <span class="tag">Flat List</span>
-          <span class="tag">Risk Flags</span>
-          <span class="tag">Hourly Heatmap</span>
-        </div>
-        <div class="card-arrow">
-          Open Report
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
-      <!-- AFFILIATE -->
-      <a class="report-card" href="reports/affiliate-report.html" style="--card-color: var(--purple);">
-        <div class="card-header">
-          <div class="card-icon">🤝</div>
-          <div class="card-num">05</div>
+      <a class="quick-item" href="reports/affiliate-report.html">
+        <div class="qi-icon">🤝</div>
+        <div class="qi-info">
+          <div class="qi-name">Affiliate Performance</div>
+          <div class="qi-sub">3-level drill-down · ROI / eCPA</div>
         </div>
-        <div class="card-title">Affiliate Performance</div>
-        <div class="card-desc">Drill-down Affiliate → Media Item → GEO. ROI, eCPA, R2D%, NET PROFIT с performance flags и side panel.</div>
-        <div class="card-tags">
-          <span class="tag">3-level Drill-down</span>
-          <span class="tag">ROI / eCPA</span>
-          <span class="tag">Performance Flags</span>
-        </div>
-        <div class="card-arrow">
-          Open Report
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
+        <span class="qi-badge live">Live</span>
       </a>
-
     </div>
   </div>
 
-  <!-- RIGHT: SIDEBAR PANEL -->
-  <div class="side-panel">
-
-    <!-- DOCS -->
-    <div class="docs-section">
-      <div class="section-title">Documentation</div>
-      <a class="doc-link" href="docs/index.html">
-        <div class="doc-icon">📋</div>
-        <div>
-          <div class="doc-title">Project Overview</div>
-          <div class="doc-sub">General description & requirements</div>
+  <!-- DOCS -->
+  <div class="quick-block">
+    <div class="section-label">Documentation</div>
+    <div class="quick-list">
+      <a class="quick-item" href="docs/overview.html">
+        <div class="qi-icon">📋</div>
+        <div class="qi-info">
+          <div class="qi-name">Project Overview</div>
+          <div class="qi-sub">Goals · audience · user roles · NFRs</div>
         </div>
+        <span class="qi-badge">01</span>
       </a>
-      <a class="doc-link" href="docs/reports.html">
-        <div class="doc-icon">📈</div>
-        <div>
-          <div class="doc-title">Reports Specs</div>
-          <div class="doc-sub">Technical specs for all 5 reports</div>
+      <a class="quick-item" href="docs/reports.html">
+        <div class="qi-icon">📐</div>
+        <div class="qi-info">
+          <div class="qi-name">Reports Specifications</div>
+          <div class="qi-sub">Filters · metrics · export · UI specs</div>
         </div>
+        <span class="qi-badge">02</span>
       </a>
-      <a class="doc-link" href="docs/architecture.html">
-        <div class="doc-icon">⚙️</div>
-        <div>
-          <div class="doc-title">Architecture Brief</div>
-          <div class="doc-sub">Engineering decisions & guidelines</div>
+      <a class="quick-item" href="docs/architecture.html">
+        <div class="qi-icon">⚙️</div>
+        <div class="qi-info">
+          <div class="qi-name">Architecture Brief</div>
+          <div class="qi-sub">Data pipeline · RLS · API · cache</div>
         </div>
+        <span class="qi-badge">03</span>
       </a>
-      <a class="doc-link" href="docs/vocabulary.html">
-        <div class="doc-icon">📖</div>
-        <div>
-          <div class="doc-title">Vocabulary</div>
-          <div class="doc-sub">Definitions of all metrics & terms</div>
+      <a class="quick-item" href="docs/vocabulary.html">
+        <div class="qi-icon">📖</div>
+        <div class="qi-info">
+          <div class="qi-name">Vocabulary v1.4</div>
+          <div class="qi-sub">GGR · NGR · FTD · cohort definitions</div>
         </div>
+        <span class="qi-badge">04</span>
       </a>
-      <a class="doc-link" href="docs/changelog.html">
-        <div class="doc-icon">🔖</div>
-        <div>
-          <div class="doc-title">Changelog</div>
-          <div class="doc-sub">Version history & updates</div>
+      <a class="quick-item" href="docs/design-system.html">
+        <div class="qi-icon">🎨</div>
+        <div class="qi-info">
+          <div class="qi-name">Design System</div>
+          <div class="qi-sub">Colors · typography · components</div>
         </div>
+        <span class="qi-badge">05</span>
+      </a>
+      <a class="quick-item" href="docs/roadmap.html">
+        <div class="qi-icon">🗺️</div>
+        <div class="qi-info">
+          <div class="qi-name">Roadmap</div>
+          <div class="qi-sub">Priorities · phases · features in work</div>
+        </div>
+        <span class="qi-badge new">New</span>
       </a>
     </div>
+  </div>
 
-    <!-- CHANGELOG MINI -->
+</div>
+
+<!-- ─── ABOUT ─── -->
+<div class="about-wrap">
+  <div class="section-label">About the Platform</div>
+  <div class="about-card">
+
     <div>
-      <div class="section-title">Recent Changes</div>
-      <div class="changelog-item">
-        <div class="cl-dot" style="background:var(--green)"></div>
-        <div>
-          <div class="cl-version">v2.3 — Mar 2026</div>
-          <div class="cl-text">Affiliate Report v1.0 · Architecture Brief · Notion полный аудит</div>
-        </div>
-      </div>
-      <div class="changelog-item">
-        <div class="cl-dot" style="background:var(--accent)"></div>
-        <div>
-          <div class="cl-version">v2.2 — Mar 2026</div>
-          <div class="cl-text">In/Out Report v1.1 · Hover tooltip · Side panel</div>
-        </div>
-      </div>
-      <div class="changelog-item">
-        <div class="cl-dot" style="background:var(--purple)"></div>
-        <div>
-          <div class="cl-version">v2.0 — Mar 2026</div>
-          <div class="cl-text">Churn Rate v2.0 · 7 KPI cards · Collapse groups</div>
-        </div>
-      </div>
-      <div class="changelog-item">
-        <div class="cl-dot" style="background:var(--muted)"></div>
-        <div>
-          <div class="cl-version">v1.0 — Mar 2026</div>
-          <div class="cl-text">Initial release: Daily + Payment Reports</div>
-        </div>
+      <div class="about-block-title">What is WinBetix</div>
+      <p class="about-text">
+        <strong>WinBetix</strong> — внутренняя аналитическая платформа для мульти-брендовой iGaming-операции, заменяющая PowerBI.<br><br>
+        Все отчёты работают с предварительно агрегированными данными — никаких real-time запросов к базе. SLA загрузки &lt;3 сек для P95.<br><br>
+        Права доступа управляются через <strong>Row-Level Security</strong> на уровне SQL — не на уровне API.
+      </p>
+    </div>
+
+    <div>
+      <div class="about-block-title">Quick Navigation</div>
+      <div class="about-links">
+        <a class="about-link" href="reports/dashboard.html">Dashboard — live overview</a>
+        <a class="about-link" href="reports/daily-report.html">Daily Performance KPI</a>
+        <a class="about-link" href="reports/payment-report.html">Payment Performance</a>
+        <a class="about-link" href="reports/churn-report.html">Churn Rate (Cohort)</a>
+        <a class="about-link" href="reports/inout-report.html">In / Out Report</a>
+        <a class="about-link" href="reports/affiliate-report.html">Affiliate Performance</a>
+        <a class="about-link" href="docs/index.html">Documentation hub</a>
+        <a class="about-link" href="docs/roadmap.html">Product Roadmap</a>
       </div>
     </div>
 
-    <!-- TECH STACK -->
     <div>
-      <div class="section-title">Design System</div>
-      <div class="stack-grid">
-        <div class="stack-item">
-          <div class="stack-icon">🎨</div>
-          <span class="stack-name">Dark Theme</span>
-        </div>
-        <div class="stack-item">
-          <div class="stack-icon">🔠</div>
-          <span class="stack-name">Syne + DM Mono</span>
-        </div>
-        <div class="stack-item">
-          <div class="stack-icon">📱</div>
-          <span class="stack-name">Responsive</span>
-        </div>
-        <div class="stack-item">
-          <div class="stack-icon">⚡</div>
-          <span class="stack-name">No Framework</span>
-        </div>
-        <div class="stack-item">
-          <div class="stack-icon">♿</div>
-          <span class="stack-name">Accessible</span>
-        </div>
-        <div class="stack-item">
-          <div class="stack-icon">🚀</div>
-          <span class="stack-name">Pure HTML/CSS</span>
-        </div>
+      <div class="about-block-title">Architecture Principles</div>
+      <div class="about-principles">
+        <div class="principle"><div class="principle-dot"></div>No real-time aggregations — pre-computed only</div>
+        <div class="principle"><div class="principle-dot" style="background:var(--green)"></div>RLS enforced at SQL level, never API</div>
+        <div class="principle"><div class="principle-dot" style="background:var(--yellow)"></div>Cursor-based pagination — no offset</div>
+        <div class="principle"><div class="principle-dot" style="background:var(--purple)"></div>UTC storage, per-brand timezone at query time</div>
+        <div class="principle"><div class="principle-dot" style="background:var(--teal)"></div>Idempotent ETL — UPSERT on conflict</div>
+        <div class="principle"><div class="principle-dot" style="background:var(--red)"></div>Soft deletes only — immutable audit trail</div>
       </div>
     </div>
 
@@ -757,9 +805,7 @@ footer {
 </div>
 
 <footer>
-  <div class="footer-left">
-    WinBetix Analytics Platform · v2.3 · March 2026 · Internal use only
-  </div>
+  <div class="footer-left">WinBetix Analytics Platform · v2.4 · March 2026 · Internal use only</div>
   <div class="footer-links">
     <a href="docs/index.html">Docs</a>
     <a href="docs/roadmap.html">Roadmap</a>
