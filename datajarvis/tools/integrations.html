@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations — WinBetix Postback</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+  <style>
+    /* ── Page layout ─────────────────────────────────────── */
+    body { display:flex; height:100vh; overflow:hidden; background:var(--bg); }
+    .main { flex:1; display:flex; flex-direction:column; min-width:0; overflow:hidden; }
+
+    /* ── Topbar ──────────────────────────────────────────── */
+    .topbar {
+      display:flex; align-items:center; gap:12px;
+      padding:0 22px; height:52px; flex-shrink:0;
+      border-bottom:1px solid var(--border); background:var(--surface);
+    }
+    .topbar-title { font-family:var(--sans); font-size:15px; font-weight:600; color:var(--text); }
+    .topbar-badge {
+      font-size:9px; font-family:var(--mono); font-weight:600;
+      padding:2px 7px; border-radius:4px; letter-spacing:.04em; text-transform:uppercase;
+      background:rgba(255,140,66,.12); color:#ff8c42; border:1px solid rgba(255,140,66,.25);
+    }
+    .topbar-sep { width:1px; height:18px; background:var(--border); margin:0 2px; }
+    .topbar-sub { font-size:12px; color:var(--muted); font-family:var(--sans); }
+    .topbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+
+    /* ── Filter bar ──────────────────────────────────────── */
+    .filter-bar {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 22px; flex-shrink:0;
+      border-bottom:1px solid var(--border); background:var(--surface);
+    }
+    .filter-bar .lbl { font-size:11px; color:var(--muted); font-family:var(--mono); margin-right:2px; }
+
+    .chip {
+      display:inline-flex; align-items:center; gap:5px;
+      height:26px; padding:0 10px; border-radius:5px; cursor:pointer;
+      font-size:11px; font-family:var(--mono); border:1px solid var(--border2);
+      background:var(--surface2); color:var(--muted2); transition:all .15s;
+    }
+    .chip.active { background:rgba(61,127,255,.12); border-color:rgba(61,127,255,.35); color:var(--accent); }
+    .chip:hover:not(.active) { border-color:var(--border); color:var(--text); }
+
+    /* ── Search + mode toggle ────────────────────────────── */
+    .search-group { margin-left:auto; display:flex; align-items:center; }
+    .search-mode {
+      display:flex; border:1px solid var(--border2); border-right:none;
+      border-radius:5px 0 0 5px; overflow:hidden; background:var(--surface2);
+    }
+    .sm-opt {
+      height:26px; padding:0 10px; font-size:10px; font-family:var(--mono);
+      font-weight:600; letter-spacing:.03em; text-transform:uppercase;
+      color:var(--muted); cursor:pointer; border-right:1px solid var(--border2);
+      transition:all .12s; white-space:nowrap;
+    }
+    .sm-opt:last-child { border-right:none; }
+    .sm-opt.active { background:rgba(61,127,255,.12); color:var(--accent); }
+    .sm-opt:hover:not(.active) { color:var(--text); }
+    .search-wrap { position:relative; }
+    .search-wrap input {
+      height:26px; padding:0 10px 0 30px;
+      border-radius:0 5px 5px 0; border:1px solid var(--border2);
+      background:var(--surface2); font-size:12px; font-family:var(--mono);
+      color:var(--text); outline:none; width:200px; transition:border-color .15s;
+    }
+    .search-wrap input:focus { border-color:var(--accent); }
+    .search-wrap input::placeholder { color:var(--muted); }
+    .search-wrap svg { position:absolute; left:8px; top:50%; transform:translateY(-50%); pointer-events:none; }
+
+    /* ── Pagination bar ──────────────────────────────────── */
+    .pagination-bar {
+      display:flex; align-items:center; gap:10px;
+      padding:9px 14px; border-top:1px solid var(--border);
+      background:var(--surface); flex-shrink:0;
+    }
+    .page-info { font-size:11px; font-family:var(--mono); color:var(--muted); }
+    .page-info b { color:var(--muted2); font-weight:600; }
+    .page-size-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+    .page-size-lbl { font-size:10px; font-family:var(--mono); color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+    .page-size-sel {
+      display:flex; border:1px solid var(--border2); border-radius:4px; overflow:hidden;
+    }
+    .ps-opt {
+      height:22px; padding:0 9px; font-size:10px; font-family:var(--mono); font-weight:600;
+      color:var(--muted); cursor:pointer; transition:all .12s;
+      border-right:1px solid var(--border2);
+    }
+    .ps-opt:last-child { border-right:none; }
+    .ps-opt.active { background:rgba(61,127,255,.12); color:var(--accent); }
+    .ps-opt:hover:not(.active) { color:var(--text); }
+    .page-btns { display:flex; gap:4px; }
+    .pg-btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:28px; height:24px; padding:0 6px; border-radius:4px;
+      font-size:11px; font-family:var(--mono); cursor:pointer; transition:all .12s;
+      border:1px solid var(--border2); background:var(--surface2); color:var(--muted2);
+    }
+    .pg-btn:hover:not(.active):not(:disabled) { border-color:var(--border); color:var(--text); }
+    .pg-btn.active { background:rgba(61,127,255,.12); border-color:rgba(61,127,255,.35); color:var(--accent); }
+    .pg-btn:disabled { opacity:.35; cursor:default; }
+    .pg-ellipsis { display:inline-flex; align-items:center; padding:0 4px; font-family:var(--mono); font-size:12px; color:var(--muted); }
+
+    /* ── Create button ───────────────────────────────────── */
+    .btn-create {
+      display:inline-flex; align-items:center; gap:6px;
+      height:30px; padding:0 14px; border-radius:6px; cursor:pointer;
+      font-size:12px; font-family:var(--mono); font-weight:600;
+      background:rgba(255,140,66,.15); border:1px solid rgba(255,140,66,.35);
+      color:#ff8c42; transition:all .15s; white-space:nowrap;
+    }
+    .btn-create:hover { background:rgba(255,140,66,.25); border-color:rgba(255,140,66,.5); }
+
+    /* ── Table section ───────────────────────────────────── */
+    .tbl-section { flex:1; min-height:0; overflow-y:auto; padding:18px 22px 30px; }
+    .tbl-section::-webkit-scrollbar { width:5px; }
+    .tbl-section::-webkit-scrollbar-track { background:transparent; }
+    .tbl-section::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+    .tbl-wrap {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; overflow:hidden;
+    }
+    table { width:100%; border-collapse:collapse; }
+    thead th {
+      padding:10px 14px; font-size:10px; font-family:var(--mono);
+      text-transform:uppercase; letter-spacing:.06em; color:var(--muted);
+      border-bottom:1px solid var(--border); background:var(--surface);
+      white-space:nowrap; text-align:left; position:sticky; top:0; z-index:2;
+    }
+
+    /* ── Main rows ───────────────────────────────────────── */
+    tr.main-row { cursor:pointer; transition:background .12s; }
+    tr.main-row:hover { background:var(--surface2); }
+    tr.main-row.expanded { background:var(--surface2); }
+    tr.main-row td { padding:12px 14px; vertical-align:middle; border-bottom:1px solid var(--border); }
+    tr.main-row.last-main td { border-bottom:none; }
+
+    /* Expand chevron */
+    .expand-chevron {
+      width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center;
+      color:var(--muted); transition:transform .18s;
+    }
+    tr.main-row.expanded .expand-chevron { transform:rotate(90deg); }
+
+    /* Reference cell */
+    .ref-name { font-family:var(--sans); font-weight:600; color:var(--text); font-size:13px; }
+    .ref-brand { font-size:10px; font-family:var(--mono); color:var(--muted); margin-top:2px; }
+
+    /* Integration ID */
+    .int-id {
+      font-family:var(--mono); font-size:11px; color:var(--muted2);
+      background:var(--surface2); border:1px solid var(--border2);
+      padding:2px 7px; border-radius:4px; display:inline-block;
+    }
+
+    /* Event pills in main row */
+    .ev-pills { display:flex; gap:4px; flex-wrap:wrap; }
+    .ev-pill {
+      display:inline-flex; align-items:center; gap:4px;
+      height:20px; padding:0 7px; border-radius:3px;
+      font-size:9px; font-family:var(--mono); font-weight:700; letter-spacing:.04em;
+    }
+    .ev-pill.on-reg { background:rgba(91,146,255,.15); color:#5b92ff; }
+    .ev-pill.on-ftd { background:rgba(255,140,66,.15); color:#ff8c42; }
+    .ev-pill.on-dep { background:rgba(34,208,122,.15); color:#22d07a; }
+    .ev-pill.on-ggr { background:rgba(155,89,255,.15); color:#9b59ff; }
+    .ev-pill.off    { background:var(--surface2); color:var(--border); border:1px solid var(--border); }
+    .ev-pill-method {
+      font-size:8px; font-family:var(--mono); opacity:.7;
+    }
+
+    /* Status badge */
+    .status {
+      display:inline-flex; align-items:center; gap:5px;
+      font-size:11px; font-family:var(--mono); padding:2px 9px;
+      border-radius:12px; font-weight:600;
+    }
+    .status-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .status.active { background:rgba(34,208,122,.12); color:var(--green); }
+    .status.active .status-dot { background:var(--green); }
+    .status.paused { background:rgba(255,193,7,.1); color:#ffc107; }
+    .status.paused .status-dot { background:#ffc107; }
+    .status.error  { background:rgba(255,77,106,.1); color:var(--red); }
+    .status.error  .status-dot { background:var(--red); }
+
+    .last-fired { font-family:var(--mono); font-size:11px; color:var(--muted2); }
+
+    /* action column — just the gear icon */
+
+    /* ── Expanded rows ───────────────────────────────────── */
+    tr.exp-row { display:none; }
+    tr.exp-row.show { display:table-row; }
+    tr.exp-row td {
+      padding:0; border-bottom:1px solid var(--border);
+      background:rgba(0,0,0,.18);
+    }
+
+    .exp-content { padding:0; }
+
+    .exp-ev-card {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;
+    }
+    .exp-ev-hd { display:flex; align-items:center; gap:8px; }
+    .exp-ev-name { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--text); flex:1; }
+    .method-badge {
+      font-size:9px; font-family:var(--mono); font-weight:700;
+      padding:2px 6px; border-radius:3px; letter-spacing:.04em;
+    }
+    .method-badge.get  { background:rgba(34,208,122,.12); color:#22d07a; }
+    .method-badge.post { background:rgba(255,140,66,.12); color:#ff8c42; }
+
+    .exp-ev-url {
+      font-family:var(--mono); font-size:10px; color:var(--muted2);
+      word-break:break-all; line-height:1.55;
+      background:var(--surface2); border-radius:5px;
+      padding:6px 8px; border:1px solid var(--border);
+    }
+    /* Highlight macros in URL display */
+    .exp-ev-url .macro { color:#ff8c42; }
+
+    .exp-ev-params { display:flex; flex-direction:column; gap:3px; }
+    .exp-ev-params-label {
+      font-size:9px; font-family:var(--mono); text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted); margin-bottom:2px;
+    }
+    .param-row { display:flex; align-items:baseline; gap:0; font-family:var(--mono); font-size:10px; }
+    .param-key { color:var(--muted2); flex-shrink:0; }
+    .param-eq  { color:var(--border); margin:0 2px; flex-shrink:0; }
+    .param-val { color:var(--text); }
+    .param-val.is-macro { color:#ff8c42; }
+
+    .exp-ev-copy {
+      align-self:flex-start;
+      height:20px; padding:0 8px; border-radius:4px; font-size:10px;
+      font-family:var(--mono); cursor:pointer; transition:all .12s;
+      border:1px solid var(--border2); background:var(--surface2); color:var(--muted);
+    }
+    .exp-ev-copy:hover { color:var(--text); border-color:var(--border); }
+
+    .exp-fires { font-size:10px; font-family:var(--mono); color:var(--muted); }
+
+    /* ── Expanded linear list ────────────────────────────── */
+    .exp-list { display:flex; flex-direction:column; }
+    .exp-list-row {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 16px 8px 48px;
+      border-bottom:1px solid var(--border);
+      transition:background .1s;
+    }
+    .exp-list-row:last-child { border-bottom:none; }
+    .exp-list-row:hover { background:rgba(255,255,255,.02); }
+    .exp-list-tag { flex-shrink:0; }
+    .exp-list-method { flex-shrink:0; }
+    .exp-list-url {
+      flex:1; min-width:0;
+      font-family:var(--mono); font-size:11px; color:var(--muted2);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .exp-list-url .macro { color:#ff8c42; }
+    .exp-list-url.no-url { font-style:italic; color:var(--muted); font-size:10px; }
+    .exp-list-fires {
+      flex-shrink:0; font-family:var(--mono); font-size:10px; color:var(--muted);
+      white-space:nowrap; min-width:72px; text-align:right;
+    }
+    .exp-list-copy {
+      flex-shrink:0; height:20px; padding:0 8px; border-radius:4px;
+      font-size:10px; font-family:var(--mono); cursor:pointer;
+      border:1px solid var(--border2); background:var(--surface2); color:var(--muted);
+      transition:all .12s; white-space:nowrap;
+    }
+    .exp-list-copy:hover { color:var(--text); border-color:var(--border); }
+
+    /* ── Gear button ─────────────────────────────────────── */
+    .gear-btn {
+      opacity:0; width:28px; height:28px; border-radius:5px;
+      border:1px solid var(--border2); background:var(--surface2);
+      cursor:pointer; color:var(--muted); display:flex; align-items:center;
+      justify-content:center; transition:opacity .15s, background .12s, color .12s;
+      flex-shrink:0;
+    }
+    tr.main-row:hover .gear-btn { opacity:1; }
+    .gear-btn:hover { background:var(--surface); color:var(--text); border-color:var(--border); }
+
+    /* ── Affiliate pills ─────────────────────────────────── */
+    .aff-pills { display:flex; gap:4px; flex-wrap:wrap; align-items:center; }
+    .aff-pill {
+      display:inline-flex; align-items:center; gap:4px;
+      height:20px; padding:0 7px; border-radius:3px;
+      font-size:10px; font-family:var(--mono); font-weight:600; letter-spacing:.02em;
+      background:rgba(0,201,177,.1); color:var(--teal); border:1px solid rgba(0,201,177,.2);
+    }
+    .aff-pill-rm {
+      cursor:pointer; opacity:.5; font-size:11px; line-height:1;
+      margin-left:1px;
+    }
+    .aff-pill-rm:hover { opacity:1; }
+    .aff-none { font-size:11px; font-family:var(--mono); color:var(--muted); }
+
+    /* Affiliate tag input in form */
+    .aff-input-wrap {
+      display:flex; flex-wrap:wrap; gap:5px; align-items:center;
+      min-height:34px; padding:4px 8px; border-radius:6px;
+      border:1px solid var(--border2); background:var(--surface2);
+      cursor:text; transition:border-color .15s;
+    }
+    .aff-input-wrap:focus-within { border-color:var(--accent); }
+    .aff-form-pill {
+      display:inline-flex; align-items:center; gap:4px;
+      height:20px; padding:0 7px; border-radius:3px;
+      font-size:10px; font-family:var(--mono); font-weight:600;
+      background:rgba(0,201,177,.1); color:var(--teal); border:1px solid rgba(0,201,177,.2);
+    }
+    .aff-form-pill button {
+      background:none; border:none; cursor:pointer; color:inherit;
+      opacity:.5; font-size:12px; padding:0; line-height:1;
+    }
+    .aff-form-pill button:hover { opacity:1; }
+    .aff-text-input {
+      background:none; border:none; outline:none; color:var(--text);
+      font-size:11px; font-family:var(--mono); flex:1; min-width:80px;
+      height:22px; padding:0 2px;
+    }
+    .aff-text-input::placeholder { color:var(--muted); }
+    .aff-hint { font-size:10px; font-family:var(--mono); color:var(--muted); }
+
+    /* Empty state */
+    .empty-row td {
+      text-align:center; padding:52px 0;
+      color:var(--muted); font-size:13px; font-family:var(--mono);
+    }
+
+    /* ── Overlay ─────────────────────────────────────────── */
+    .overlay {
+      position:fixed; inset:0; z-index:100;
+      background:rgba(0,0,0,.55); opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    .overlay.show { opacity:1; pointer-events:all; }
+
+    /* ── Slide panels ────────────────────────────────────── */
+    .panel {
+      position:fixed; top:0; right:0; width:640px; height:100vh; z-index:101;
+      background:var(--surface); border-left:1px solid var(--border);
+      display:flex; flex-direction:column;
+      transform:translateX(100%); transition:transform .22s cubic-bezier(.4,0,.2,1);
+      overflow:hidden;
+    }
+    .panel.open { transform:translateX(0); }
+
+    .panel-hd {
+      display:flex; align-items:center; gap:10px;
+      padding:16px 22px; border-bottom:1px solid var(--border); flex-shrink:0;
+    }
+    .panel-title { font-family:var(--sans); font-size:14px; font-weight:700; color:var(--text); flex:1; }
+    .panel-sub   { font-size:11px; font-family:var(--mono); color:var(--muted); margin-top:1px; }
+    .panel-close {
+      width:28px; height:28px; border-radius:6px; background:var(--surface2);
+      border:1px solid var(--border2); cursor:pointer; color:var(--muted);
+      display:flex; align-items:center; justify-content:center; font-size:14px;
+      transition:all .12s; flex-shrink:0;
+    }
+    .panel-close:hover { color:var(--text); border-color:var(--border); }
+
+    .panel-body {
+      flex:1; overflow-y:auto; padding:22px;
+      display:flex; flex-direction:column; gap:20px;
+    }
+    .panel-body::-webkit-scrollbar { width:4px; }
+    .panel-body::-webkit-scrollbar-track { background:transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+    .panel-footer {
+      padding:14px 22px; border-top:1px solid var(--border); flex-shrink:0;
+      display:flex; gap:8px;
+    }
+
+    /* ── Create form ─────────────────────────────────────── */
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .form-group { display:flex; flex-direction:column; gap:5px; }
+    .form-label {
+      font-size:10px; font-family:var(--mono); text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted);
+    }
+    .form-input {
+      height:34px; padding:0 12px; border-radius:6px;
+      border:1px solid var(--border2); background:var(--surface2);
+      font-size:12px; font-family:var(--mono); color:var(--text); outline:none;
+      transition:border-color .15s;
+    }
+    .form-input:focus { border-color:var(--accent); }
+    .form-input::placeholder { color:var(--muted); }
+
+    /* Event block */
+    .ev-blocks { display:flex; flex-direction:column; gap:10px; }
+    .ev-blocks-label {
+      font-size:10px; font-family:var(--mono); text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted2); border-bottom:1px solid var(--border);
+      padding-bottom:8px;
+    }
+
+    .ev-block {
+      border:1px solid var(--border); border-radius:10px; overflow:hidden;
+      transition:border-color .15s;
+    }
+    .ev-block.enabled { border-color:rgba(255,140,66,.35); }
+
+    .ev-block-hd {
+      display:flex; align-items:center; gap:10px;
+      padding:11px 14px; cursor:pointer; user-select:none;
+      transition:background .12s;
+    }
+    .ev-block-hd:hover { background:rgba(255,255,255,.02); }
+
+    .ev-toggle {
+      width:34px; height:18px; border-radius:9px; flex-shrink:0;
+      background:var(--surface2); border:1px solid var(--border2);
+      position:relative; transition:all .2s; cursor:pointer;
+    }
+    .ev-toggle::after {
+      content:''; position:absolute; top:2px; left:2px;
+      width:12px; height:12px; border-radius:50%;
+      background:var(--muted); transition:all .2s;
+    }
+    .ev-block.enabled .ev-toggle {
+      background:rgba(255,140,66,.2); border-color:rgba(255,140,66,.5);
+    }
+    .ev-block.enabled .ev-toggle::after {
+      background:#ff8c42; transform:translateX(16px);
+    }
+
+    .ev-block-label { font-family:var(--mono); font-size:12px; color:var(--muted2); flex:1; }
+    .ev-block.enabled .ev-block-label { color:var(--text); }
+
+    .ev-tag {
+      font-size:9px; font-family:var(--mono); font-weight:700; text-transform:uppercase;
+      padding:2px 7px; border-radius:3px; letter-spacing:.05em;
+    }
+
+    .ev-block-body { display:none; padding:0 14px 14px; border-top:1px solid var(--border); }
+    .ev-block.enabled .ev-block-body { display:flex; flex-direction:column; gap:10px; }
+
+    /* URL + method row */
+    .url-method-row { display:flex; gap:8px; align-items:flex-end; }
+    .url-field-wrap { flex:1; display:flex; flex-direction:column; gap:5px; }
+    .url-input {
+      height:34px; padding:0 12px; border-radius:6px;
+      border:1px solid var(--border2); background:var(--bg);
+      font-size:11px; font-family:var(--mono); color:var(--text); outline:none;
+      box-sizing:border-box; width:100%; transition:border-color .15s;
+    }
+    .url-input:focus { border-color:rgba(255,140,66,.5); }
+    .url-input::placeholder { color:var(--muted); }
+
+    /* Method selector */
+    .method-sel { display:flex; flex-shrink:0; }
+    .method-opt {
+      height:34px; padding:0 14px; font-size:11px; font-family:var(--mono); font-weight:600;
+      border:1px solid var(--border2); background:var(--surface2); color:var(--muted2);
+      cursor:pointer; transition:all .12s;
+    }
+    .method-opt:first-child { border-radius:6px 0 0 6px; border-right:none; }
+    .method-opt:last-child  { border-radius:0 6px 6px 0; }
+    .method-opt.active-get  { background:rgba(34,208,122,.12); border-color:rgba(34,208,122,.35); color:#22d07a; }
+    .method-opt.active-post { background:rgba(255,140,66,.12); border-color:rgba(255,140,66,.35); color:#ff8c42; }
+
+    /* Parsed params */
+    .parsed-params { display:flex; flex-direction:column; gap:5px; }
+    .parsed-params-hd {
+      display:flex; align-items:center; gap:6px;
+      font-size:10px; font-family:var(--mono); color:var(--muted);
+    }
+    .parsed-params-hd span { text-transform:uppercase; letter-spacing:.05em; }
+    .param-count {
+      font-size:9px; font-family:var(--mono); padding:1px 5px; border-radius:3px;
+      background:var(--surface2); color:var(--muted2); border:1px solid var(--border2);
+    }
+    .params-grid {
+      display:grid; grid-template-columns:1fr 1fr; gap:4px;
+    }
+    .param-chip {
+      display:flex; align-items:center; gap:0;
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:5px; padding:4px 8px; font-size:10px; font-family:var(--mono);
+      overflow:hidden;
+    }
+    .param-chip .pk { color:var(--muted2); flex-shrink:0; }
+    .param-chip .peq { color:var(--border); margin:0 3px; flex-shrink:0; }
+    .param-chip .pv { color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .param-chip .pv.macro { color:#ff8c42; }
+    .no-params { font-size:10px; font-family:var(--mono); color:var(--muted); font-style:italic; }
+
+    /* ── View panel ──────────────────────────────────────── */
+    .stat-strip { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .stat-card { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:10px 12px; }
+    .stat-card-label { font-size:10px; font-family:var(--mono); color:var(--muted); margin-bottom:4px; }
+    .stat-card-val { font-size:18px; font-family:var(--mono); font-weight:700; color:var(--text); }
+
+    .detail-section { display:flex; flex-direction:column; gap:6px; }
+    .detail-section-label {
+      font-size:10px; font-family:var(--mono); text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted); border-bottom:1px solid var(--border);
+      padding-bottom:6px; margin-bottom:2px;
+    }
+    .detail-row { display:flex; align-items:flex-start; gap:10px; padding:4px 0; }
+    .detail-key { font-size:11px; font-family:var(--mono); color:var(--muted2); flex-shrink:0; min-width:110px; }
+    .detail-val { font-size:12px; font-family:var(--mono); color:var(--text); flex:1; word-break:break-all; }
+    .detail-val.muted { color:var(--muted); }
+
+    .view-ev-card {
+      background:var(--surface2); border:1px solid var(--border);
+      border-radius:9px; padding:13px 14px; display:flex; flex-direction:column; gap:9px;
+    }
+    .view-ev-hd { display:flex; align-items:center; gap:8px; }
+    .view-ev-name { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--text); flex:1; }
+    .view-ev-fires { font-size:11px; font-family:var(--mono); color:var(--muted2); }
+
+    .view-ev-url {
+      font-family:var(--mono); font-size:10px; color:var(--muted2);
+      word-break:break-all; line-height:1.6;
+      background:var(--bg); border-radius:5px; padding:7px 9px;
+      border:1px solid var(--border);
+    }
+
+    .view-ev-params-wrap { display:flex; flex-direction:column; gap:4px; }
+    .view-ev-params-label {
+      font-size:9px; font-family:var(--mono); text-transform:uppercase;
+      letter-spacing:.06em; color:var(--muted);
+    }
+
+    .copy-url-btn {
+      align-self:flex-start;
+      height:22px; padding:0 9px; border-radius:4px; font-size:10px;
+      font-family:var(--mono); cursor:pointer; transition:all .12s;
+      border:1px solid var(--border2); background:var(--surface); color:var(--muted);
+    }
+    .copy-url-btn:hover { color:var(--text); border-color:var(--border); }
+
+    /* Buttons */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      height:34px; padding:0 18px; border-radius:6px; font-size:12px;
+      font-family:var(--mono); font-weight:600; cursor:pointer; transition:all .15s; border:1px solid;
+    }
+    .btn-primary { background:rgba(255,140,66,.15); border-color:rgba(255,140,66,.4); color:#ff8c42; }
+    .btn-primary:hover { background:rgba(255,140,66,.25); border-color:rgba(255,140,66,.6); }
+    .btn-ghost   { background:var(--surface2); border-color:var(--border2); color:var(--muted2); }
+    .btn-ghost:hover   { border-color:var(--border); color:var(--text); }
+    .btn-danger  { background:rgba(255,77,106,.08); border-color:rgba(255,77,106,.3); color:var(--red); }
+    .btn-danger:hover  { background:rgba(255,77,106,.15); border-color:rgba(255,77,106,.5); }
+  </style>
+</head>
+<body>
+
+<script src="../assets/nav.js"></script>
+
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span class="topbar-title">Postback Management</span>
+    <span class="topbar-badge">In Work · v3.0</span>
+    <span class="topbar-sep"></span>
+    <span class="topbar-sub">Integrations</span>
+    <div class="topbar-right">
+      <button class="btn-create" onclick="openCreate()">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Create Integration
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <span class="lbl">Status:</span>
+    <div class="chip active" onclick="filterStatus('all',this)">All</div>
+    <div class="chip" onclick="filterStatus('active',this)">Active</div>
+    <div class="chip" onclick="filterStatus('paused',this)">Paused</div>
+    <div class="chip" onclick="filterStatus('error',this)">Error</div>
+    <div class="search-group">
+      <div class="search-mode">
+        <div class="sm-opt active" onclick="setSearchMode('all',this)">All</div>
+        <div class="sm-opt" onclick="setSearchMode('name',this)">Name</div>
+        <div class="sm-opt" onclick="setSearchMode('affiliate',this)">Affiliate</div>
+      </div>
+      <div class="search-wrap">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <circle cx="6.5" cy="6.5" r="4.5" stroke="#5a6478" stroke-width="1.5"/>
+          <path d="M10 10l3 3" stroke="#5a6478" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search…" oninput="onSearch()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="tbl-section">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:22px; padding-right:4px;"></th>
+            <th style="width:22%">Name</th>
+            <th>Integration ID</th>
+            <th style="width:18%">Affiliate</th>
+            <th>Events</th>
+            <th>Status</th>
+            <th>Last Fired</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody id="intTbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" id="paginationBar">
+      <span class="page-info" id="pageInfo"></span>
+      <div class="page-size-wrap">
+        <span class="page-size-lbl">Per page:</span>
+        <div class="page-size-sel">
+          <div class="ps-opt active" onclick="setPageSize(20,this)">20</div>
+          <div class="ps-opt" onclick="setPageSize(50,this)">50</div>
+          <div class="ps-opt" onclick="setPageSize(100,this)">100</div>
+        </div>
+      </div>
+      <div class="page-btns" id="pageBtns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay" onclick="closeAll()"></div>
+
+<!-- ── Create Integration Panel ─────────────────────────── -->
+<div class="panel" id="createPanel">
+  <div class="panel-hd">
+    <div>
+      <div class="panel-title">Create Integration</div>
+      <div class="panel-sub">Configure postback endpoints for each event type</div>
+    </div>
+    <div class="panel-close" onclick="closeAll()">✕</div>
+  </div>
+  <div class="panel-body" id="createBody">
+
+    <div class="form-row">
+      <div class="form-group" style="grid-column:1/-1">
+        <div class="form-label">Reference Name</div>
+        <input class="form-input" id="f-name" type="text" placeholder="e.g. Affise · Brand A · Summer Campaign">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Brand</div>
+        <input class="form-input" id="f-brand" type="text" placeholder="e.g. WinBetix EU">
+      </div>
+      <div class="form-group">
+        <div class="form-label">Notes (optional)</div>
+        <input class="form-input" id="f-notes" type="text" placeholder="Campaign, contact, etc.">
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <div class="form-label">Affiliate IDs</div>
+        <div class="aff-input-wrap" id="aff-tags-wrap" onclick="document.getElementById('aff-text').focus()">
+          <input class="aff-text-input" id="aff-text" placeholder="AFF-1042, AFF-2081…"
+            onkeydown="affKeydown(event)" oninput="affInputChanged(this)">
+        </div>
+        <div class="aff-hint">Press Enter or comma to add · Backspace to remove last · Events will fire for these affiliate IDs</div>
+      </div>
+    </div>
+
+    <div class="ev-blocks">
+      <div class="ev-blocks-label">Postback Events</div>
+
+      <!-- REG -->
+      <div class="ev-block" id="cb-reg">
+        <div class="ev-block-hd" onclick="toggleEv('cb-reg')">
+          <div class="ev-toggle"></div>
+          <div class="ev-block-label">Registration</div>
+          <span class="ev-tag" style="background:rgba(91,146,255,.12);color:#5b92ff;">REG</span>
+        </div>
+        <div class="ev-block-body">
+          <div class="url-method-row">
+            <div class="url-field-wrap">
+              <div class="form-label">Postback URL</div>
+              <input class="url-input" id="url-reg" placeholder="https://track.example.com/postback?event=reg&click_id={click_id}"
+                oninput="parseParams('reg')">
+            </div>
+            <div>
+              <div class="form-label" style="margin-bottom:5px">Method</div>
+              <div class="method-sel" id="msel-reg">
+                <div class="method-opt active-get" onclick="setMethod('reg','GET',this)">GET</div>
+                <div class="method-opt" onclick="setMethod('reg','POST',this)">POST</div>
+              </div>
+            </div>
+          </div>
+          <div class="parsed-params" id="pp-reg">
+            <div class="parsed-params-hd">
+              <span>Parsed Parameters</span>
+              <span class="param-count" id="pc-reg">0</span>
+            </div>
+            <div class="params-grid" id="pg-reg"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FTD -->
+      <div class="ev-block" id="cb-ftd">
+        <div class="ev-block-hd" onclick="toggleEv('cb-ftd')">
+          <div class="ev-toggle"></div>
+          <div class="ev-block-label">First Time Deposit (FTD)</div>
+          <span class="ev-tag" style="background:rgba(255,140,66,.12);color:#ff8c42;">FTD</span>
+        </div>
+        <div class="ev-block-body">
+          <div class="url-method-row">
+            <div class="url-field-wrap">
+              <div class="form-label">Postback URL</div>
+              <input class="url-input" id="url-ftd" placeholder="https://track.example.com/postback?event=ftd&click_id={click_id}&amount={amount}"
+                oninput="parseParams('ftd')">
+            </div>
+            <div>
+              <div class="form-label" style="margin-bottom:5px">Method</div>
+              <div class="method-sel" id="msel-ftd">
+                <div class="method-opt active-get" onclick="setMethod('ftd','GET',this)">GET</div>
+                <div class="method-opt" onclick="setMethod('ftd','POST',this)">POST</div>
+              </div>
+            </div>
+          </div>
+          <div class="parsed-params" id="pp-ftd">
+            <div class="parsed-params-hd">
+              <span>Parsed Parameters</span>
+              <span class="param-count" id="pc-ftd">0</span>
+            </div>
+            <div class="params-grid" id="pg-ftd"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEP -->
+      <div class="ev-block" id="cb-dep">
+        <div class="ev-block-hd" onclick="toggleEv('cb-dep')">
+          <div class="ev-toggle"></div>
+          <div class="ev-block-label">Deposits</div>
+          <span class="ev-tag" style="background:rgba(34,208,122,.12);color:#22d07a;">DEP</span>
+        </div>
+        <div class="ev-block-body">
+          <div class="url-method-row">
+            <div class="url-field-wrap">
+              <div class="form-label">Postback URL</div>
+              <input class="url-input" id="url-dep" placeholder="https://track.example.com/postback?event=dep&click_id={click_id}&amount={amount}"
+                oninput="parseParams('dep')">
+            </div>
+            <div>
+              <div class="form-label" style="margin-bottom:5px">Method</div>
+              <div class="method-sel" id="msel-dep">
+                <div class="method-opt active-get" onclick="setMethod('dep','GET',this)">GET</div>
+                <div class="method-opt" onclick="setMethod('dep','POST',this)">POST</div>
+              </div>
+            </div>
+          </div>
+          <div class="parsed-params" id="pp-dep">
+            <div class="parsed-params-hd">
+              <span>Parsed Parameters</span>
+              <span class="param-count" id="pc-dep">0</span>
+            </div>
+            <div class="params-grid" id="pg-dep"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GGR -->
+      <div class="ev-block" id="cb-ggr">
+        <div class="ev-block-hd" onclick="toggleEv('cb-ggr')">
+          <div class="ev-toggle"></div>
+          <div class="ev-block-label">GGR</div>
+          <span class="ev-tag" style="background:rgba(155,89,255,.12);color:#9b59ff;">GGR</span>
+        </div>
+        <div class="ev-block-body">
+          <div class="url-method-row">
+            <div class="url-field-wrap">
+              <div class="form-label">Postback URL</div>
+              <input class="url-input" id="url-ggr" placeholder="https://track.example.com/postback?event=ggr&click_id={click_id}&ggr={ggr}"
+                oninput="parseParams('ggr')">
+            </div>
+            <div>
+              <div class="form-label" style="margin-bottom:5px">Method</div>
+              <div class="method-sel" id="msel-ggr">
+                <div class="method-opt active-get" onclick="setMethod('ggr','GET',this)">GET</div>
+                <div class="method-opt" onclick="setMethod('ggr','POST',this)">POST</div>
+              </div>
+            </div>
+          </div>
+          <div class="parsed-params" id="pp-ggr">
+            <div class="parsed-params-hd">
+              <span>Parsed Parameters</span>
+              <span class="param-count" id="pc-ggr">0</span>
+            </div>
+            <div class="params-grid" id="pg-ggr"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-primary" style="flex:1" onclick="saveIntegration()">Save Integration</button>
+    <button class="btn btn-ghost" onclick="closeAll()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── View Integration Panel ──────────────────────────── -->
+<div class="panel" id="viewPanel">
+  <div class="panel-hd">
+    <div>
+      <div class="panel-title" id="viewPanelTitle">Integration Details</div>
+      <div class="panel-sub" id="viewPanelSub"></div>
+    </div>
+    <div class="panel-close" onclick="closeAll()">✕</div>
+  </div>
+  <div class="panel-body" id="viewPanelBody"></div>
+  <div class="panel-footer" id="viewPanelFooter"></div>
+</div>
+
+<script>
+/* ── Mock data ──────────────────────────────────────────── */
+var integrations = [
+  {
+    id: 'INT-0041', name: 'Affise · Brand A · Summer 2025', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true,  ftd: true,  dep: true,  ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'POST', ggr: 'GET' },
+    urls: {
+      reg: 'https://affise.winbetix.com/postback?event=reg&click_id={click_id}&sub1={sub1}',
+      ftd: 'https://affise.winbetix.com/postback?event=ftd&click_id={click_id}&amount={amount}&currency={currency}',
+      dep: 'https://affise.winbetix.com/postback?event=dep&click_id={click_id}&amount={amount}',
+      ggr: ''
+    },
+    fires: { reg: 4821, ftd: 1204, dep: 8933, ggr: 0 },
+    lastFired: '2026-03-15 · 14:22', notes: 'Main summer campaign tracking',
+    affiliates: ['AFF-1042', 'AFF-1091']
+  },
+  {
+    id: 'INT-0038', name: 'Cellxpert · Creative Bundle', brand: 'WinBetix LATAM', status: 'active',
+    events:  { reg: true,  ftd: true,  dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://track.cellxpert.com/postback?action=reg&sub={click_id}&source={source}',
+      ftd: 'https://track.cellxpert.com/postback?action=ftd&sub={click_id}&rev={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 2140, ftd: 517, dep: 0, ggr: 0 },
+    lastFired: '2026-03-15 · 11:05', notes: '',
+    affiliates: ['AFF-2081']
+  },
+  {
+    id: 'INT-0035', name: 'MyAffiliates · CPA Deal Q1', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: false, ftd: true,  dep: false, ggr: true },
+    methods: { reg: 'GET', ftd: 'POST', dep: 'GET', ggr: 'POST' },
+    urls: {
+      reg: '',
+      ftd: 'https://myaffiliates.example.com/postback?event=ftd&click_id={click_id}&goal=1',
+      dep: '',
+      ggr: 'https://myaffiliates.example.com/postback?event=ggr&click_id={click_id}&val={ggr}&type=revenue'
+    },
+    fires: { reg: 0, ftd: 890, dep: 0, ggr: 1230 },
+    lastFired: '2026-03-14 · 22:47', notes: 'Revenue share + CPA hybrid',
+    affiliates: ['AFF-3310', 'AFF-3318', 'AFF-3401']
+  },
+  {
+    id: 'INT-0031', name: 'Income Access · APAC Promo', brand: 'WinBetix APAC', status: 'paused',
+    events:  { reg: true, ftd: true, dep: true, ggr: true },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://reports.incomeaccess.com/postback?e=reg&uid={click_id}&brand={brand}',
+      ftd: 'https://reports.incomeaccess.com/postback?e=ftd&uid={click_id}&amt={amount}&cur={currency}',
+      dep: 'https://reports.incomeaccess.com/postback?e=dep&uid={click_id}&amt={amount}',
+      ggr: 'https://reports.incomeaccess.com/postback?e=ggr&uid={click_id}&v={ggr}'
+    },
+    fires: { reg: 6712, ftd: 1830, dep: 14200, ggr: 3411 },
+    lastFired: '2026-02-28 · 09:00', notes: 'Paused — APAC promo cycle ended',
+    affiliates: ['AFF-4120', 'AFF-4121']
+  },
+  {
+    id: 'INT-0028', name: 'Affilka · Partner Network', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://partners.affilka.com/pb?event=reg&s1={click_id}',
+      ftd: 'https://partners.affilka.com/pb?event=ftd&s1={click_id}&amount={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 3302, ftd: 820, dep: 0, ggr: 0 },
+    lastFired: '2026-03-15 · 13:50', notes: '',
+    affiliates: ['AFF-0812']
+  },
+  {
+    id: 'INT-0024', name: 'TrakAff · FB Campaign Dec', brand: 'WinBetix EU', status: 'error',
+    events:  { reg: true, ftd: true, dep: true, ggr: false },
+    methods: { reg: 'GET', ftd: 'POST', dep: 'POST', ggr: 'GET' },
+    urls: {
+      reg: 'https://trakking.io/v1/postback?e=register&uid={click_id}',
+      ftd: 'https://trakking.io/v1/postback?e=ftd&uid={click_id}&dep={amount}&status={status}',
+      dep: 'https://trakking.io/v1/postback?e=deposit&uid={click_id}&dep={amount}',
+      ggr: ''
+    },
+    fires: { reg: 512, ftd: 88, dep: 144, ggr: 0 },
+    lastFired: '2026-03-13 · 06:11', notes: 'Error: 403 Forbidden on FTD endpoint',
+    affiliates: ['AFF-5500', 'AFF-5502']
+  },
+  {
+    id: 'INT-0019', name: 'HasOffers · Internal Media', brand: 'WinBetix LATAM', status: 'active',
+    events:  { reg: false, ftd: false, dep: true, ggr: true },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: '', ftd: '',
+      dep: 'https://internal.hasoffers.com/postback?event=dep&ref={click_id}&rev={amount}&cur={currency}',
+      ggr: 'https://internal.hasoffers.com/postback?event=ggr&ref={click_id}&ggr={ggr}'
+    },
+    fires: { reg: 0, ftd: 0, dep: 22400, ggr: 8120 },
+    lastFired: '2026-03-15 · 14:01', notes: 'Internal media buying team only',
+    affiliates: []
+  },
+  {
+    id: 'INT-0011', name: 'Everflow · Legacy Campaigns', brand: 'WinBetix EU', status: 'paused',
+    events:  { reg: true, ftd: false, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://hk182.everflow.io/postback?transaction_id={click_id}&type=reg',
+      ftd: '', dep: '', ggr: ''
+    },
+    fires: { reg: 18444, ftd: 0, dep: 0, ggr: 0 },
+    lastFired: '2025-11-01 · 00:00', notes: 'Legacy campaigns — reg only',
+    affiliates: ['AFF-0100', 'AFF-0101', 'AFF-0104']
+  },
+  {
+    id: 'INT-0009', name: 'ClickMeter · Influencer Drop', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://cltm.io/t/postback?ev=reg&ref={click_id}',
+      ftd: 'https://cltm.io/t/postback?ev=ftd&ref={click_id}&sum={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 1140, ftd: 280, dep: 0, ggr: 0 },
+    lastFired: '2026-03-14 · 18:30', notes: '',
+    affiliates: ['AFF-6601']
+  },
+  {
+    id: 'INT-0007', name: 'Post Affiliate Pro · SEO Team', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: true, ggr: false },
+    methods: { reg: 'POST', ftd: 'POST', dep: 'POST', ggr: 'GET' },
+    urls: {
+      reg: 'https://pap.winbetix.com/scripts/sale.php?TotalCost=0&AccountId={click_id}&type=reg',
+      ftd: 'https://pap.winbetix.com/scripts/sale.php?TotalCost={amount}&AccountId={click_id}&type=ftd',
+      dep: 'https://pap.winbetix.com/scripts/sale.php?TotalCost={amount}&AccountId={click_id}&type=dep',
+      ggr: ''
+    },
+    fires: { reg: 3800, ftd: 940, dep: 5200, ggr: 0 },
+    lastFired: '2026-03-15 · 10:11', notes: 'SEO team CPA tracking',
+    affiliates: ['AFF-7700', 'AFF-7701']
+  },
+  {
+    id: 'INT-0006', name: 'Voluum · Display Retargeting', brand: 'WinBetix LATAM', status: 'paused',
+    events:  { reg: false, ftd: true, dep: false, ggr: true },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: '',
+      ftd: 'https://trk.voluum.com/postback?cid={click_id}&payout={amount}&currency={currency}',
+      dep: '',
+      ggr: 'https://trk.voluum.com/postback?cid={click_id}&payout={ggr}&type=ggr'
+    },
+    fires: { reg: 0, ftd: 320, dep: 0, ggr: 210 },
+    lastFired: '2026-01-15 · 09:00', notes: 'Paused after Q4 budget cut',
+    affiliates: ['AFF-8810']
+  },
+  {
+    id: 'INT-0005', name: 'LinkTrust · CPA Network Alpha', brand: 'WinBetix APAC', status: 'active',
+    events:  { reg: true, ftd: true, dep: true, ggr: true },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://linktrust.net/pb?e=reg&sid={click_id}',
+      ftd: 'https://linktrust.net/pb?e=ftd&sid={click_id}&r={amount}',
+      dep: 'https://linktrust.net/pb?e=dep&sid={click_id}&r={amount}',
+      ggr: 'https://linktrust.net/pb?e=ggr&sid={click_id}&r={ggr}'
+    },
+    fires: { reg: 2200, ftd: 610, dep: 4800, ggr: 1100 },
+    lastFired: '2026-03-15 · 13:00', notes: '',
+    affiliates: ['AFF-9001', 'AFF-9002', 'AFF-9005', 'AFF-9011']
+  },
+  {
+    id: 'INT-0004', name: 'ImpactRadius · Brand Deals', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: false, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://impact.winbetix.com/t?oid=42&aid={click_id}&evt=reg',
+      ftd: '', dep: '', ggr: ''
+    },
+    fires: { reg: 5680, ftd: 0, dep: 0, ggr: 0 },
+    lastFired: '2026-03-15 · 12:44', notes: 'Brand awareness — REG only',
+    affiliates: ['AFF-1500']
+  },
+  {
+    id: 'INT-0003', name: 'ShareASale · Cashback Portal', brand: 'WinBetix EU', status: 'error',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'POST', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://shareasale.com/q.cfm?transaction={click_id}&merchantID=99241&type=reg',
+      ftd: 'https://shareasale.com/q.cfm?transaction={click_id}&merchantID=99241&type=ftd&amount={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 740, ftd: 88, dep: 0, ggr: 0 },
+    lastFired: '2026-03-10 · 14:55', notes: 'Error: SSL mismatch on FTD endpoint',
+    affiliates: ['AFF-2200', 'AFF-2201']
+  },
+  {
+    id: 'INT-0002', name: 'CAKE · Performance Network', brand: 'WinBetix LATAM', status: 'active',
+    events:  { reg: false, ftd: true, dep: true, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: '',
+      ftd: 'https://cakeplatform.io/s2s?offer_id=81&transaction_id={click_id}&payout={amount}',
+      dep: 'https://cakeplatform.io/s2s?offer_id=81&transaction_id={click_id}&payout={amount}&type=dep',
+      ggr: ''
+    },
+    fires: { reg: 0, ftd: 1620, dep: 9100, ggr: 0 },
+    lastFired: '2026-03-15 · 11:55', notes: '',
+    affiliates: ['AFF-3600', 'AFF-3601', 'AFF-3602']
+  },
+  {
+    id: 'INT-0001', name: 'Webgains · EU Voucher Sites', brand: 'WinBetix EU', status: 'paused',
+    events:  { reg: false, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: '',
+      ftd: 'https://webgains.io/conf.aspx?programmeId=11204&transactionId={click_id}&orderId={click_id}&transactionValue={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 0, ftd: 388, dep: 0, ggr: 0 },
+    lastFired: '2026-01-31 · 23:59', notes: 'Voucher sites — seasonal',
+    affiliates: ['AFF-4400']
+  },
+  {
+    id: 'INT-9982', name: 'Admitad · CIS Region', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: true, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://ad.admitad.com/r?code={click_id}&action=reg',
+      ftd: 'https://ad.admitad.com/r?code={click_id}&action=ftd&amount={amount}',
+      dep: 'https://ad.admitad.com/r?code={click_id}&action=dep&amount={amount}',
+      ggr: ''
+    },
+    fires: { reg: 4120, ftd: 1010, dep: 7700, ggr: 0 },
+    lastFired: '2026-03-15 · 14:00', notes: '',
+    affiliates: ['AFF-5900', 'AFF-5901']
+  },
+  {
+    id: 'INT-9971', name: 'Awin · DE/AT Comparison', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'POST', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://www.awin1.com/sread.php?awinaffid={click_id}&awinmid=18720&clickref={click_id}&aw_a=reg',
+      ftd: 'https://www.awin1.com/sread.php?awinaffid={click_id}&awinmid=18720&clickref={click_id}&aw_a=ftd&amount={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 2980, ftd: 720, dep: 0, ggr: 0 },
+    lastFired: '2026-03-15 · 09:33', notes: 'DE/AT price comparison sites',
+    affiliates: ['AFF-6200', 'AFF-6210']
+  },
+  {
+    id: 'INT-9960', name: 'CJ Affiliate · US Sports', brand: 'WinBetix APAC', status: 'active',
+    events:  { reg: false, ftd: true, dep: true, ggr: true },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'POST' },
+    urls: {
+      reg: '',
+      ftd: 'https://www.emjcd.com/u?CID=2103148&OID={click_id}&TYPE=ftd&AMOUNT={amount}',
+      dep: 'https://www.emjcd.com/u?CID=2103148&OID={click_id}&TYPE=dep&AMOUNT={amount}',
+      ggr: 'https://www.emjcd.com/u?CID=2103148&OID={click_id}&TYPE=ggr&GGR={ggr}'
+    },
+    fires: { reg: 0, ftd: 880, dep: 3200, ggr: 990 },
+    lastFired: '2026-03-14 · 20:15', notes: 'Sports content publishers',
+    affiliates: ['AFF-7100', 'AFF-7101', 'AFF-7102']
+  },
+  {
+    id: 'INT-9950', name: 'Partnerize · Tier 1 Pubs', brand: 'WinBetix EU', status: 'active',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://prf.hn/conversion/tracking_mode::s2s/campaign_id:9312/{click_id}:action:reg',
+      ftd: 'https://prf.hn/conversion/tracking_mode::s2s/campaign_id:9312/{click_id}:action:ftd:sale_amount:{amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 1840, ftd: 450, dep: 0, ggr: 0 },
+    lastFired: '2026-03-13 · 16:00', notes: '',
+    affiliates: ['AFF-8100']
+  },
+  {
+    id: 'INT-9940', name: 'Tradetracker · NL/BE Markets', brand: 'WinBetix EU', status: 'error',
+    events:  { reg: true, ftd: true, dep: false, ggr: false },
+    methods: { reg: 'GET', ftd: 'GET', dep: 'GET', ggr: 'GET' },
+    urls: {
+      reg: 'https://ts.tradetracker.net/?cid=33410&type=event&pid={click_id}&event=reg',
+      ftd: 'https://ts.tradetracker.net/?cid=33410&type=event&pid={click_id}&event=ftd&amount={amount}',
+      dep: '', ggr: ''
+    },
+    fires: { reg: 420, ftd: 55, dep: 0, ggr: 0 },
+    lastFired: '2026-03-08 · 11:00', notes: 'Error: Connection timeout — NL server down',
+    affiliates: ['AFF-8800', 'AFF-8801']
+  }
+];
+
+/* ── Affiliate helpers ──────────────────────────────────── */
+function affPillsHtml(affs) {
+  if (!affs || !affs.length) return '<span class="aff-none">—</span>';
+  var shown = affs.slice(0, 3);
+  var more  = affs.length > 3 ? '<span class="aff-none" style="font-size:10px">+' + (affs.length - 3) + '</span>' : '';
+  return '<div class="aff-pills">' +
+    shown.map(function(a){ return '<span class="aff-pill">' + esc(a) + '</span>'; }).join('') +
+    more +
+  '</div>';
+}
+
+/* ── Form affiliate state ───────────────────────────────── */
+var formAffs = [];
+
+function renderFormAffs() {
+  var wrap = document.getElementById('aff-tags-wrap');
+  if (!wrap) return;
+  var chips = formAffs.map(function(a, i) {
+    return '<span class="aff-form-pill">' + esc(a) +
+      '<button onclick="removeFormAff(' + i + ')" title="Remove">×</button>' +
+    '</span>';
+  }).join('');
+  /* Re-render preserving the input */
+  var inp = wrap.querySelector('.aff-text-input');
+  var val = inp ? inp.value : '';
+  wrap.innerHTML = chips +
+    '<input class="aff-text-input" id="aff-text" placeholder="' + (formAffs.length ? '' : 'AFF-1042, AFF-2081…') + '" ' +
+      'onkeydown="affKeydown(event)" oninput="affInputChanged(this)">';
+  document.getElementById('aff-text').value = val;
+  document.getElementById('aff-text').focus();
+}
+
+function affKeydown(e) {
+  var inp = e.target;
+  if ((e.key === 'Enter' || e.key === ',' || e.key === 'Tab') && inp.value.trim()) {
+    e.preventDefault();
+    addFormAff(inp.value.trim().replace(/,/g,''));
+  } else if (e.key === 'Backspace' && !inp.value && formAffs.length) {
+    formAffs.pop();
+    renderFormAffs();
+  }
+}
+
+function affInputChanged(inp) {
+  /* Auto-split on comma paste */
+  if (inp.value.includes(',')) {
+    inp.value.split(',').forEach(function(v){ if(v.trim()) addFormAff(v.trim()); });
+    inp.value = '';
+    renderFormAffs();
+  }
+}
+
+function addFormAff(val) {
+  val = val.replace(/,/g,'').trim();
+  if (!val || formAffs.includes(val)) return;
+  formAffs.push(val);
+  renderFormAffs();
+}
+
+function removeFormAff(i) {
+  formAffs.splice(i, 1);
+  renderFormAffs();
+}
+
+/* ── Event definitions ──────────────────────────────────── */
+var EV_DEFS = [
+  { key:'reg', label:'Registration',         tag:'REG', tagColor:'#5b92ff', tagBg:'rgba(91,146,255,.12)',  pillCls:'on-reg' },
+  { key:'ftd', label:'First Time Deposit',   tag:'FTD', tagColor:'#ff8c42', tagBg:'rgba(255,140,66,.12)',  pillCls:'on-ftd' },
+  { key:'dep', label:'Deposits',             tag:'DEP', tagColor:'#22d07a', tagBg:'rgba(34,208,122,.12)',  pillCls:'on-dep' },
+  { key:'ggr', label:'GGR',                  tag:'GGR', tagColor:'#9b59ff', tagBg:'rgba(155,89,255,.12)',  pillCls:'on-ggr' }
+];
+
+/* ── State ──────────────────────────────────────────────── */
+var statusFilter = 'all';
+var searchMode   = 'all';   /* 'all' | 'name' | 'affiliate' */
+var currentPage  = 1;
+var pageSize     = 20;
+var expandedIds  = new Set();
+var formMethods  = { reg:'GET', ftd:'GET', dep:'GET', ggr:'GET' };
+
+/* ── URL param parsing ──────────────────────────────────── */
+function parseUrlParams(url) {
+  if (!url) return [];
+  var qIdx = url.indexOf('?');
+  if (qIdx === -1) return [];
+  var qs = url.slice(qIdx + 1);
+  return qs.split('&').map(function(pair) {
+    var eq = pair.indexOf('=');
+    if (eq === -1) return { k: pair, v: '' };
+    return { k: pair.slice(0, eq), v: decodeURIComponent(pair.slice(eq + 1)).replace(/\+/g,' ') };
+  }).filter(function(p){ return p.k; });
+}
+
+function isMacro(v) { return /^\{[^}]+\}$/.test(v); }
+
+function renderParamChips(params, gridId, countId) {
+  var grid  = document.getElementById(gridId);
+  var count = document.getElementById(countId);
+  if (!grid) return;
+  count.textContent = params.length;
+  if (!params.length) {
+    grid.innerHTML = '<span class="no-params">Paste a URL with query parameters to see them here</span>';
+    return;
+  }
+  grid.innerHTML = params.map(function(p) {
+    var vCls = isMacro(p.v) ? 'pv macro' : 'pv';
+    return '<div class="param-chip">' +
+      '<span class="pk">' + esc(p.k) + '</span>' +
+      '<span class="peq">=</span>' +
+      '<span class="' + vCls + '">' + esc(p.v) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function parseParams(evKey) {
+  var url    = document.getElementById('url-' + evKey).value;
+  var params = parseUrlParams(url);
+  renderParamChips(params, 'pg-' + evKey, 'pc-' + evKey);
+}
+
+/* ── Method selector ────────────────────────────────────── */
+function setMethod(evKey, method, el) {
+  formMethods[evKey] = method;
+  var sel = document.getElementById('msel-' + evKey);
+  sel.querySelectorAll('.method-opt').forEach(function(o){ o.className = 'method-opt'; });
+  el.classList.add(method === 'GET' ? 'active-get' : 'active-post');
+}
+
+/* ── Event block toggle ─────────────────────────────────── */
+function toggleEv(id) {
+  document.getElementById(id).classList.toggle('enabled');
+}
+
+/* ── Filter / search controls ───────────────────────────── */
+function filterStatus(s, el) {
+  statusFilter = s;
+  currentPage = 1;
+  document.querySelectorAll('.filter-bar .chip').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  renderTable();
+}
+
+function setSearchMode(mode, el) {
+  searchMode = mode;
+  currentPage = 1;
+  document.querySelectorAll('.sm-opt').forEach(function(o){ o.classList.remove('active'); });
+  el.classList.add('active');
+  var inp = document.getElementById('searchInput');
+  var ph = mode === 'affiliate' ? 'AFF-1042…' : mode === 'name' ? 'Integration name…' : 'Search…';
+  inp.placeholder = ph;
+  renderTable();
+}
+
+function onSearch() { currentPage = 1; renderTable(); }
+
+function setPageSize(size, el) {
+  pageSize = size;
+  currentPage = 1;
+  document.querySelectorAll('.ps-opt').forEach(function(o){ o.classList.remove('active'); });
+  el.classList.add('active');
+  renderTable();
+}
+
+/* ── Render helpers ─────────────────────────────────────── */
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusBadge(s) {
+  var labels = { active:'Active', paused:'Paused', error:'Error' };
+  return '<span class="status ' + s + '"><span class="status-dot"></span>' + (labels[s]||s) + '</span>';
+}
+
+function evPills(integ) {
+  return EV_DEFS.map(function(e) {
+    if (!integ.events[e.key]) return '';
+    var m = integ.methods[e.key] || 'GET';
+    return '<span class="ev-pill ' + e.pillCls + '">' +
+      e.tag +
+      '<span class="ev-pill-method">' + m + '</span>' +
+    '</span>';
+  }).join('') || '<span style="font-size:11px;color:var(--muted);font-family:var(--mono)">—</span>';
+}
+
+function renderUrlWithMacros(url) {
+  return esc(url).replace(/\{[^}]+\}/g, function(m){
+    return '<span class="macro">' + m + '</span>';
+  });
+}
+
+/* ── Filter logic ───────────────────────────────────────── */
+function filterList() {
+  var q = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+  return integrations.filter(function(i) {
+    if (statusFilter !== 'all' && i.status !== statusFilter) return false;
+    if (!q) return true;
+    if (searchMode === 'name') {
+      return i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q);
+    }
+    if (searchMode === 'affiliate') {
+      return (i.affiliates || []).some(function(a){ return a.toLowerCase().includes(q); });
+    }
+    /* 'all' — search everything */
+    return i.name.toLowerCase().includes(q)
+        || i.brand.toLowerCase().includes(q)
+        || i.id.toLowerCase().includes(q)
+        || (i.affiliates || []).some(function(a){ return a.toLowerCase().includes(q); });
+  });
+}
+
+function expandedCardHtml(integ) {
+  var activeEvs = EV_DEFS.filter(function(e){ return integ.events[e.key]; });
+  if (!activeEvs.length) return '<div style="padding:10px 48px;font-family:var(--mono);font-size:11px;color:var(--muted)">No events configured</div>';
+
+  var rows = activeEvs.map(function(e) {
+    var url    = integ.urls[e.key] || '';
+    var method = integ.methods[e.key] || 'GET';
+    var fires  = integ.fires[e.key] || 0;
+
+    var urlHtml = url
+      ? '<span class="exp-list-url">' + renderUrlWithMacros(url) + '</span>'
+      : '<span class="exp-list-url no-url">No URL configured</span>';
+
+    var copyBtn = url
+      ? '<button class="exp-list-copy" onclick="event.stopPropagation();copyText(\'' + esc(url).replace(/'/g,'&#39;') + '\',this)">⎘ Copy</button>'
+      : '';
+
+    return '<div class="exp-list-row">' +
+      '<span class="exp-list-tag ev-tag" style="background:' + e.tagBg + ';color:' + e.tagColor + '">' + e.tag + '</span>' +
+      '<span class="exp-list-method method-badge ' + method.toLowerCase() + '">' + method + '</span>' +
+      urlHtml +
+      '<span class="exp-list-fires">' + fires.toLocaleString() + ' fires</span>' +
+      copyBtn +
+    '</div>';
+  }).join('');
+
+  return '<div class="exp-list">' + rows + '</div>';
+}
+
+/* ── Pagination render ──────────────────────────────────── */
+function goToPage(p) {
+  currentPage = p;
+  renderTable();
+  document.querySelector('.tbl-section').scrollTop = 0;
+}
+
+function renderPagination(total, pages) {
+  var start = (currentPage - 1) * pageSize + 1;
+  var end   = Math.min(currentPage * pageSize, total);
+  document.getElementById('pageInfo').innerHTML =
+    'Showing <b>' + (total ? start : 0) + '–' + end + '</b> of <b>' + total + '</b>';
+
+  if (pages <= 1) { document.getElementById('pageBtns').innerHTML = ''; return; }
+
+  var html = '';
+  /* Prev */
+  html += '<button class="pg-btn" onclick="goToPage(' + (currentPage-1) + ')" ' + (currentPage===1?'disabled':'') + '>‹</button>';
+
+  /* Page numbers with ellipsis */
+  var shown = [];
+  for (var p = 1; p <= pages; p++) {
+    if (p === 1 || p === pages || (p >= currentPage - 1 && p <= currentPage + 1)) {
+      shown.push(p);
+    }
+  }
+  var prev = 0;
+  shown.forEach(function(p) {
+    if (prev && p - prev > 1) html += '<span class="pg-ellipsis">…</span>';
+    html += '<button class="pg-btn' + (p === currentPage ? ' active' : '') + '" onclick="goToPage(' + p + ')">' + p + '</button>';
+    prev = p;
+  });
+
+  /* Next */
+  html += '<button class="pg-btn" onclick="goToPage(' + (currentPage+1) + ')" ' + (currentPage===pages?'disabled':'') + '>›</button>';
+
+  document.getElementById('pageBtns').innerHTML = html;
+}
+
+function renderTable() {
+  var list  = filterList();
+  var total = list.length;
+  var pages = Math.max(1, Math.ceil(total / pageSize));
+  if (currentPage > pages) currentPage = pages;
+  var start = (currentPage - 1) * pageSize;
+  var page  = list.slice(start, start + pageSize);
+
+  var tbody = document.getElementById('intTbody');
+
+  renderPagination(total, pages);
+
+  if (!page.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="8">No integrations found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = page.map(function(integ, idx) {
+    var isExp  = expandedIds.has(integ.id);
+    var isLast = idx === page.length - 1;
+
+    var mainRow = '<tr class="main-row' + (isExp ? ' expanded' : '') + (isLast && !isExp ? ' last-main' : '') + '" id="mr-' + integ.id + '" onclick="toggleRow(\'' + integ.id + '\')">' +
+      '<td style="padding-right:4px;width:22px">' +
+        '<span class="expand-chevron">' +
+          '<svg width="10" height="10" viewBox="0 0 10 10" fill="none">' +
+            '<path d="M3 2l4 3-4 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+          '</svg>' +
+        '</span>' +
+      '</td>' +
+      '<td>' +
+        '<div class="ref-name">' + esc(integ.name) + '</div>' +
+        '<div class="ref-brand">' + esc(integ.brand) + '</div>' +
+      '</td>' +
+      '<td><span class="int-id">' + esc(integ.id) + '</span></td>' +
+      '<td>' + affPillsHtml(integ.affiliates || []) + '</td>' +
+      '<td><div class="ev-pills">' + evPills(integ) + '</div></td>' +
+      '<td>' + statusBadge(integ.status) + '</td>' +
+      '<td><span class="last-fired">' + esc(integ.lastFired) + '</span></td>' +
+      '<td style="width:36px;text-align:center" onclick="event.stopPropagation()">' +
+        '<button class="gear-btn" title="Settings" onclick="openView(\'' + integ.id + '\')">' +
+          '<svg width="14" height="14" viewBox="0 0 16 16" fill="none">' +
+            '<circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.4"/>' +
+            '<path d="M8 1.5V3M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>' +
+          '</svg>' +
+        '</button>' +
+      '</td>' +
+    '</tr>';
+
+    var expRow = '<tr class="exp-row' + (isExp ? ' show' : '') + '" id="er-' + integ.id + '">' +
+      '<td colspan="8">' +
+        '<div class="exp-content" id="ec-' + integ.id + '">' +
+          (isExp ? expandedCardHtml(integ) : '') +
+        '</div>' +
+      '</td>' +
+    '</tr>';
+
+    return mainRow + expRow;
+  }).join('');
+}
+
+function toggleRow(id) {
+  if (expandedIds.has(id)) {
+    expandedIds.delete(id);
+  } else {
+    expandedIds.add(id);
+    /* Lazy-render expanded content */
+    var ec = document.getElementById('ec-' + id);
+    if (ec && !ec.hasChildNodes()) {
+      var integ = integrations.find(function(i){ return i.id === id; });
+      if (integ) ec.innerHTML = expandedCardHtml(integ);
+    }
+  }
+  var mr = document.getElementById('mr-' + id);
+  var er = document.getElementById('er-' + id);
+  if (mr) mr.classList.toggle('expanded', expandedIds.has(id));
+  if (er) er.classList.toggle('show', expandedIds.has(id));
+}
+
+/* ── Create panel ───────────────────────────────────────── */
+function openCreate() {
+  document.getElementById('f-name').value  = '';
+  document.getElementById('f-brand').value = '';
+  document.getElementById('f-notes').value = '';
+  formAffs = [];
+  var wrap = document.getElementById('aff-tags-wrap');
+  if (wrap) wrap.innerHTML = '<input class="aff-text-input" id="aff-text" placeholder="AFF-1042, AFF-2081…" onkeydown="affKeydown(event)" oninput="affInputChanged(this)">';
+  ['reg','ftd','dep','ggr'].forEach(function(k) {
+    document.getElementById('cb-' + k).classList.remove('enabled');
+    document.getElementById('url-' + k).value = '';
+    formMethods[k] = 'GET';
+    var sel = document.getElementById('msel-' + k);
+    sel.querySelectorAll('.method-opt').forEach(function(o){ o.className = 'method-opt'; });
+    sel.querySelector('.method-opt').classList.add('active-get');
+    document.getElementById('pg-' + k).innerHTML = '';
+    document.getElementById('pc-' + k).textContent = '0';
+  });
+  showPanel('createPanel');
+}
+
+function saveIntegration() {
+  var name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+
+  var events  = {}, urls = {}, methods = {};
+  ['reg','ftd','dep','ggr'].forEach(function(k) {
+    var enabled = document.getElementById('cb-' + k).classList.contains('enabled');
+    events[k]  = enabled;
+    urls[k]    = enabled ? document.getElementById('url-' + k).value.trim() : '';
+    methods[k] = formMethods[k] || 'GET';
+  });
+
+  /* Flush any pending text in affiliate input */
+  var affText = document.getElementById('aff-text');
+  if (affText && affText.value.trim()) addFormAff(affText.value.trim());
+
+  var newId = 'INT-' + String(Math.floor(Math.random() * 9000) + 1000);
+  integrations.unshift({
+    id: newId, name: name,
+    brand: document.getElementById('f-brand').value.trim() || 'Unknown Brand',
+    status: 'active', events: events, methods: methods, urls: urls,
+    fires: { reg:0, ftd:0, dep:0, ggr:0 },
+    lastFired: '—',
+    notes: document.getElementById('f-notes').value.trim(),
+    affiliates: formAffs.slice()
+  });
+
+  closeAll();
+  renderTable();
+}
+
+/* ── View panel ─────────────────────────────────────────── */
+function openView(id) {
+  var integ = integrations.find(function(i){ return i.id === id; });
+  if (!integ) return;
+
+  document.getElementById('viewPanelTitle').textContent = integ.name;
+  document.getElementById('viewPanelSub').textContent   = integ.brand + ' · ' + integ.id;
+
+  var totalFires = Object.values(integ.fires).reduce(function(a,b){ return a+b; }, 0);
+  var activeEvs  = EV_DEFS.filter(function(e){ return integ.events[e.key]; });
+
+  var body = '';
+
+  body += '<div class="stat-strip">' +
+    '<div class="stat-card"><div class="stat-card-label">Total Fires</div><div class="stat-card-val">' + totalFires.toLocaleString() + '</div></div>' +
+    '<div class="stat-card"><div class="stat-card-label">Events Active</div><div class="stat-card-val">' + activeEvs.length + ' / 4</div></div>' +
+    '<div class="stat-card"><div class="stat-card-label">Status</div><div style="margin-top:6px">' + statusBadge(integ.status) + '</div></div>' +
+  '</div>';
+
+  var affs = integ.affiliates || [];
+  var affHtml = affs.length
+    ? affs.map(function(a){ return '<span class="aff-pill">' + esc(a) + '</span>'; }).join('')
+    : '<span class="aff-none">Not assigned</span>';
+
+  body += '<div class="detail-section">' +
+    '<div class="detail-section-label">General</div>' +
+    '<div class="detail-row"><span class="detail-key">Integration ID</span><span class="detail-val"><span class="int-id">' + esc(integ.id) + '</span></span></div>' +
+    '<div class="detail-row"><span class="detail-key">Brand</span><span class="detail-val">' + esc(integ.brand) + '</span></div>' +
+    '<div class="detail-row"><span class="detail-key">Affiliates</span><span class="detail-val"><div class="aff-pills" style="flex-wrap:wrap;gap:5px">' + affHtml + '</div></span></div>' +
+    '<div class="detail-row"><span class="detail-key">Last Fired</span><span class="detail-val muted">' + esc(integ.lastFired) + '</span></div>' +
+    (integ.notes ? '<div class="detail-row"><span class="detail-key">Notes</span><span class="detail-val muted">' + esc(integ.notes) + '</span></div>' : '') +
+  '</div>';
+
+  body += '<div class="detail-section"><div class="detail-section-label">Postback Events</div>';
+
+  EV_DEFS.forEach(function(e) {
+    if (!integ.events[e.key]) return;
+    var url    = integ.urls[e.key] || '';
+    var method = integ.methods[e.key] || 'GET';
+    var fires  = integ.fires[e.key] || 0;
+    var params = parseUrlParams(url);
+
+    var paramsHtml = '';
+    if (params.length) {
+      paramsHtml = '<div class="view-ev-params-wrap">' +
+        '<div class="view-ev-params-label">Parameters (' + params.length + ')</div>' +
+        '<div class="params-grid">' +
+        params.map(function(p) {
+          var vCls = isMacro(p.v) ? 'pv macro' : 'pv';
+          return '<div class="param-chip">' +
+            '<span class="pk">' + esc(p.k) + '</span>' +
+            '<span class="peq">=</span>' +
+            '<span class="' + vCls + '">' + esc(p.v) + '</span>' +
+          '</div>';
+        }).join('') + '</div></div>';
+    }
+
+    body += '<div class="view-ev-card">' +
+      '<div class="view-ev-hd">' +
+        '<span class="ev-tag" style="background:' + e.tagBg + ';color:' + e.tagColor + '">' + e.tag + '</span>' +
+        '<span class="view-ev-name">' + e.label + '</span>' +
+        '<span class="method-badge ' + method.toLowerCase() + '">' + method + '</span>' +
+        '<span class="view-ev-fires">' + fires.toLocaleString() + ' fires</span>' +
+      '</div>' +
+      (url ? '<div class="view-ev-url">' + renderUrlWithMacros(url) + '</div>' : '<div class="view-ev-url" style="color:var(--muted)">No URL configured</div>') +
+      paramsHtml +
+      (url ? '<button class="copy-url-btn" onclick="copyText(\'' + esc(url).replace(/'/g,"&#39;") + '\',this)">Copy URL</button>' : '') +
+    '</div>';
+  });
+
+  var disabledEvs = EV_DEFS.filter(function(e){ return !integ.events[e.key]; });
+  if (disabledEvs.length) {
+    body += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:2px">';
+    disabledEvs.forEach(function(e){
+      body += '<span class="ev-tag" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border2)">' + e.tag + ' disabled</span>';
+    });
+    body += '</div>';
+  }
+
+  body += '</div>';
+
+  document.getElementById('viewPanelBody').innerHTML = body;
+  document.getElementById('viewPanelFooter').innerHTML =
+    '<button class="btn btn-ghost" style="flex:1">Edit</button>' +
+    '<button class="btn btn-danger" onclick="deleteInt(\'' + integ.id + '\');closeAll()">Delete</button>';
+
+  showPanel('viewPanel');
+}
+
+/* ── Helpers ────────────────────────────────────────────── */
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(function(){
+    var prev = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.style.color = 'var(--green)';
+    setTimeout(function(){ btn.textContent = prev; btn.style.color = ''; }, 1400);
+  });
+}
+
+function deleteInt(id) {
+  if (!confirm('Delete integration ' + id + '? This cannot be undone.')) return;
+  integrations = integrations.filter(function(i){ return i.id !== id; });
+  expandedIds.delete(id);
+  renderTable();
+}
+
+function showPanel(panelId) {
+  document.getElementById('overlay').classList.add('show');
+  document.getElementById(panelId).classList.add('open');
+}
+
+function closeAll() {
+  document.getElementById('overlay').classList.remove('show');
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('open'); });
+}
+
+/* ── Init ───────────────────────────────────────────────── */
+renderTable();
+</script>
+</body>
+</html>

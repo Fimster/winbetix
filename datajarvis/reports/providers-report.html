@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>WinBetix — Providers Report</title>
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
+
+body { display: flex; height: 100vh; overflow: hidden; }
+
+/* ── TOPBAR ── */
+.topbar { height: 60px; padding: 0 24px; gap: 14px; }
+.topbar-left { display: flex; align-items: center; gap: 8px; }
+.topbar-actions { display: flex; gap: 6px; align-items: center; }
+
+/* ── FILTER BAR ── */
+.filter-bar { height: 48px; }
+.filter-label { margin-right: 4px; }
+.filter-chip .caret { font-size: 8px; opacity: .5; }
+.filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+
+/* ── GROUP TABS ── */
+.group-tabs { display: flex; gap: 2px; }
+.group-tab {
+  height: 26px; padding: 0 10px; border-radius: 5px;
+  font-size: 11px; font-family: var(--mono);
+  color: var(--muted); cursor: pointer; display: flex; align-items: center;
+}
+.group-tab:hover { color: var(--text); background: var(--surface2); }
+.group-tab.active { color: var(--text); background: var(--surface2); border: 1px solid var(--border2); }
+
+/* ── PAGE SCROLL ── */
+.page-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 14px 22px 40px;
+}
+.page-scroll::-webkit-scrollbar { width: 5px; }
+.page-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ── SECTION HEADER ── */
+.section-hd {
+  display: flex; align-items: center; gap: 10px;
+  margin: 18px 0 10px;
+}
+.section-hd-line {
+  flex: 1; height: 1px; background: var(--border);
+}
+.section-title {
+  font-size: 11px; font-weight: 600; font-family: var(--mono);
+  letter-spacing: .08em; text-transform: uppercase; color: var(--muted2);
+  display: flex; align-items: center; gap: 7px;
+}
+.section-title::before {
+  content: ''; display: inline-block;
+  width: 3px; height: 12px;
+  background: var(--accent); border-radius: 2px;
+}
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
+.kc {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px 10px; position: relative; overflow: hidden;
+}
+.kc::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kc.c1::before { background: var(--yellow); }
+.kc.c2::before { background: var(--green); }
+.kc.c3::before { background: var(--accent); }
+.kc.c4::before { background: var(--purple); }
+.kc.c5::before { background: #0dcff7; }
+.kc.c6::before { background: #ff9f43; }
+.kc-lbl { font-family: var(--mono); font-size: 7px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.kc-val { font-family: 'Roboto', sans-serif; font-size: 20px; font-weight: 600; line-height: 1.15; }
+.kc-sub { font-family: var(--mono); font-size: 8px; color: var(--muted2); margin-top: 2px; }
+.kc-d { font-family: var(--mono); font-size: 8.5px; margin-top: 5px; }
+.kc-d.up { color: var(--green); }
+.kc-d.dn { color: var(--red); }
+
+/* ── PROVIDER RANK BADGE ── */
+.rank {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 5px;
+  font-family: var(--mono); font-size: 9px; font-weight: 700;
+  background: var(--surface2); color: var(--muted); border: 1px solid var(--border2);
+  flex-shrink: 0; margin-right: 6px;
+}
+.rank.r1 { background: rgba(245,183,49,.15); color: var(--yellow); border-color: rgba(245,183,49,.3); }
+.rank.r2 { background: rgba(136,146,164,.12); color: var(--muted2); border-color: var(--border2); }
+.rank.r3 { background: rgba(167,139,250,.12); color: var(--purple); border-color: rgba(167,139,250,.25); }
+
+/* ── GAME TYPE BADGE ── */
+.game-type {
+  font-family: var(--mono); font-size: 8px; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 3px; white-space: nowrap;
+}
+.game-type.slot  { background: rgba(61,127,255,.12); color: var(--accent2); }
+.game-type.live  { background: rgba(34,208,122,.12); color: var(--green); }
+.game-type.table { background: rgba(167,139,250,.12); color: var(--purple); }
+
+/* ── VOLATILITY BADGE ── */
+.vol {
+  font-family: var(--mono); font-size: 8px; letter-spacing: .04em;
+  padding: 2px 7px; border-radius: 3px; white-space: nowrap;
+}
+.vol.high { background: rgba(255,77,106,.12); color: var(--red); }
+.vol.mid  { background: rgba(245,183,49,.12); color: var(--yellow); }
+.vol.low  { background: rgba(34,208,122,.12); color: var(--green); }
+
+/* ── RTP BAR ── */
+.rtp-cell { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.rtp-bar-track { width: 48px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.rtp-bar-fill { height: 100%; border-radius: 2px; background: var(--green); }
+
+/* ── SHARE BAR ── */
+.share-cell { display: flex; align-items: center; gap: 6px; justify-content: flex-end; }
+.share-bar-track { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.share-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+/* ── TABLE CARD ── */
+.tbl-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+}
+.tbl-head {
+  display: flex; align-items: center; padding: 11px 16px;
+  border-bottom: 1px solid var(--border); gap: 10px;
+}
+.tbl-ttl { font-size: 12px; font-weight: 500; }
+.tbl-meta { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-left: 4px; }
+.tbl-inner { overflow: auto; }
+.tbl-inner::-webkit-scrollbar { width: 6px; height: 6px; }
+.tbl-inner::-webkit-scrollbar-track { background: transparent; }
+.tbl-inner::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+.tbl-inner::-webkit-scrollbar-corner { background: transparent; }
+.tbl-foot {
+  padding: 8px 16px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 16px;
+}
+.fstat { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.fstat span { color: var(--text); }
+
+/* ── TABLE BASE ── */
+table { border-collapse: collapse; min-width: 100%; table-layout: fixed; }
+thead { position: sticky; top: 0; z-index: 20; }
+
+.th-group { background: var(--surface2); border-bottom: 1px solid var(--border); }
+.th-group th {
+  padding: 5px 0; text-align: center;
+  font-family: var(--mono); font-size: 8px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); font-weight: 500;
+  border-right: 1px solid var(--border); white-space: nowrap;
+}
+.th-group th.g-activity { color: var(--accent2); background: rgba(61,127,255,.06); }
+.th-group th.g-bets     { color: var(--green);   background: rgba(34,208,122,.06); }
+.th-group th.g-revenue  { color: var(--yellow);  background: rgba(245,183,49,.06); }
+.th-group th.g-rm       { color: #0dcff7;         background: rgba(13,207,247,.04); }
+.th-group th.g-bonus    { color: #ff9f43;         background: rgba(255,159,67,.05); }
+.th-group th.g-perf     { color: var(--purple);  background: rgba(167,139,250,.05); }
+
+.th-cols { background: var(--surface2); border-bottom: 2px solid var(--border2); }
+.th-cols th {
+  padding: 0 8px; height: 30px; text-align: right;
+  font-family: var(--mono); font-size: 9px; letter-spacing: .02em;
+  color: var(--muted2); font-weight: 400;
+  border-right: 1px solid var(--border); white-space: nowrap;
+  cursor: pointer; user-select: none; vertical-align: middle;
+}
+.th-cols th:hover { color: var(--text); background: var(--surface3); }
+.th-cols th.sticky-col { text-align: left; position: sticky; left: 0; z-index: 10; background: var(--surface2); }
+.th-cols th.sorted { color: var(--accent2); }
+.sort-arrow { margin-left: 3px; font-size: 8px; }
+
+/* ── ROWS ── */
+tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+tbody tr:hover { background: var(--surface2); }
+tbody tr.total-row {
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border2);
+  border-top: 2px solid var(--border2);
+}
+tbody tr.total-row td { color: var(--text); font-weight: 600; }
+
+td {
+  padding: 0 10px; height: 32px;
+  font-family: 'Roboto', sans-serif; font-size: 11px;
+  color: var(--muted2); text-align: right;
+  border-right: 1px solid var(--border);
+  white-space: nowrap; vertical-align: middle;
+}
+td.sticky-col {
+  text-align: left; position: sticky; left: 0; z-index: 5;
+  background: var(--surface); color: var(--text);
+  font-weight: 500; font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+  display: flex; align-items: center; height: 32px;
+}
+td.sticky-col-plain {
+  text-align: left; position: sticky; left: 0; z-index: 5;
+  background: var(--surface); color: var(--text);
+  font-weight: 500; font-size: 12px;
+  font-family: 'Roboto', sans-serif;
+}
+tbody tr:hover td.sticky-col,
+tbody tr:hover td.sticky-col-plain { background: var(--surface2); }
+tbody tr.total-row td.sticky-col,
+tbody tr.total-row td.sticky-col-plain { background: var(--surface2); }
+
+td.num    { color: var(--text); }
+td.up     { color: var(--green); }
+td.down   { color: var(--red); }
+td.accent { color: var(--accent2); }
+td.yellow { color: var(--yellow); }
+td.purple { color: var(--purple); }
+td.teal   { color: #0dcff7; }
+td.orange { color: #ff9f43; }
+
+.col-sep { border-left: 2px solid var(--border2) !important; }
+
+/* ── PROVIDER HOVER TOOLTIP ── */
+#ptip {
+  position: fixed; z-index: 9999; pointer-events: none;
+  background: #0e1420; border: 1px solid #2a3548;
+  border-radius: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.7);
+  width: 310px; display: none; overflow: hidden;
+}
+#ptip.show { display: block; }
+.ptip-hd {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.ptip-hd-icon {
+  width: 32px; height: 32px; border-radius: 7px;
+  background: rgba(61,127,255,.15); border: 1px solid rgba(61,127,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.ptip-hd-name { font-size: 11px; font-weight: 600; color: var(--text); }
+.ptip-hd-sub { font-family: var(--mono); font-size: 8px; color: var(--muted2); margin-top: 2px; }
+.ptip-games-hd {
+  padding: 7px 14px 5px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ptip-games-lbl { font-family: var(--mono); font-size: 7.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.ptip-game {
+  display: flex; align-items: center; gap: 7px;
+  padding: 4px 14px; border-top: 1px solid rgba(255,255,255,.04);
+  transition: background .08s;
+}
+.ptip-game:hover { background: rgba(255,255,255,.03); }
+.ptip-g-rank { font-family: var(--mono); font-size: 8px; color: var(--muted); width: 12px; flex-shrink: 0; text-align: right; }
+.ptip-g-name { font-family: var(--mono); font-size: 9px; color: var(--text); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ptip-g-type { font-family: var(--mono); font-size: 7.5px; padding: 1px 5px; border-radius: 3px; flex-shrink: 0; }
+.ptip-g-ggr { font-family: var(--mono); font-size: 9px; color: var(--yellow); flex-shrink: 0; }
+.ptip-foot {
+  padding: 6px 14px; background: rgba(61,127,255,.05);
+  border-top: 1px solid var(--border);
+  font-family: var(--mono); font-size: 7.5px; color: var(--accent2); text-align: center;
+}
+
+/* ── SESSION & LOBBY TABLE ── */
+.sess-bar-track { width: 56px; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; flex-shrink: 0; }
+.sess-bar-fill { height: 100%; border-radius: 2px; }
+.conv-cell { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
+
+/* ── CATEGORY BREAKDOWN ── */
+.cat-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+.cat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px 10px; position: relative; overflow: hidden;
+}
+.cat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.cat-card.slots::before { background: var(--accent); }
+.cat-card.live::before  { background: var(--green); }
+.cat-card.table::before { background: var(--purple); }
+.cat-card-lbl { font-family: var(--mono); font-size: 8px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.cat-card-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cat-card-key { font-family: var(--mono); font-size: 8.5px; color: var(--muted2); }
+.cat-card-val { font-family: var(--mono); font-size: 9px; color: var(--text); }
+.cat-big { font-family: var(--mono); font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+.cat-bar-wrap { height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; margin: 6px 0 4px; }
+.cat-bar-fill { height: 100%; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="breadcrumb">Reports / <span>Providers</span></span>
+    </div>
+    <div class="update-badge">
+      <div class="update-dot"></div>
+      Updated 5 min ago
+    </div>
+    <div style="flex:1"></div>
+    <div class="topbar-actions">
+      <div class="btn">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Columns
+      </div>
+      <div class="btn">🔗 Share view</div>
+      <div class="btn primary">↓ Export</div>
+      <div class="btn-icon">↻</div>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Period</span>
+    <div class="filter-chip active">📅 01 Mar – 12 Mar 2026 <span class="caret">▾</span></div>
+
+    <div class="filter-sep"></div>
+    <div class="filter-chip">All Brands <span class="caret">▾</span></div>
+    <div class="filter-chip">All GEOs <span class="caret">▾</span></div>
+    <div class="filter-chip">All Traffic Types <span class="caret">▾</span></div>
+
+    <div class="filter-sep"></div>
+    <div class="filter-chip">Company ID <span class="caret">▾</span></div>
+    <div class="filter-chip">Affiliate ID <span class="caret">▾</span></div>
+
+    <div class="filter-sep"></div>
+    <div class="filter-chip">Currency: EUR <span class="caret">▾</span></div>
+
+    <div class="spacer"></div>
+
+    <div class="group-tabs">
+      <div class="group-tab active">All</div>
+      <div class="group-tab">Slots</div>
+      <div class="group-tab">Live</div>
+      <div class="group-tab">Table</div>
+      <div class="group-tab">Other</div>
+    </div>
+
+    <div class="filter-sep"></div>
+    <div class="filter-chip">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><circle cx="4.5" cy="4.5" r="3.5" stroke="currentColor" stroke-width="1.2"/><path d="M7.5 7.5L10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Search
+    </div>
+  </div>
+
+  <!-- PAGE SCROLL -->
+  <div class="page-scroll">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-row">
+      <div class="kc c1">
+        <div class="kc-lbl">Total GGR</div>
+        <div class="kc-val" style="color:var(--yellow)">€ 797,000</div>
+        <div class="kc-sub">Bet − Win, all providers</div>
+        <div class="kc-d up">▲ +€58,400 vs prev (+7.9%)</div>
+      </div>
+      <div class="kc c2">
+        <div class="kc-lbl">Total Bet Volume</div>
+        <div class="kc-val" style="color:var(--green)">€ 8,974,800</div>
+        <div class="kc-sub">all rounds incl. bonus</div>
+        <div class="kc-d up">▲ +€612,000 vs prev (+7.3%)</div>
+      </div>
+      <div class="kc c3">
+        <div class="kc-lbl">Unique Players</div>
+        <div class="kc-val" style="color:var(--accent2)">134,080</div>
+        <div class="kc-sub">across all game providers</div>
+        <div class="kc-d up">▲ +9,240 vs prev (+7.4%)</div>
+      </div>
+      <div class="kc c4">
+        <div class="kc-lbl">Avg Bet / Round</div>
+        <div class="kc-val" style="color:var(--purple)">€ 3.00</div>
+        <div class="kc-sub">Bet Volume / Rounds Count</div>
+        <div class="kc-d up">▲ +€0.08 vs prev (+2.7%)</div>
+      </div>
+      <div class="kc c5">
+        <div class="kc-lbl">Platform RTP</div>
+        <div class="kc-val" style="color:#0dcff7">91.1%</div>
+        <div class="kc-sub">Win / Bet × 100 (all providers)</div>
+        <div class="kc-d dn">▼ −0.3pp vs prev period</div>
+      </div>
+      <div class="kc c6">
+        <div class="kc-lbl">Total Rounds</div>
+        <div class="kc-val" style="color:#ff9f43">2,986,000</div>
+        <div class="kc-sub">all game rounds settled</div>
+        <div class="kc-d up">▲ +214,000 vs prev (+7.7%)</div>
+      </div>
+    </div>
+
+    <!-- ─── TABLE 1: TOP PROVIDERS ─── -->
+    <div class="section-hd">
+      <div class="section-title">Top Providers by GGR</div>
+      <div class="section-hd-line"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">8 providers · sorted by GGR ↓</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div class="tbl-ttl">Provider Performance KPI</div>
+        <span class="tbl-meta">01 Mar – 12 Mar 2026 · EUR</span>
+        <div style="flex:1"></div>
+        <div class="fstat">Providers: <span>8</span></div>
+        <div class="fstat">Currency: <span>EUR</span></div>
+      </div>
+
+      <div class="tbl-inner">
+        <table>
+          <thead>
+            <!-- GROUP ROW -->
+            <tr class="th-group">
+              <th colspan="1" style="border-right:2px solid var(--border2)"><!-- provider --></th>
+              <th colspan="3" class="g-activity">Gaming Activity</th>
+              <th colspan="3" class="g-bets">Bets &amp; Wins</th>
+              <th colspan="4" class="g-revenue">Revenue (GGR)</th>
+              <th colspan="3" class="g-rm">Real Money</th>
+              <th colspan="3" class="g-bonus">Bonus Money</th>
+              <th colspan="3" class="g-perf">Performance</th>
+            </tr>
+            <!-- COLUMN ROW -->
+            <tr class="th-cols">
+              <th class="sticky-col" style="width:180px;min-width:180px">Provider ↕</th>
+
+              <th class="col-sep" style="width:80px">Uniq Players</th>
+              <th style="width:78px">Sessions</th>
+              <th style="width:82px">Rounds</th>
+
+              <th class="col-sep" style="width:90px">Bet Amt €</th>
+              <th style="width:90px">Win Amt €</th>
+              <th style="width:80px">avg Bet €</th>
+
+              <th class="col-sep sorted" style="width:86px">GGR € <span class="sort-arrow">↓</span></th>
+              <th style="width:84px">Real GGR €</th>
+              <th style="width:82px">Bonus GGR €</th>
+              <th style="width:76px">GGR share</th>
+
+              <th class="col-sep" style="width:86px">RM Bet €</th>
+              <th style="width:84px">RM Win €</th>
+              <th style="width:80px">RM GGR €</th>
+
+              <th class="col-sep" style="width:82px">BM Bet €</th>
+              <th style="width:82px">BM Win €</th>
+              <th style="width:80px">BM GGR €</th>
+
+              <th class="col-sep" style="width:72px">RTP%</th>
+              <th style="width:82px">Margin %</th>
+              <th style="width:90px">Avg Round €</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <!-- TOTAL ROW -->
+            <tr class="total-row">
+              <td class="sticky-col">Total (8 providers)</td>
+              <td class="num col-sep">134,080</td><td>892,400</td><td>2,986,000</td>
+              <td class="up col-sep">€ 8,974,800</td><td>€ 8,177,800</td><td>€ 3.00</td>
+              <td class="yellow col-sep">€ 797,000</td><td>€ 637,600</td><td>€ 159,400</td>
+              <td>
+                <div class="share-cell">100% <div class="share-bar-track"><div class="share-bar-fill" style="width:100%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 7,179,840</td><td>€ 6,541,840</td><td>€ 510,080</td>
+              <td class="orange col-sep">€ 1,794,960</td><td>€ 1,635,960</td><td>€ 159,000</td>
+              <td class="col-sep">
+                <div class="rtp-cell">91.1% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>8.9%</td><td>€ 3.00</td>
+            </tr>
+
+            <!-- PROVIDER ROWS -->
+            <tr>
+              <td class="sticky-col"><span class="rank r1">1</span>Pragmatic Play</td>
+              <td class="col-sep">38,420</td><td>268,140</td><td>847,200</td>
+              <td class="up col-sep">€ 2,840,600</td><td>€ 2,583,100</td><td>€ 3.35</td>
+              <td class="yellow col-sep">€ 257,500</td><td>€ 206,000</td><td>€ 51,500</td>
+              <td>
+                <div class="share-cell">32.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:32%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 2,272,480</td><td>€ 2,066,480</td><td>€ 164,800</td>
+              <td class="orange col-sep">€ 568,120</td><td>€ 516,620</td><td>€ 51,500</td>
+              <td class="col-sep">
+                <div class="rtp-cell">90.9% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>9.1%</td><td>€ 3.35</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank r2">2</span>Evolution Gaming</td>
+              <td class="col-sep">24,180</td><td>156,300</td><td>312,600</td>
+              <td class="up col-sep">€ 1,924,800</td><td>€ 1,770,800</td><td>€ 6.16</td>
+              <td class="yellow col-sep">€ 154,000</td><td>€ 138,600</td><td>€ 15,400</td>
+              <td>
+                <div class="share-cell">19.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:19%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 1,731,120</td><td>€ 1,593,120</td><td>€ 123,200</td>
+              <td class="orange col-sep">€ 193,680</td><td>€ 177,680</td><td>€ 16,000</td>
+              <td class="col-sep">
+                <div class="rtp-cell">92.0% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:92%"></div></div></div>
+              </td>
+              <td>8.0%</td><td>€ 6.16</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank r3">3</span>NetEnt</td>
+              <td class="col-sep">18,940</td><td>132,580</td><td>526,400</td>
+              <td class="up col-sep">€ 1,248,200</td><td>€ 1,136,900</td><td>€ 2.37</td>
+              <td class="yellow col-sep">€ 111,300</td><td>€ 89,040</td><td>€ 22,260</td>
+              <td>
+                <div class="share-cell">14.0% <div class="share-bar-track"><div class="share-bar-fill" style="width:14%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 998,560</td><td>€ 909,520</td><td>€ 71,040</td>
+              <td class="orange col-sep">€ 249,640</td><td>€ 227,380</td><td>€ 22,260</td>
+              <td class="col-sep">
+                <div class="rtp-cell">91.1% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>8.9%</td><td>€ 2.37</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank">4</span>Play'n GO</td>
+              <td class="col-sep">15,680</td><td>109,760</td><td>398,100</td>
+              <td class="col-sep">€ 892,400</td><td>€ 810,700</td><td>€ 2.24</td>
+              <td class="yellow col-sep">€ 81,700</td><td>€ 65,360</td><td>€ 16,340</td>
+              <td>
+                <div class="share-cell">10.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:10%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 713,920</td><td>€ 648,560</td><td>€ 52,560</td>
+              <td class="orange col-sep">€ 178,480</td><td>€ 162,140</td><td>€ 16,340</td>
+              <td class="col-sep">
+                <div class="rtp-cell">90.8% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>9.2%</td><td>€ 2.24</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank">5</span>Microgaming</td>
+              <td class="col-sep">12,340</td><td>86,380</td><td>318,900</td>
+              <td class="col-sep">€ 741,800</td><td>€ 675,000</td><td>€ 2.33</td>
+              <td class="yellow col-sep">€ 66,800</td><td>€ 53,440</td><td>€ 13,360</td>
+              <td>
+                <div class="share-cell">8.4% <div class="share-bar-track"><div class="share-bar-fill" style="width:8%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 593,440</td><td>€ 540,000</td><td>€ 42,640</td>
+              <td class="orange col-sep">€ 148,360</td><td>€ 135,000</td><td>€ 13,360</td>
+              <td class="col-sep">
+                <div class="rtp-cell">91.0% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>9.0%</td><td>€ 2.33</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank">6</span>Playtech</td>
+              <td class="col-sep">9,840</td><td>68,880</td><td>241,800</td>
+              <td class="col-sep">€ 624,600</td><td>€ 566,700</td><td>€ 2.58</td>
+              <td class="yellow col-sep">€ 57,900</td><td>€ 46,320</td><td>€ 11,580</td>
+              <td>
+                <div class="share-cell">7.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:7%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 499,680</td><td>€ 453,360</td><td>€ 37,120</td>
+              <td class="orange col-sep">€ 124,920</td><td>€ 113,340</td><td>€ 11,580</td>
+              <td class="col-sep">
+                <div class="rtp-cell">90.7% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>9.3%</td><td>€ 2.58</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank">7</span>Hacksaw Gaming</td>
+              <td class="col-sep">8,260</td><td>57,820</td><td>198,400</td>
+              <td class="col-sep">€ 412,800</td><td>€ 372,400</td><td>€ 2.08</td>
+              <td class="yellow col-sep">€ 40,400</td><td>€ 32,320</td><td>€ 8,080</td>
+              <td>
+                <div class="share-cell">5.1% <div class="share-bar-track"><div class="share-bar-fill" style="width:5%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 330,240</td><td>€ 297,920</td><td>€ 25,840</td>
+              <td class="orange col-sep">€ 82,560</td><td>€ 74,480</td><td>€ 8,080</td>
+              <td class="col-sep">
+                <div class="rtp-cell">90.2% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div>
+              </td>
+              <td>9.8%</td><td>€ 2.08</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col"><span class="rank">8</span>Red Tiger</td>
+              <td class="col-sep">6,420</td><td>44,940</td><td>142,600</td>
+              <td class="col-sep">€ 289,600</td><td>€ 262,200</td><td>€ 2.03</td>
+              <td class="yellow col-sep">€ 27,400</td><td>€ 21,920</td><td>€ 5,480</td>
+              <td>
+                <div class="share-cell">3.4% <div class="share-bar-track"><div class="share-bar-fill" style="width:3%"></div></div></div>
+              </td>
+              <td class="teal col-sep">€ 231,680</td><td>€ 209,760</td><td>€ 17,520</td>
+              <td class="orange col-sep">€ 57,920</td><td>€ 52,440</td><td>€ 5,480</td>
+              <td class="col-sep">
+                <div class="rtp-cell">90.5% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:91%"></div></div></div>
+              </td>
+              <td>9.5%</td><td>€ 2.03</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-foot">
+        <span class="fstat"><span>8</span> providers · 01–12 Mar 2026</span>
+        <span class="fstat">Last updated: <span>12 Mar 2026, 14:52</span></span>
+        <div style="flex:1"></div>
+        <div class="btn" style="font-family:var(--mono);font-size:10px">↓ Export Providers</div>
+      </div>
+    </div><!-- /tbl-wrap providers -->
+
+    <!-- ─── CATEGORY BREAKDOWN ─── -->
+    <div class="section-hd">
+      <div class="section-title">Category Breakdown</div>
+      <div class="section-hd-line"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">Slots · Live · Table · all providers</span>
+    </div>
+
+    <div class="cat-breakdown">
+      <div class="cat-card slots">
+        <div class="cat-card-lbl">Slots</div>
+        <div class="cat-big" style="color:var(--accent2)">€ 497,200</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:62%;background:var(--accent)"></div></div>
+        <div class="cat-card-row"><span class="cat-card-key">GGR share</span><span class="cat-card-val">62.4%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Rounds</span><span class="cat-card-val">2,184,600</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Unique Players</span><span class="cat-card-val">92,400</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg RTP</span><span class="cat-card-val">90.3%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg Bet</span><span class="cat-card-val">€ 2.47</span></div>
+      </div>
+      <div class="cat-card live">
+        <div class="cat-card-lbl">Live Casino</div>
+        <div class="cat-big" style="color:var(--green)">€ 247,800</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:31%;background:var(--green)"></div></div>
+        <div class="cat-card-row"><span class="cat-card-key">GGR share</span><span class="cat-card-val">31.1%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Rounds</span><span class="cat-card-val">641,800</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Unique Players</span><span class="cat-card-val">34,620</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg RTP</span><span class="cat-card-val">92.4%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg Bet</span><span class="cat-card-val">€ 7.14</span></div>
+      </div>
+      <div class="cat-card table">
+        <div class="cat-card-lbl">Table Games</div>
+        <div class="cat-big" style="color:var(--purple)">€ 52,000</div>
+        <div class="cat-bar-wrap"><div class="cat-bar-fill" style="width:6.5%;background:var(--purple)"></div></div>
+        <div class="cat-card-row"><span class="cat-card-key">GGR share</span><span class="cat-card-val">6.5%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Rounds</span><span class="cat-card-val">159,600</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Unique Players</span><span class="cat-card-val">7,060</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg RTP</span><span class="cat-card-val">97.8%</span></div>
+        <div class="cat-card-row"><span class="cat-card-key">Avg Bet</span><span class="cat-card-val">€ 4.20</span></div>
+      </div>
+    </div>
+
+    <!-- ─── SESSION & LOBBY ANALYTICS ─── -->
+    <div class="section-hd">
+      <div class="section-title">Session &amp; Lobby Analytics</div>
+      <div class="section-hd-line"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">Lobby → game click-through · per provider</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div class="tbl-ttl">Session Quality &amp; Lobby Conversion</div>
+        <span class="tbl-meta">01 Mar – 12 Mar 2026</span>
+        <div style="flex:1"></div>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">Lobby CTR = clicks ÷ provider impressions · Conv = sessions ÷ clicks</span>
+      </div>
+      <div class="tbl-inner">
+        <table>
+          <thead>
+            <tr class="th-group">
+              <th colspan="1" style="border-right:2px solid var(--border2)"></th>
+              <th colspan="4" class="g-activity">Session Quality</th>
+              <th colspan="4" class="g-revenue">Lobby Conversion</th>
+              <th colspan="2" class="g-perf">Engagement</th>
+            </tr>
+            <tr class="th-cols">
+              <th class="sticky-col" style="width:180px;min-width:180px">Provider</th>
+              <th class="col-sep" style="width:82px">Sessions</th>
+              <th style="width:96px">Avg Duration</th>
+              <th style="width:90px">Rounds/Sess</th>
+              <th style="width:90px">GGR/Sess €</th>
+              <th class="col-sep" style="width:100px">Lobby Views</th>
+              <th style="width:96px">Click-thru Rate</th>
+              <th style="width:96px">Launched Sess</th>
+              <th style="width:90px">Conv %</th>
+              <th class="col-sep" style="width:90px">Avg Games</th>
+              <th style="width:90px">Bounce %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="total-row">
+              <td class="sticky-col">Total (All Providers)</td>
+              <td class="num col-sep">892,400</td>
+              <td class="accent">24m 18s</td>
+              <td>3.34</td>
+              <td class="yellow">€ 0.89</td>
+              <td class="col-sep num">4,820,000</td>
+              <td><div class="conv-cell">18.5% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:37%;background:var(--accent)"></div></div></div></td>
+              <td>892,400</td>
+              <td><div class="conv-cell">9.6% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:48%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">2.1</td>
+              <td>32.4%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank r1">1</span>Pragmatic Play</td>
+              <td class="col-sep">268,140</td>
+              <td class="accent">26m 42s</td>
+              <td>3.16</td>
+              <td class="yellow">€ 0.96</td>
+              <td class="col-sep">1,640,000</td>
+              <td><div class="conv-cell">16.3% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:33%;background:var(--accent)"></div></div></div></td>
+              <td>268,140</td>
+              <td><div class="conv-cell">9.2% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:46%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">2.3</td>
+              <td>29.8%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank r2">2</span>Evolution Gaming</td>
+              <td class="col-sep">156,300</td>
+              <td class="accent">38m 04s</td>
+              <td>2.00</td>
+              <td class="yellow">€ 0.99</td>
+              <td class="col-sep">892,000</td>
+              <td><div class="conv-cell">17.5% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:35%;background:var(--accent)"></div></div></div></td>
+              <td>156,300</td>
+              <td><div class="conv-cell">7.1% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:36%;background:var(--yellow)"></div></div></div></td>
+              <td class="col-sep">1.4</td>
+              <td>22.1%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank r3">3</span>NetEnt</td>
+              <td class="col-sep">132,580</td>
+              <td class="accent">21m 56s</td>
+              <td>3.97</td>
+              <td class="yellow">€ 0.84</td>
+              <td class="col-sep">746,000</td>
+              <td><div class="conv-cell">17.8% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:36%;background:var(--accent)"></div></div></div></td>
+              <td>132,580</td>
+              <td><div class="conv-cell">11.2% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:56%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">2.6</td>
+              <td>34.2%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank">4</span>Play'n GO</td>
+              <td class="col-sep">109,760</td>
+              <td class="accent">19m 28s</td>
+              <td>3.62</td>
+              <td class="yellow">€ 0.74</td>
+              <td class="col-sep">582,000</td>
+              <td><div class="conv-cell">18.9% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:38%;background:var(--accent)"></div></div></div></td>
+              <td>109,760</td>
+              <td><div class="conv-cell">10.4% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:52%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">2.2</td>
+              <td>35.6%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank">5</span>Microgaming</td>
+              <td class="col-sep">86,380</td>
+              <td class="accent">22m 14s</td>
+              <td>3.69</td>
+              <td class="yellow">€ 0.77</td>
+              <td class="col-sep">462,000</td>
+              <td><div class="conv-cell">18.7% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:37%;background:var(--accent)"></div></div></div></td>
+              <td>86,380</td>
+              <td><div class="conv-cell">9.4% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:47%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">2.0</td>
+              <td>31.8%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank">6</span>Playtech</td>
+              <td class="col-sep">68,880</td>
+              <td class="accent">20m 38s</td>
+              <td>3.51</td>
+              <td class="yellow">€ 0.84</td>
+              <td class="col-sep">368,000</td>
+              <td><div class="conv-cell">18.7% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:37%;background:var(--accent)"></div></div></div></td>
+              <td>68,880</td>
+              <td><div class="conv-cell">9.4% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:47%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">1.9</td>
+              <td>33.4%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank">7</span>Hacksaw Gaming</td>
+              <td class="col-sep">57,820</td>
+              <td class="accent">17m 52s</td>
+              <td>3.43</td>
+              <td class="yellow">€ 0.70</td>
+              <td class="col-sep">298,000</td>
+              <td><div class="conv-cell">19.4% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:39%;background:var(--accent)"></div></div></div></td>
+              <td>57,820</td>
+              <td><div class="conv-cell">9.7% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:49%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">1.8</td>
+              <td>38.2%</td>
+            </tr>
+            <tr>
+              <td class="sticky-col"><span class="rank">8</span>Red Tiger</td>
+              <td class="col-sep">44,940</td>
+              <td class="accent">16m 30s</td>
+              <td>3.17</td>
+              <td class="yellow">€ 0.61</td>
+              <td class="col-sep">224,000</td>
+              <td><div class="conv-cell">20.1% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:40%;background:var(--accent)"></div></div></div></td>
+              <td>44,940</td>
+              <td><div class="conv-cell">10.1% <div class="sess-bar-track"><div class="sess-bar-fill" style="width:51%;background:var(--green)"></div></div></div></td>
+              <td class="col-sep">1.7</td>
+              <td>37.1%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-foot">
+        <span class="fstat">Conv % = launched sessions ÷ lobby clicks · <span>Avg Duration</span> per session</span>
+        <span class="fstat">Bounce = sessions with only 1 round played</span>
+        <div style="flex:1"></div>
+        <div class="btn" style="font-family:var(--mono);font-size:10px">↓ Export Sessions</div>
+      </div>
+    </div><!-- /session tbl-wrap -->
+
+    <!-- ─── TABLE 2: TOP GAMES ─── -->
+    <div class="section-hd">
+      <div class="section-title">Top Games by GGR</div>
+      <div class="section-hd-line"></div>
+      <span style="font-family:var(--mono);font-size:9px;color:var(--muted)">Top 10 games · sorted by GGR ↓</span>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-head">
+        <div class="tbl-ttl">Game Performance KPI</div>
+        <span class="tbl-meta">01 Mar – 12 Mar 2026 · All Providers</span>
+        <div style="flex:1"></div>
+        <div class="fstat">Games shown: <span>10</span></div>
+        <div class="fstat">Currency: <span>EUR</span></div>
+      </div>
+
+      <div class="tbl-inner">
+        <table>
+          <thead>
+            <!-- GROUP ROW -->
+            <tr class="th-group">
+              <th colspan="3" style="border-right:2px solid var(--border2);background:var(--surface2)"><!-- game info --></th>
+              <th colspan="3" class="g-activity">Player Activity</th>
+              <th colspan="3" class="g-bets">Bets &amp; Wins</th>
+              <th colspan="4" class="g-revenue">Revenue</th>
+              <th colspan="2" class="g-bonus">Bonus Rounds</th>
+              <th colspan="2" class="g-perf">Classification</th>
+            </tr>
+            <!-- COLUMN ROW -->
+            <tr class="th-cols">
+              <th class="sticky-col" style="width:200px;min-width:200px">Game ↕</th>
+              <th style="width:110px">Provider</th>
+              <th style="width:72px;border-right:2px solid var(--border2)">Type</th>
+
+              <th class="col-sep" style="width:80px">Uniq Players</th>
+              <th style="width:80px">Rounds</th>
+              <th style="width:76px">Sessions</th>
+
+              <th class="col-sep" style="width:90px">Bet Amt €</th>
+              <th style="width:88px">Win Amt €</th>
+              <th style="width:80px">avg Bet €</th>
+
+              <th class="col-sep sorted" style="width:88px">GGR € <span class="sort-arrow">↓</span></th>
+              <th style="width:88px">GGR share</th>
+              <th style="width:76px">Provider %</th>
+              <th style="width:72px">RTP%</th>
+
+              <th class="col-sep" style="width:82px">Bonus Rnds</th>
+              <th style="width:88px">Bonus Win €</th>
+
+              <th class="col-sep" style="width:72px">Volatility</th>
+              <th style="width:72px">Min Bet €</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td class="sticky-col-plain">Gates of Olympus</td>
+              <td>Pragmatic Play</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">18,240</td><td>394,800</td><td>64,820</td>
+              <td class="up col-sep">€ 1,482,000</td><td>€ 1,333,800</td><td>€ 3.75</td>
+              <td class="yellow col-sep">€ 148,200</td>
+              <td><div class="share-cell">18.6% <div class="share-bar-track"><div class="share-bar-fill" style="width:19%"></div></div></div></td>
+              <td>57.6%</td>
+              <td><div class="rtp-cell">90.0% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">48,640</td><td>€ 186,420</td>
+              <td class="col-sep"><span class="vol high">High</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Sweet Bonanza</td>
+              <td>Pragmatic Play</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">12,650</td><td>286,400</td><td>46,820</td>
+              <td class="up col-sep">€ 859,200</td><td>€ 773,300</td><td>€ 3.00</td>
+              <td class="yellow col-sep">€ 85,900</td>
+              <td><div class="share-cell">10.8% <div class="share-bar-track"><div class="share-bar-fill" style="width:11%"></div></div></div></td>
+              <td>33.4%</td>
+              <td><div class="rtp-cell">90.0% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">34,360</td><td>€ 103,740</td>
+              <td class="col-sep"><span class="vol high">High</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Lightning Roulette</td>
+              <td>Evolution Gaming</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type live">Live</span></td>
+              <td class="col-sep num">11,840</td><td>142,600</td><td>38,480</td>
+              <td class="up col-sep">€ 912,400</td><td>€ 838,000</td><td>€ 6.40</td>
+              <td class="yellow col-sep">€ 74,400</td>
+              <td><div class="share-cell">9.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:9%"></div></div></div></td>
+              <td>48.3%</td>
+              <td><div class="rtp-cell">91.8% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:92%"></div></div></div></td>
+              <td class="orange col-sep">—</td><td>—</td>
+              <td class="col-sep"><span class="vol mid">Mid</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Crazy Time</td>
+              <td>Evolution Gaming</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type live">Live</span></td>
+              <td class="col-sep num">9,280</td><td>84,200</td><td>30,140</td>
+              <td class="col-sep">€ 748,600</td><td>€ 694,800</td><td>€ 8.89</td>
+              <td class="yellow col-sep">€ 53,800</td>
+              <td><div class="share-cell">6.8% <div class="share-bar-track"><div class="share-bar-fill" style="width:7%"></div></div></div></td>
+              <td>34.9%</td>
+              <td><div class="rtp-cell">92.8% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:93%"></div></div></div></td>
+              <td class="orange col-sep">—</td><td>—</td>
+              <td class="col-sep"><span class="vol mid">Mid</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Book of Dead</td>
+              <td>Play'n GO</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">8,420</td><td>218,600</td><td>32,180</td>
+              <td class="col-sep">€ 504,800</td><td>€ 453,600</td><td>€ 2.31</td>
+              <td class="yellow col-sep">€ 51,200</td>
+              <td><div class="share-cell">6.4% <div class="share-bar-track"><div class="share-bar-fill" style="width:6%"></div></div></div></td>
+              <td>62.7%</td>
+              <td><div class="rtp-cell">89.9% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">24,680</td><td>€ 57,200</td>
+              <td class="col-sep"><span class="vol high">High</span></td><td>€ 0.10</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Starburst</td>
+              <td>NetEnt</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">7,980</td><td>312,400</td><td>28,640</td>
+              <td class="col-sep">€ 398,200</td><td>€ 358,400</td><td>€ 1.27</td>
+              <td class="yellow col-sep">€ 39,800</td>
+              <td><div class="share-cell">5.0% <div class="share-bar-track"><div class="share-bar-fill" style="width:5%"></div></div></div></td>
+              <td>35.8%</td>
+              <td><div class="rtp-cell">90.0% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">18,440</td><td>€ 23,420</td>
+              <td class="col-sep"><span class="vol low">Low</span></td><td>€ 0.10</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Wanted Dead or a Wild</td>
+              <td>Hacksaw Gaming</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">6,840</td><td>156,200</td><td>24,840</td>
+              <td class="col-sep">€ 326,400</td><td>€ 290,800</td><td>€ 2.09</td>
+              <td class="yellow col-sep">€ 35,600</td>
+              <td><div class="share-cell">4.5% <div class="share-bar-track"><div class="share-bar-fill" style="width:4%"></div></div></div></td>
+              <td>88.1%</td>
+              <td><div class="rtp-cell">89.1% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:89%"></div></div></div></td>
+              <td class="orange col-sep">18,840</td><td>€ 39,820</td>
+              <td class="col-sep"><span class="vol high">High</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Gonzo's Quest</td>
+              <td>NetEnt</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">5,680</td><td>198,400</td><td>20,480</td>
+              <td class="col-sep">€ 284,800</td><td>€ 255,300</td><td>€ 1.44</td>
+              <td class="yellow col-sep">€ 29,500</td>
+              <td><div class="share-cell">3.7% <div class="share-bar-track"><div class="share-bar-fill" style="width:4%"></div></div></div></td>
+              <td>26.5%</td>
+              <td><div class="rtp-cell">89.6% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">22,640</td><td>€ 32,600</td>
+              <td class="col-sep"><span class="vol mid">Mid</span></td><td>€ 0.20</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Mega Moolah</td>
+              <td>Microgaming</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">4,820</td><td>124,600</td><td>18,240</td>
+              <td class="col-sep">€ 241,000</td><td>€ 217,900</td><td>€ 1.93</td>
+              <td class="yellow col-sep">€ 23,100</td>
+              <td><div class="share-cell">2.9% <div class="share-bar-track"><div class="share-bar-fill" style="width:3%"></div></div></div></td>
+              <td>34.6%</td>
+              <td><div class="rtp-cell">90.4% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:90%"></div></div></div></td>
+              <td class="orange col-sep">14,420</td><td>€ 18,640</td>
+              <td class="col-sep"><span class="vol mid">Mid</span></td><td>€ 0.25</td>
+            </tr>
+
+            <tr>
+              <td class="sticky-col-plain">Hand of Midas</td>
+              <td>Pragmatic Play</td>
+              <td style="border-right:2px solid var(--border2)"><span class="game-type slot">Slot</span></td>
+              <td class="col-sep num">4,200</td><td>148,200</td><td>16,480</td>
+              <td class="col-sep">€ 168,400</td><td>€ 150,200</td><td>€ 1.14</td>
+              <td class="yellow col-sep">€ 18,200</td>
+              <td><div class="share-cell">2.3% <div class="share-bar-track"><div class="share-bar-fill" style="width:2%"></div></div></div></td>
+              <td>7.1%</td>
+              <td><div class="rtp-cell">89.2% <div class="rtp-bar-track"><div class="rtp-bar-fill" style="width:89%"></div></div></div></td>
+              <td class="orange col-sep">17,480</td><td>€ 19,980</td>
+              <td class="col-sep"><span class="vol high">High</span></td><td>€ 0.10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="tbl-foot">
+        <span class="fstat">Top <span>10</span> of 248 games · 01–12 Mar 2026</span>
+        <span class="fstat">Last updated: <span>12 Mar 2026, 14:52</span></span>
+        <div style="flex:1"></div>
+        <div class="btn" style="font-family:var(--mono);font-size:10px">View all 248 games</div>
+        <div class="btn" style="font-family:var(--mono);font-size:10px">↓ Export Games</div>
+      </div>
+    </div><!-- /tbl-wrap games -->
+
+  </div><!-- /page-scroll -->
+
+</main>
+
+<!-- PROVIDER HOVER TOOLTIP -->
+<div id="ptip">
+  <div class="ptip-hd">
+    <div class="ptip-hd-icon" id="ptip-icon">🎮</div>
+    <div>
+      <div class="ptip-hd-name" id="ptip-name"></div>
+      <div class="ptip-hd-sub" id="ptip-sub"></div>
+    </div>
+  </div>
+  <div class="ptip-games-hd">
+    <span class="ptip-games-lbl">Top Games by GGR</span>
+    <span style="font-family:var(--mono);font-size:7.5px;color:var(--muted)">hover provider row</span>
+  </div>
+  <div id="ptip-games"></div>
+  <div class="ptip-foot">Click row to drill into this provider →</div>
+</div>
+
+<script>
+// ── PROVIDER TOP GAMES DATA ───────────────────────────────────────────────────
+const PROVIDER_GAMES = {
+  'Pragmatic Play': [
+    {n:'Gates of Olympus',    t:'Slot',  p:18240, ggr:'€148,200'},
+    {n:'Sweet Bonanza',       t:'Slot',  p:12650, ggr:'€85,900'},
+    {n:'Hand of Midas',       t:'Slot',  p:4200,  ggr:'€18,200'},
+    {n:'Big Bass Bonanza',    t:'Slot',  p:3840,  ggr:'€14,600'},
+    {n:'Wild West Gold',      t:'Slot',  p:3240,  ggr:'€10,800'},
+    {n:'Starlight Princess',  t:'Slot',  p:2980,  ggr:'€9,100'},
+    {n:'Great Rhino Megaways',t:'Slot',  p:2640,  ggr:'€7,400'},
+    {n:'Fruit Party',         t:'Slot',  p:2190,  ggr:'€5,800'},
+    {n:'The Dog House',       t:'Slot',  p:1840,  ggr:'€4,200'},
+    {n:'Money Roll',          t:'Slot',  p:1580,  ggr:'€3,100'},
+  ],
+  'Evolution Gaming': [
+    {n:'Lightning Roulette',  t:'Live',  p:11840, ggr:'€74,400'},
+    {n:'Crazy Time',          t:'Live',  p:9280,  ggr:'€53,800'},
+    {n:'Dream Catcher',       t:'Live',  p:6840,  ggr:'€18,200'},
+    {n:'Monopoly Live',       t:'Live',  p:4820,  ggr:'€7,600'},
+    {n:'Blackjack VIP',       t:'Table', p:3240,  ggr:'€5,400'},
+    {n:'Baccarat Squeeze',    t:'Table', p:2480,  ggr:'€3,800'},
+    {n:'Speed Blackjack',     t:'Table', p:1960,  ggr:'€2,900'},
+    {n:'Auto-Roulette',       t:'Live',  p:1640,  ggr:'€2,100'},
+    {n:'Infinite Blackjack',  t:'Table', p:1280,  ggr:'€1,600'},
+    {n:'First Person Roulette',t:'Live', p:840,   ggr:'€1,000'},
+  ],
+  'NetEnt': [
+    {n:'Starburst',           t:'Slot',  p:7980,  ggr:'€39,800'},
+    {n:"Gonzo's Quest",       t:'Slot',  p:5680,  ggr:'€29,500'},
+    {n:'Dead or Alive 2',     t:'Slot',  p:3840,  ggr:'€18,200'},
+    {n:'Finn and the Swirly Spin',t:'Slot',p:2640,ggr:'€9,400'},
+    {n:'Divine Fortune',      t:'Slot',  p:2180,  ggr:'€7,200'},
+    {n:'Narcos',              t:'Slot',  p:1640,  ggr:'€4,800'},
+    {n:'Twin Spin',           t:'Slot',  p:1240,  ggr:'€3,200'},
+    {n:'Aloha Cluster Pays',  t:'Slot',  p:940,   ggr:'€2,400'},
+    {n:'Jack Hammer',         t:'Slot',  p:680,   ggr:'€1,600'},
+    {n:'Mega Fortune',        t:'Slot',  p:480,   ggr:'€1,100'},
+  ],
+  "Play'n GO": [
+    {n:'Book of Dead',        t:'Slot',  p:8420,  ggr:'€51,200'},
+    {n:'Rich Wilde & the Book of Dead',t:'Slot',p:4840,ggr:'€16,400'},
+    {n:'Reactoonz',           t:'Slot',  p:3640,  ggr:'€9,200'},
+    {n:'Rise of Olympus',     t:'Slot',  p:2480,  ggr:'€5,800'},
+    {n:'Moon Princess',       t:'Slot',  p:1840,  ggr:'€4,100'},
+    {n:'Fire Joker',          t:'Slot',  p:1240,  ggr:'€2,800'},
+    {n:'Golden Ticket',       t:'Slot',  p:840,   ggr:'€1,900'},
+    {n:'Wolf Hunters',        t:'Slot',  p:640,   ggr:'€1,400'},
+    {n:'Hugo',                t:'Slot',  p:480,   ggr:'€980'},
+    {n:'Raging Rex',          t:'Slot',  p:340,   ggr:'€640'},
+  ],
+  'Microgaming': [
+    {n:'Mega Moolah',         t:'Slot',  p:4820,  ggr:'€23,100'},
+    {n:'Immortal Romance',    t:'Slot',  p:3240,  ggr:'€12,800'},
+    {n:'Thunderstruck II',    t:'Slot',  p:2640,  ggr:'€9,400'},
+    {n:'Avalon II',           t:'Slot',  p:1840,  ggr:'€6,100'},
+    {n:'Break da Bank Again', t:'Slot',  p:1240,  ggr:'€4,200'},
+    {n:'Jurassic World',      t:'Slot',  p:920,   ggr:'€3,100'},
+    {n:'Game of Thrones',     t:'Slot',  p:680,   ggr:'€2,400'},
+    {n:'Terminator 2',        t:'Slot',  p:480,   ggr:'€1,800'},
+    {n:'Bridesmaids',         t:'Slot',  p:340,   ggr:'€1,200'},
+    {n:'The Dark Knight',     t:'Slot',  p:240,   ggr:'€840'},
+  ],
+  'Playtech': [
+    {n:'Age of the Gods',     t:'Slot',  p:3840,  ggr:'€24,200'},
+    {n:'White King',          t:'Slot',  p:2640,  ggr:'€14,800'},
+    {n:'Plenty of Fruit',     t:'Slot',  p:1840,  ggr:'€9,100'},
+    {n:'Gladiator Jackpot',   t:'Slot',  p:1240,  ggr:'€5,400'},
+    {n:'Buffalo Blitz',       t:'Slot',  p:840,   ggr:'€3,100'},
+    {n:'Frankie Dettori',     t:'Slot',  p:540,   ggr:'€1,800'},
+    {n:'Live Blackjack',      t:'Table', p:480,   ggr:'€1,400'},
+    {n:'Live Roulette',       t:'Live',  p:340,   ggr:'€1,100'},
+    {n:'Triple Edge Poker',   t:'Table', p:240,   ggr:'€840'},
+    {n:'Casino Hold\'em',     t:'Table', p:180,   ggr:'€640'},
+  ],
+  'Hacksaw Gaming': [
+    {n:'Wanted Dead or a Wild',t:'Slot', p:6840,  ggr:'€35,600'},
+    {n:'Chaos Crew',          t:'Slot',  p:3240,  ggr:'€12,400'},
+    {n:'Stick\'em',           t:'Slot',  p:1840,  ggr:'€6,200'},
+    {n:'Cubes',               t:'Slot',  p:1240,  ggr:'€4,100'},
+    {n:'Highrise',            t:'Slot',  p:840,   ggr:'€2,800'},
+    {n:'Reel Heist',          t:'Slot',  p:540,   ggr:'€1,900'},
+    {n:'Oktoberfest',         t:'Slot',  p:380,   ggr:'€1,400'},
+    {n:'Cash Compass',        t:'Slot',  p:280,   ggr:'€1,100'},
+    {n:'Knight Rider',        t:'Slot',  p:180,   ggr:'€840'},
+    {n:'Dwarven Gold',        t:'Slot',  p:120,   ggr:'€600'},
+  ],
+  'Red Tiger': [
+    {n:'Dragon's Luck',       t:'Slot',  p:2840,  ggr:'€12,200'},
+    {n:'Gonzo's Quest Megaways',t:'Slot',p:1840,  ggr:'€8,100'},
+    {n:'Wild Elements',       t:'Slot',  p:1240,  ggr:'€4,800'},
+    {n:'Piggy Riches Megaways',t:'Slot', p:840,   ggr:'€3,200'},
+    {n:'Primate King',        t:'Slot',  p:540,   ggr:'€2,100'},
+    {n:'Wild Toro II',        t:'Slot',  p:380,   ggr:'€1,500'},
+    {n:'Voodoo Magic',        t:'Slot',  p:280,   ggr:'€1,100'},
+    {n:'Pied Piper',          t:'Slot',  p:180,   ggr:'€840'},
+    {n:'Lucky Easter',        t:'Slot',  p:120,   ggr:'€620'},
+    {n:'Aztec Spins',         t:'Slot',  p:80,    ggr:'€440'},
+  ],
+};
+
+const TYPE_STYLE = {
+  'Slot':  {bg:'rgba(61,127,255,.12)',color:'#5b92ff'},
+  'Live':  {bg:'rgba(34,208,122,.12)',color:'#22d07a'},
+  'Table': {bg:'rgba(167,139,250,.12)',color:'#a78bfa'},
+};
+
+// ── TOOLTIP ─────────────────────────────────────────────────────────────────
+const ptip = document.getElementById('ptip');
+let tipVisible = false;
+
+function showProviderTip(e, name, sessions, ggr){
+  const games = PROVIDER_GAMES[name] || [];
+  document.getElementById('ptip-name').textContent = name;
+  document.getElementById('ptip-sub').textContent = `${sessions.toLocaleString()} sessions · GGR ${ggr}`;
+
+  const gamesEl = document.getElementById('ptip-games');
+  gamesEl.innerHTML = games.map((g,i)=>{
+    const ts = TYPE_STYLE[g.t] || {bg:'rgba(255,255,255,.06)',color:'var(--muted2)'};
+    return `<div class="ptip-game">
+      <span class="ptip-g-rank">${i+1}</span>
+      <span class="ptip-g-name">${g.n}</span>
+      <span class="ptip-g-type" style="background:${ts.bg};color:${ts.color}">${g.t}</span>
+      <span class="ptip-g-ggr">${g.ggr}</span>
+    </div>`;
+  }).join('');
+
+  ptip.classList.add('show');
+  tipVisible = true;
+  positionTip(e);
+}
+
+function positionTip(e){
+  const W = window.innerWidth, H = window.innerHeight;
+  const tw = 310, th = ptip.offsetHeight || 320;
+  let x = e.clientX + 18, y = e.clientY - 20;
+  if(x + tw > W - 10) x = e.clientX - tw - 14;
+  if(y + th > H - 10) y = H - th - 10;
+  ptip.style.left = x + 'px';
+  ptip.style.top  = y + 'px';
+}
+
+function hideTip(){ ptip.classList.remove('show'); tipVisible = false; }
+
+document.addEventListener('mousemove', e=>{ if(tipVisible) positionTip(e); });
+
+// ── ATTACH TOOLTIP TO PROVIDER ROWS ─────────────────────────────────────────
+document.querySelectorAll('tbody tr').forEach(tr=>{
+  const stickyCell = tr.querySelector('td.sticky-col');
+  if(!stickyCell) return;
+  const providerName = stickyCell.textContent.replace(/^[\d\s]+/, '').trim();
+  if(!PROVIDER_GAMES[providerName]) return;
+
+  // get sessions count from 2nd visible cell after sticky
+  const cells = tr.querySelectorAll('td');
+  const sessions = parseInt((cells[1]?.textContent||'').replace(/[^0-9]/g,''))||0;
+  const ggrCell = cells[7]?.textContent?.trim()||'—';
+
+  tr.addEventListener('mouseenter', e=>showProviderTip(e, providerName, sessions, ggrCell));
+  tr.addEventListener('mouseleave', hideTip);
+});
+</script>
+
+<script src="../assets/nav.js"></script>
+</body>
+</html>

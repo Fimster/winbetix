@@ -47,6 +47,20 @@
     },
     {
       type: 'group',
+      id: 'providers',
+      label: 'Providers',
+      icon: '<svg class="icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M9 12h6M12 9v6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+      links: [
+        {
+          href: 'providers-report.html',
+          file: 'providers-report.html',
+          label: 'Providers & Games KPI',
+          icon: '<svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 13V7l6-5 6 5v6H2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><rect x="5.5" y="9" width="2.5" height="4" rx=".5" fill="currentColor" opacity=".5"/><rect x="8" y="7.5" width="2.5" height="5.5" rx=".5" fill="currentColor"/></svg>'
+        }
+      ]
+    },
+    {
+      type: 'group',
       id: 'crm',
       label: 'CRM',
       icon: '<svg class="icon" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M1 14c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11.5 7a2.5 2.5 0 010 5M13 8.5c1 .5 2 1.5 2 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
@@ -65,6 +79,20 @@
       file: 'roadmap.html',
       label: 'Roadmap',
       icon: '<svg class="icon" viewBox="0 0 16 16" fill="none"><path d="M2 4h3l2 3-2 3H2V4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5 7h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M11 4l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    },
+    {
+      type: 'group',
+      id: 'postback',
+      label: 'Postback',
+      icon: '<svg class=\"icon\" viewBox=\"0 0 16 16\" fill=\"none\"><path d=\"M2 5h9a3 3 0 010 6H8\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\"/><path d=\"M5 8L2 5l3-3\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>',
+      links: [
+        {
+          href: '../tools/integrations.html',
+          file: 'integrations.html',
+          label: 'Integrations',
+          icon: '<svg class=\"icon\" viewBox=\"0 0 16 16\" fill=\"none\"><rect x=\"1\" y=\"3\" width=\"5\" height=\"10\" rx=\"1.5\" stroke=\"currentColor\" stroke-width=\"1.4\"/><rect x=\"10\" y=\"3\" width=\"5\" height=\"10\" rx=\"1.5\" stroke=\"currentColor\" stroke-width=\"1.4\"/><path d=\"M6 8h4\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\"/></svg>'
+        }
+      ]
     },
     {
       type: 'group',
@@ -121,7 +149,7 @@
   var sidebarHTML =
     '<aside class="sidebar">' +
       '<div class="logo">' +
-        '<img class="logo-img" src="../assets/logo.png" alt="WinBetix">' +
+        '<a href="../index.html"><img class="logo-img" src="../assets/logo.png" alt="WinBetix"></a>' +
         '<button class="sidebar-collapse-btn" title="Collapse sidebar">' +
           '<svg viewBox="0 0 16 16" fill="none"><path d="M10 3L6 8l4 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
         '</button>' +

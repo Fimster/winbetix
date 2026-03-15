@@ -208,8 +208,26 @@ header {
 
 .modules-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+}
+.modules-grid.functional { grid-template-columns: repeat(2, 1fr); margin-bottom: 40px; }
+.modules-grid.informational { grid-template-columns: repeat(4, 1fr); }
+
+/* IN-WORK card overlay */
+.mc-inwork {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: rgba(255,140,66,.12);
+  color: #ff8c42;
+  border: 1px solid rgba(255,140,66,.25);
+  margin-bottom: 8px;
+  align-self: flex-start;
 }
 
 /* ─── MODULE CARD ─── */
@@ -331,7 +349,7 @@ header {
   z-index: 10;
   padding: 56px 48px 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.4fr 0.6fr 1fr;
   gap: 32px;
   animation: fadeUp .5s .24s ease both;
 }
@@ -530,12 +548,14 @@ footer {
   </div>
   <nav class="header-nav">
     <a class="hnav" href="reports/dashboard.html">Analytics</a>
+    <a class="hnav" href="tools/postback.html">Postback</a>
     <a class="hnav" href="docs/index.html">Wiki</a>
+    <a class="hnav" href="docs/vocabulary.html">Vocabulary</a>
     <a class="hnav" href="docs/roadmap.html">Roadmap</a>
     <a class="hnav" href="docs/changelog.html">Changelog</a>
   </nav>
   <div class="header-meta">
-    <span class="badge blue">v2.4</span>
+    <span class="badge blue">v2.7</span>
     <span class="badge green">● Live</span>
   </div>
 </header>
@@ -546,7 +566,7 @@ footer {
   <h1>Data, decisions,<br><em>delivered.</em></h1>
   <p class="hero-desc">WinBetix — кастомный аналитический микросервис, созданный для замены PowerBI. Единая платформа для всех брендов, регионов и команд. Реальные данные, понятные отчёты, без лишних инструментов.</p>
   <div class="hero-pills">
-    <span class="hero-pill accent">6 Reports Ready</span>
+    <span class="hero-pill accent">7 Reports Ready</span>
     <span class="hero-pill green">● Prototypes Live</span>
     <span class="hero-pill">Multi-brand</span>
     <span class="hero-pill">Role-based Access</span>
@@ -557,7 +577,7 @@ footer {
 <!-- ─── STATS BAR ─── -->
 <div class="stats-bar">
   <div class="stat">
-    <div class="stat-val"><span>6</span></div>
+    <div class="stat-val"><span>7</span></div>
     <div class="stat-label">Live Reports</div>
   </div>
   <div class="stat">
@@ -580,15 +600,17 @@ footer {
 
 <!-- ─── MODULES ─── -->
 <div class="modules-wrap">
-  <div class="section-label">Platform Modules</div>
-  <div class="modules-grid">
+
+  <!-- FUNCTIONAL -->
+  <div class="section-label">Functional Modules</div>
+  <div class="modules-grid functional">
 
     <!-- ANALYTICS -->
     <a class="module-card" href="reports/dashboard.html" style="--mc-color: var(--accent);">
       <span class="mc-icon">📊</span>
-      <div class="mc-tag">Analytics</div>
+      <div class="mc-tag">Analytics · Live</div>
       <div class="mc-name">Data &amp;<br>Reports</div>
-      <div class="mc-desc">Все аналитические отчёты платформы — Dashboard, Daily KPI, Payment, Churn, In/Out, Affiliate. Данные по всем брендам в реальном времени.</div>
+      <div class="mc-desc">Все аналитические отчёты платформы — Dashboard, Daily KPI, Payment, Churn, In/Out, Affiliate, Providers. 7 отчётов, данные по всем брендам в реальном времени. Когортный анализ, тепловые карты, дрил-дауны.</div>
       <div class="mc-footer">
         <div class="mc-cta">
           Open Dashboard
@@ -598,18 +620,55 @@ footer {
       </div>
     </a>
 
+    <!-- POSTBACK MANAGEMENT -->
+    <a class="module-card" href="tools/postback.html" style="--mc-color: #ff8c42;">
+      <span class="mc-icon">📡</span>
+      <div class="mc-inwork">⚙ In Work · v3.0</div>
+      <div class="mc-tag" style="color:#ff8c42">Tools · In Development</div>
+      <div class="mc-name">Postback<br>Management</div>
+      <div class="mc-desc">Централизованный модуль управления постбеками — S2S-конструктор, тест-пуш, лог событий, аффилиатские интеграции. Управление макросами и фильтрация по событиям, GEO, бренду.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          View Details
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="mc-num">02</div>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- INFORMATIONAL -->
+  <div class="section-label">Informational</div>
+  <div class="modules-grid informational">
+
     <!-- WIKI -->
     <a class="module-card" href="docs/index.html" style="--mc-color: var(--green);">
       <span class="mc-icon">📚</span>
       <div class="mc-tag">Documentation</div>
       <div class="mc-name">Wiki &amp;<br>Knowledge Base</div>
-      <div class="mc-desc">Полная документация проекта — архитектура, спецификации отчётов, дизайн-система, словарь терминов и технические требования.</div>
+      <div class="mc-desc">Полная документация — архитектура, спецификации отчётов, дизайн-система, словарь терминов и технические требования.</div>
       <div class="mc-footer">
         <div class="mc-cta">
           Open Wiki
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="mc-num">02</div>
+        <div class="mc-num">03</div>
+      </div>
+    </a>
+
+    <!-- VOCABULARY -->
+    <a class="module-card" href="docs/vocabulary.html" style="--mc-color: var(--teal);">
+      <span class="mc-icon">📖</span>
+      <div class="mc-tag">Glossary</div>
+      <div class="mc-name">Vocabulary<br>&amp; Glossary</div>
+      <div class="mc-desc">83 термина с формулами, категориями и описаниями. Поиск, фильтрация по категории, сортировка. GGR, NGR, FTD, RTP, когорты, постбеки.</div>
+      <div class="mc-footer">
+        <div class="mc-cta">
+          Open Vocabulary
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="mc-num">04</div>
       </div>
     </a>
 
@@ -618,13 +677,13 @@ footer {
       <span class="mc-icon">🗺️</span>
       <div class="mc-tag">Planning</div>
       <div class="mc-name">Project<br>Roadmap</div>
-      <div class="mc-desc">Приоритеты разработки: 6 отчётов готовы к разработке, 5 запланированы. Фичи в работе, фазы релизов и статус задач.</div>
+      <div class="mc-desc">Приоритеты разработки, фазы релизов, статус задач. 7 отчётов готовы, новые модули в работе.</div>
       <div class="mc-footer">
         <div class="mc-cta">
           View Roadmap
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="mc-num">03</div>
+        <div class="mc-num">05</div>
       </div>
     </a>
 
@@ -633,13 +692,13 @@ footer {
       <span class="mc-icon">🔖</span>
       <div class="mc-tag">Releases</div>
       <div class="mc-name">Change<br>Log</div>
-      <div class="mc-desc">История всех версий WinBetix — изменения в спецификациях, новые отчёты, обновления архитектуры и прототипов.</div>
+      <div class="mc-desc">История всех версий WinBetix — новые отчёты, обновления архитектуры, изменения в спецификациях и прототипах.</div>
       <div class="mc-footer">
         <div class="mc-cta">
           View Changelog
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7 2.5l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
-        <div class="mc-num">04</div>
+        <div class="mc-num">06</div>
       </div>
     </a>
 
@@ -701,52 +760,51 @@ footer {
         </div>
         <span class="qi-badge live">Live</span>
       </a>
+      <a class="quick-item" href="reports/providers-report.html">
+        <div class="qi-icon">🎰</div>
+        <div class="qi-info">
+          <div class="qi-name">Providers &amp; Games</div>
+          <div class="qi-sub">GGR · RTP · top slots · rounds</div>
+        </div>
+        <span class="qi-badge live">Live</span>
+      </a>
     </div>
   </div>
 
-  <!-- DOCS -->
+  <!-- TOOLS -->
   <div class="quick-block">
-    <div class="section-label">Documentation</div>
+    <div class="section-label">Tools</div>
     <div class="quick-list">
-      <a class="quick-item" href="docs/overview.html">
-        <div class="qi-icon">📋</div>
+      <a class="quick-item" href="tools/postback.html">
+        <div class="qi-icon">📡</div>
         <div class="qi-info">
-          <div class="qi-name">Project Overview</div>
-          <div class="qi-sub">Goals · audience · user roles · NFRs</div>
+          <div class="qi-name">Postback Management</div>
+          <div class="qi-sub">S2S · event log · test push</div>
         </div>
-        <span class="qi-badge">01</span>
+        <span class="qi-badge" style="color:#ff8c42;background:rgba(255,140,66,.1)">In Work</span>
       </a>
-      <a class="quick-item" href="docs/reports.html">
-        <div class="qi-icon">📐</div>
+    </div>
+  </div>
+
+  <!-- INFORMATIONAL -->
+  <div class="quick-block">
+    <div class="section-label">Informational</div>
+    <div class="quick-list">
+      <a class="quick-item" href="docs/index.html">
+        <div class="qi-icon">📚</div>
         <div class="qi-info">
-          <div class="qi-name">Reports Specifications</div>
-          <div class="qi-sub">Filters · metrics · export · UI specs</div>
+          <div class="qi-name">Wiki</div>
+          <div class="qi-sub">Architecture · specs · design system</div>
         </div>
-        <span class="qi-badge">02</span>
-      </a>
-      <a class="quick-item" href="docs/architecture.html">
-        <div class="qi-icon">⚙️</div>
-        <div class="qi-info">
-          <div class="qi-name">Architecture Brief</div>
-          <div class="qi-sub">Data pipeline · RLS · API · cache</div>
-        </div>
-        <span class="qi-badge">03</span>
+        <span class="qi-badge">Docs</span>
       </a>
       <a class="quick-item" href="docs/vocabulary.html">
         <div class="qi-icon">📖</div>
         <div class="qi-info">
-          <div class="qi-name">Vocabulary v1.4</div>
-          <div class="qi-sub">GGR · NGR · FTD · cohort definitions</div>
+          <div class="qi-name">Vocabulary v1.6</div>
+          <div class="qi-sub">83 terms · search · categories</div>
         </div>
-        <span class="qi-badge">04</span>
-      </a>
-      <a class="quick-item" href="docs/design-system.html">
-        <div class="qi-icon">🎨</div>
-        <div class="qi-info">
-          <div class="qi-name">Design System</div>
-          <div class="qi-sub">Colors · typography · components</div>
-        </div>
-        <span class="qi-badge">05</span>
+        <span class="qi-badge new">v1.6</span>
       </a>
       <a class="quick-item" href="docs/roadmap.html">
         <div class="qi-icon">🗺️</div>
@@ -754,7 +812,15 @@ footer {
           <div class="qi-name">Roadmap</div>
           <div class="qi-sub">Priorities · phases · features in work</div>
         </div>
-        <span class="qi-badge new">New</span>
+        <span class="qi-badge">Plan</span>
+      </a>
+      <a class="quick-item" href="docs/changelog.html">
+        <div class="qi-icon">🔖</div>
+        <div class="qi-info">
+          <div class="qi-name">Changelog</div>
+          <div class="qi-sub">Version history · v2.7 latest</div>
+        </div>
+        <span class="qi-badge new">v2.7</span>
       </a>
     </div>
   </div>
@@ -784,6 +850,8 @@ footer {
         <a class="about-link" href="reports/churn-report.html">Churn Rate (Cohort)</a>
         <a class="about-link" href="reports/inout-report.html">In / Out Report</a>
         <a class="about-link" href="reports/affiliate-report.html">Affiliate Performance</a>
+        <a class="about-link" href="reports/providers-report.html">Providers &amp; Games</a>
+        <a class="about-link" href="tools/postback.html">Postback Management ⚙ in work</a>
         <a class="about-link" href="docs/index.html">Documentation hub</a>
         <a class="about-link" href="docs/roadmap.html">Product Roadmap</a>
       </div>
@@ -805,7 +873,7 @@ footer {
 </div>
 
 <footer>
-  <div class="footer-left">WinBetix Analytics Platform · v2.4 · March 2026 · Internal use only</div>
+  <div class="footer-left">WinBetix Analytics Platform · v2.7 · March 2026 · Internal use only</div>
   <div class="footer-links">
     <a href="docs/index.html">Docs</a>
     <a href="docs/roadmap.html">Roadmap</a>

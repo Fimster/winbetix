@@ -8,7 +8,7 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap');
 
-body { display: flex; overflow: hidden; }
+body { display: flex; height: 100vh; overflow: hidden; }
 
 /* TOPBAR overrides */
 .topbar { height: 60px; padding: 0 24px; gap: 14px; }
@@ -34,6 +34,7 @@ body { display: flex; overflow: hidden; }
 /* PAGE SCROLL */
 .page-scroll {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 14px 22px 24px;

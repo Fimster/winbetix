@@ -6,28 +6,34 @@
 <title>WinBetix — In/Out Report</title>
 <link rel="stylesheet" href="../assets/styles.css">
 <style>
-  body{display:flex;overflow:hidden;}
+  body{display:flex;height:100vh;overflow:hidden;}
   .topbar{height:56px;padding:0 22px;gap:10px;}
 .radio-chip{display:flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:4px;font-size:11px;cursor:pointer;border:1px solid transparent;background:var(--surface2);color:var(--muted);}
 .radio-chip.sel{border-color:var(--teal);color:var(--teal);background:rgba(0,201,177,.08);}
 .rdot{width:7px;height:7px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rdot.on::after{content:'';width:3px;height:3px;border-radius:50%;background:currentColor;}
 
-/* KPI STRIP */
-.kpi-strip{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;}
-.kpi-item{flex:1;display:flex;flex-direction:column;justify-content:center;padding:10px 18px;border-right:1px solid var(--border);position:relative;overflow:hidden;}
-.kpi-item::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.ki-in::before{background:var(--green);}
-.ki-out::before{background:var(--red);}
-.ki-net::before{background:var(--teal);}
-.ki-count::before{background:var(--accent);}
-.ki-players::before{background:var(--purple);}
-.ki-avg::before{background:var(--yellow);}
-.kpi-lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
-.kpi-val{font-family:var(--mono);font-size:16px;font-weight:500;line-height:1.1;}
-.kpi-sub{font-family:var(--mono);font-size:8.5px;margin-top:3px;color:var(--muted2);}
-.kpi-sub.up{color:var(--green);}
-.kpi-sub.dn{color:var(--red);}
+/* KPI CARDS */
+.kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;padding:12px 22px 0;flex-shrink:0;}
+.kc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px 10px;position:relative;overflow:hidden;}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kc.c-in::before{background:var(--green);}
+.kc.c-out::before{background:var(--red);}
+.kc.c-net::before{background:var(--teal);}
+.kc.c-tx::before{background:var(--accent);}
+.kc.c-pl::before{background:var(--purple);}
+.kc.c-avg::before{background:var(--yellow);}
+.kc-lbl{font-family:var(--mono);font-size:7px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.kc-val{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.15;}
+.kc-sub{font-family:var(--mono);font-size:8px;color:var(--muted2);margin-top:2px;}
+.kc-d{font-family:var(--mono);font-size:8.5px;margin-top:5px;}
+.kc-d.up{color:var(--green);}
+.kc-d.dn{color:var(--red);}
+
+/* PLAYER CELL (no avatar) */
+.pl-id-row{display:flex;align-items:center;gap:4px;}
+.copy-btn{background:none;border:none;cursor:pointer;color:var(--muted);font-size:10px;padding:0 2px;line-height:1;transition:color .1s;}
+.copy-btn:hover{color:var(--accent2);}
 
 /* CTRL ROW */
 .ctrl-row{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:8px;height:36px;flex-shrink:0;}
@@ -50,7 +56,7 @@
 .heat-lbl{font-family:var(--mono);font-size:6.5px;color:var(--muted);}
 
 /* TABLE SECTION */
-.tbl-section{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.tbl-section{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 .tbl-wrap{flex:1;overflow:auto;}
 .tbl-wrap::-webkit-scrollbar{width:5px;height:5px;}
 .tbl-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
@@ -241,37 +247,43 @@ td.n{color:var(--text);}
     <div class="chip">🔍 Search player / TX</div>
   </div>
 
-  <!-- KPI STRIP -->
-  <div class="kpi-strip">
-    <div class="kpi-item ki-in">
-      <div class="kpi-lbl">Total IN (EUR)</div>
-      <div class="kpi-val" style="color:var(--green)">€ 53 473</div>
-      <div class="kpi-sub up">▲ +12.4% vs yesterday</div>
+  <!-- KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kc c-in">
+      <div class="kc-lbl">Total IN (EUR)</div>
+      <div class="kc-val" style="color:var(--green)">€ 53 473</div>
+      <div class="kc-sub">deposits · cashins</div>
+      <div class="kc-d up">▲ +12.4% vs yesterday</div>
     </div>
-    <div class="kpi-item ki-out">
-      <div class="kpi-lbl">Total OUT (EUR)</div>
-      <div class="kpi-val" style="color:var(--red)">€ 31 208</div>
-      <div class="kpi-sub dn">▲ +8.1% vs yesterday</div>
+    <div class="kc c-out">
+      <div class="kc-lbl">Total OUT (EUR)</div>
+      <div class="kc-val" style="color:var(--red)">€ 31 208</div>
+      <div class="kc-sub">withdrawals · cashouts</div>
+      <div class="kc-d dn">▲ +8.1% vs yesterday</div>
     </div>
-    <div class="kpi-item ki-net">
-      <div class="kpi-lbl">Net (IN − OUT)</div>
-      <div class="kpi-val" style="color:var(--teal)">€ 22 265</div>
-      <div class="kpi-sub up">▲ +18.9% vs yesterday</div>
+    <div class="kc c-net">
+      <div class="kc-lbl">Net (IN − OUT)</div>
+      <div class="kc-val" style="color:var(--teal)">€ 22 265</div>
+      <div class="kc-sub">net cash flow</div>
+      <div class="kc-d up">▲ +18.9% vs yesterday</div>
     </div>
-    <div class="kpi-item ki-count">
-      <div class="kpi-lbl">Transactions</div>
-      <div class="kpi-val" style="color:var(--accent2)">1 487</div>
-      <div class="kpi-sub">In: 1 012 · Out: 475</div>
+    <div class="kc c-tx">
+      <div class="kc-lbl">Transactions</div>
+      <div class="kc-val" style="color:var(--accent2)">1 487</div>
+      <div class="kc-sub">In: 1 012 · Out: 475</div>
+      <div class="kc-d up">▲ +103 vs yesterday</div>
     </div>
-    <div class="kpi-item ki-players">
-      <div class="kpi-lbl">Unique Players</div>
-      <div class="kpi-val" style="color:var(--purple)">756</div>
-      <div class="kpi-sub dn">▼ −59 vs yesterday</div>
+    <div class="kc c-pl">
+      <div class="kc-lbl">Unique Players</div>
+      <div class="kc-val" style="color:var(--purple)">756</div>
+      <div class="kc-sub">active today</div>
+      <div class="kc-d dn">▼ −59 vs yesterday</div>
     </div>
-    <div class="kpi-item ki-avg">
-      <div class="kpi-lbl">Avg TX Amount</div>
-      <div class="kpi-val" style="color:var(--yellow)">€ 35.9</div>
-      <div class="kpi-sub up">▲ +€3.2 vs yesterday</div>
+    <div class="kc c-avg">
+      <div class="kc-lbl">Avg TX Amount</div>
+      <div class="kc-val" style="color:var(--yellow)">€ 35.9</div>
+      <div class="kc-sub">per transaction</div>
+      <div class="kc-d up">▲ +€3.2 vs yesterday</div>
     </div>
   </div>
 
@@ -315,12 +327,12 @@ td.n{color:var(--text);}
             <th class="g-tx" colspan="3">Transaction</th>
             <th class="g-amt" colspan="3">Amount</th>
             <th class="g-pay" colspan="4">Payment</th>
-            <th class="g-ctx" colspan="5">Context</th>
+            <th class="g-ctx" colspan="4">Context</th>
             <th class="g-risk" colspan="2">Risk / Proc.</th>
           </tr>
           <tr class="th-cols">
-            <th style="min-width:178px">Player</th>
-            <th style="min-width:82px">Player ID</th>
+            <th style="min-width:190px">Player</th>
+            <th style="min-width:60px">GEO</th>
             <th class="sorted" style="min-width:108px">TX ID ↓</th>
             <th style="min-width:66px">Type</th>
             <th style="min-width:128px">Date / Time</th>
@@ -331,7 +343,6 @@ td.n{color:var(--text);}
             <th style="min-width:88px">Aggregator</th>
             <th style="min-width:88px">Status</th>
             <th style="min-width:72px">Bonus</th>
-            <th style="min-width:54px">GEO</th>
             <th style="min-width:66px">Brand</th>
             <th style="min-width:76px">Affiliate</th>
             <th style="min-width:84px">Company</th>
@@ -539,14 +550,16 @@ function render(){
     tr.innerHTML=`
       <td>
         <div class="pl-cell">
-          <div class="pl-av" style="background:${p.col}">${p.av}</div>
           <div>
             <div class="pl-name">${p.name}</div>
-            <div class="pl-id">#${p.id}</div>
+            <div class="pl-id-row">
+              <span class="pl-id">#${p.id}</span>
+              <button class="copy-btn" title="Copy Player ID" onclick="event.stopPropagation();copyId('${p.id}',this)">⎘</button>
+            </div>
           </div>
         </div>
       </td>
-      <td><span style="color:var(--muted2);font-size:8.5px">${p.id}</span></td>
+      <td style="font-size:14px;text-align:center">${p.country.split(' ')[0]}</td>
       <td class="n" style="font-size:9px">${tx.txId}</td>
       <td><span class="${tx.isIn?'badge-in':'badge-out'}">${tx.isIn?'↓ IN':'↑ OUT'}</span></td>
       <td><span style="color:var(--muted2);font-size:9px">12 Mar 2026</span> <span style="color:var(--text)">${tx.time}</span></td>
@@ -557,7 +570,6 @@ function render(){
       <td style="font-size:9px">${tx.agg}</td>
       <td><span class="${{success:'badge-ok',pending:'badge-pend',failed:'badge-fail'}[tx.status]}">${{success:'✓ Success',pending:'⏳ Pending',failed:'✕ Failed'}[tx.status]}</span></td>
       <td>${tx.bonus?'<span class="badge-bonus">🎁 Bonus</span>':'<span style="color:var(--muted)">—</span>'}</td>
-      <td style="font-size:13px">${p.country.split(' ')[0]}</td>
       <td style="font-size:9.5px">${p.brand}</td>
       <td style="font-size:9px">${p.aff}</td>
       <td style="font-size:9.5px">${p.company}</td>
@@ -660,6 +672,16 @@ function openPanel(p){
 function closePanel(){
   document.getElementById('panel').classList.remove('open');
   document.getElementById('overlay').classList.remove('show');
+}
+
+// ── COPY PLAYER ID ────────────────────────────────────────────────────────────
+function copyId(id, btn){
+  navigator.clipboard.writeText(id).then(()=>{
+    const prev=btn.textContent;
+    btn.textContent='✓';
+    btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent=prev;btn.style.color='';},1200);
+  });
 }
 
 // ── RISK TOGGLE ───────────────────────────────────────────────────────────────

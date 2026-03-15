@@ -3,213 +3,490 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280">
-<title>WinBetix — Vocabulary v1.4</title>
+<title>WinBetix — Vocabulary v1.6</title>
 <link rel="stylesheet" href="../assets/styles.css">
 <style>
-body{display:grid;grid-template-columns:260px 1fr;grid-template-rows:auto 1fr auto;grid-template-areas:"nav nav" "toc main" "nav2 nav2";}
-body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 5% 15%,rgba(61,127,255,.06) 0%,transparent 60%);pointer-events:none;z-index:0;}
-.topbar{grid-area:nav;position:sticky;top:0;z-index:100;background:rgba(10,11,13,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0 32px;height:52px;}
-.topbar-logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--text);margin-right:24px;}
-.topbar-sep{width:1px;height:18px;background:var(--border);margin-right:24px;}
-.topbar-crumb{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px;}
-.topbar-crumb a{color:var(--muted2);text-decoration:none;transition:.15s;}
-.topbar-crumb a:hover{color:var(--accent2);}
-.topbar-crumb .sep{color:var(--border2);}
-.topbar-crumb .cur{color:var(--text);}
+body { overflow-x: hidden; min-height: 100vh; display: flex; flex-direction: column; }
 
-/* TOC SIDEBAR */
-.toc{grid-area:toc;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;border-right:1px solid var(--border);padding:32px 0;z-index:10;}
-.toc::-webkit-scrollbar{width:4px;}
-.toc::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.toc-title{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 24px 12px;}
-.toc-link{display:block;padding:7px 24px;font-family:var(--mono);font-size:11px;color:var(--muted2);text-decoration:none;transition:.15s;border-left:2px solid transparent;}
-.toc-link:hover{color:var(--text);background:var(--surface);}
-.toc-link.active{color:var(--accent2);border-color:var(--accent2);background:rgba(61,127,255,.06);}
-.toc-sep{height:1px;background:var(--border);margin:16px 24px;}
+/* ── TOPBAR ── */
+.topbar { position: sticky; top: 0; z-index: 100; background: rgba(10,11,13,.94); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0; padding: 0 32px; height: 52px; flex-shrink: 0; }
+.topbar-logo { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--text); margin-right: 24px; }
+.topbar-sep { width: 1px; height: 18px; background: var(--border); margin-right: 24px; }
+.topbar-crumb { font-family: var(--mono); font-size: 11px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.topbar-crumb a { color: var(--muted2); text-decoration: none; transition: .15s; }
+.topbar-crumb a:hover { color: var(--accent2); }
+.topbar-crumb .sep { color: var(--border2); }
+.topbar-crumb .cur { color: var(--text); }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-/* MAIN CONTENT */
-.doc-main{grid-area:main;padding:48px 60px 80px;position:relative;z-index:10;max-width:900px;}
-.doc-header{margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border);}
-.doc-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
-.doc-label::before{content:"";width:20px;height:1px;background:var(--accent2);}
-.doc-header h1{font-size:36px;font-weight:900;letter-spacing:-.04em;margin-bottom:12px;}
-.doc-header p{font-family:var(--mono);font-size:12px;color:var(--muted2);font-weight:300;line-height:1.65;max-width:540px;}
-.doc-meta-row{display:flex;gap:16px;margin-top:20px;}
-.meta-pill{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;background:var(--surface);border:1px solid var(--border2);color:var(--muted2);}
-.meta-pill.green{color:var(--green);border-color:rgba(34,208,122,.3);background:rgba(34,208,122,.06);}
+/* ── PAGE HEADER ── */
+.page-header { padding: 40px 40px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.page-header-left { }
+.page-label { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent2); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.page-label::before { content: ""; width: 20px; height: 1px; background: var(--accent2); }
+.page-header h1 { font-size: 32px; font-weight: 900; letter-spacing: -.04em; margin-bottom: 8px; }
+.page-header p { font-family: var(--mono); font-size: 11px; color: var(--muted2); line-height: 1.6; max-width: 500px; }
+.page-meta { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.meta-pill { font-family: var(--mono); font-size: 10px; padding: 4px 12px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border2); color: var(--muted2); }
+.meta-pill.green { color: var(--green); border-color: rgba(34,208,122,.3); background: rgba(34,208,122,.06); }
+.meta-pill.blue { color: var(--accent2); border-color: rgba(61,127,255,.3); background: rgba(61,127,255,.06); }
 
-/* CONTENT BLOCKS */
-.doc-section{margin-bottom:48px;}
-.doc-section h2{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
-.doc-section h2::before{content:"";width:4px;height:20px;background:var(--accent);border-radius:2px;flex-shrink:0;}
-.doc-section h3{font-size:14px;font-weight:700;margin-bottom:10px;margin-top:24px;color:var(--muted2);}
-.doc-section p{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:12px;}
-.doc-section ul,.doc-section ol{padding-left:20px;}
-.doc-section li{font-family:var(--mono);font-size:12px;color:var(--muted2);line-height:1.7;font-weight:300;margin-bottom:6px;}
-.doc-section strong{color:var(--text);font-weight:500;}
+/* ── FILTER BAR ── */
+.filter-bar { padding: 24px 40px 20px; position: sticky; top: 52px; z-index: 50; background: rgba(10,11,13,.97); border-bottom: 1px solid var(--border); }
+.filter-row-1 { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.search-wrap { position: relative; flex: 1; max-width: 380px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.search-input { width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px 9px 36px; font-family: var(--mono); font-size: 12px; color: var(--text); outline: none; transition: .2s; }
+.search-input::placeholder { color: var(--muted); }
+.search-input:focus { border-color: var(--accent); background: rgba(61,127,255,.04); }
+.search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); padding: 2px; display: none; font-size: 14px; line-height: 1; }
+.search-clear.visible { display: block; }
+.filter-divider { width: 1px; height: 28px; background: var(--border); }
+.sort-group { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.sort-btn { font-family: var(--mono); font-size: 10px; padding: 7px 12px; background: none; border: none; cursor: pointer; color: var(--muted); transition: .15s; white-space: nowrap; }
+.sort-btn.active { background: var(--accent); color: #fff; }
+.sort-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,.04); }
+.view-toggle { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.view-btn { background: none; border: none; cursor: pointer; padding: 7px 10px; color: var(--muted); transition: .15s; }
+.view-btn.active { background: rgba(61,127,255,.15); color: var(--accent2); }
+.result-count { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.result-count span { color: var(--text); font-weight: 600; }
 
-/* TABLE */
-.doc-table{width:100%;border-collapse:collapse;margin:16px 0;}
-.doc-table th{background:var(--surface2);font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border2);}
-.doc-table td{font-family:var(--mono);font-size:11px;color:var(--muted2);padding:9px 14px;border-bottom:1px solid var(--border);}
-.doc-table tr:hover td{background:var(--surface);color:var(--text);}
+.filter-row-2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.filter-label { font-family: var(--mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.cat-chip { font-family: var(--mono); font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--muted2); transition: .15s; white-space: nowrap; }
+.cat-chip:hover { color: var(--text); border-color: var(--border2); }
+.cat-chip.active { color: #fff; border-color: transparent; }
+.cat-chip[data-cat="All"] { border-color: var(--border2); color: var(--muted2); }
+.cat-chip[data-cat="All"].active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.cat-chip[data-cat="Acquisition"].active { background: #3d7fff; }
+.cat-chip[data-cat="Payment"].active { background: #0dcff7; color: #0a0b0d; }
+.cat-chip[data-cat="Finance"].active { background: #22d07a; color: #0a0b0d; }
+.cat-chip[data-cat="CRM"].active { background: #f5b731; color: #0a0b0d; }
+.cat-chip[data-cat="Affiliate"].active { background: #a78bfa; }
+.cat-chip[data-cat="KPI"].active { background: #ff9f43; color: #0a0b0d; }
+.cat-chip[data-cat="Risk & Compliance"].active { background: #ff4d6a; }
+.cat-chip[data-cat="Gaming"].active { background: #22d07a; color: #0a0b0d; }
 
-/* CALLOUT */
-.callout{border-radius:8px;padding:16px 20px;margin:16px 0;border-left:3px solid var(--accent);background:rgba(61,127,255,.06);}
-.callout.warning{border-color:var(--yellow);background:rgba(245,183,49,.06);}
-.callout.danger{border-color:var(--red);background:rgba(255,77,106,.06);}
-.callout.success{border-color:var(--green);background:rgba(34,208,122,.06);}
-.callout-title{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;font-weight:500;}
-.callout.warning .callout-title{color:var(--yellow);}
-.callout.danger .callout-title{color:var(--red);}
-.callout.success .callout-title{color:var(--green);}
-.callout p{font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;font-weight:300;margin:0;}
+.type-chip { font-family: var(--mono); font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; cursor: pointer; color: var(--muted2); transition: .15s; }
+.type-chip.active { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: var(--text); }
+.filter-divider-v { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 
-/* CODE */
-.code-block{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;font-family:var(--mono);font-size:11px;color:var(--muted2);line-height:1.6;overflow-x:auto;margin:12px 0;}
+/* ── GRID VIEW ── */
+.vocab-grid { padding: 28px 40px 60px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; flex: 1; }
+.vocab-grid.view-list { grid-template-columns: 1fr; gap: 8px; }
+.vocab-grid.view-list .vocab-card { flex-direction: row; align-items: center; padding: 14px 20px; gap: 16px; }
+.vocab-grid.view-list .vc-body { display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0; }
+.vocab-grid.view-list .vc-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 200px; max-width: 280px; }
+.vocab-grid.view-list .vc-formula { margin: 0; flex: 1; }
+.vocab-grid.view-list .vc-desc { display: none; }
+.vocab-grid.view-list .vc-tags { margin-top: 0; }
+.vocab-grid.view-list .vc-footer { margin-top: 0; border-top: none; padding-top: 0; display: flex; align-items: center; gap: 8px; }
+.vocab-grid.view-list .vc-abbrev { margin-left: 0; }
 
-/* BADGE */
-.badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;display:inline-block;}
-.badge-red{background:rgba(255,77,106,.15);color:var(--red);}
-.badge-green{background:rgba(34,208,122,.15);color:var(--green);}
-.badge-yellow{background:rgba(245,183,49,.15);color:var(--yellow);}
-.badge-blue{background:rgba(61,127,255,.15);color:var(--accent2);}
+/* ── VOCAB CARD ── */
+.vocab-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; border-left: 3px solid var(--cat-color, var(--border2)); transition: border-color .2s, background .2s, transform .15s; position: relative; overflow: hidden; cursor: default; }
+.vocab-card:hover { background: rgba(255,255,255,.03); border-color: var(--cat-color, var(--border2)); transform: translateY(-1px); }
+.vocab-card.hidden { display: none; }
 
-footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;z-index:10;position:relative;}
-.f-left{font-family:var(--mono);font-size:10px;color:var(--muted);}
-.f-links{display:flex;gap:20px;}
-.f-links a{font-family:var(--mono);font-size:10px;color:var(--muted);text-decoration:none;transition:.15s;}
-.f-links a:hover{color:var(--accent2);}
+.vc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.vc-name { font-size: 14px; font-weight: 700; letter-spacing: -.02em; color: var(--text); line-height: 1.3; }
+.vc-abbrev { font-family: var(--mono); font-size: 9px; padding: 3px 8px; border-radius: 4px; background: rgba(255,255,255,.06); border: 1px solid var(--border2); color: var(--muted2); white-space: nowrap; flex-shrink: 0; letter-spacing: .04em; margin-left: 6px; }
+
+.vc-formula { font-family: var(--mono); font-size: 10px; color: var(--muted2); background: rgba(0,0,0,.25); border: 1px solid var(--border); border-radius: 5px; padding: 6px 10px; margin-bottom: 10px; line-height: 1.5; }
+.vc-formula.no-formula { background: transparent; border: none; padding: 0; margin-bottom: 4px; color: var(--muted); font-size: 9px; font-style: italic; }
+
+.vc-desc { font-family: var(--mono); font-size: 11px; color: var(--muted2); line-height: 1.6; flex: 1; }
+
+.vc-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.vc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.vc-cat-badge { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 4px; letter-spacing: .04em; font-weight: 500; }
+.vc-type-badge { font-family: var(--mono); font-size: 9px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,.06); border: 1px solid var(--border2); color: var(--muted); letter-spacing: .04em; }
+
+/* category badge colors */
+.cat-Acquisition { background: rgba(61,127,255,.15); color: #3d7fff; }
+.cat-Payment { background: rgba(13,207,247,.15); color: #0dcff7; }
+.cat-Finance { background: rgba(34,208,122,.15); color: #22d07a; }
+.cat-CRM { background: rgba(245,183,49,.15); color: #f5b731; }
+.cat-Affiliate { background: rgba(167,139,250,.15); color: #a78bfa; }
+.cat-KPI { background: rgba(255,159,67,.15); color: #ff9f43; }
+.cat-Risk { background: rgba(255,77,106,.15); color: #ff4d6a; }
+.cat-Gaming { background: rgba(34,208,122,.15); color: #22d07a; }
+
+/* category left border colors */
+.border-Acquisition { --cat-color: #3d7fff; }
+.border-Payment { --cat-color: #0dcff7; }
+.border-Finance { --cat-color: #22d07a; }
+.border-CRM { --cat-color: #f5b731; }
+.border-Affiliate { --cat-color: #a78bfa; }
+.border-KPI { --cat-color: #ff9f43; }
+.border-Risk { --cat-color: #ff4d6a; }
+.border-Gaming { --cat-color: #22d07a; }
+
+/* search highlight */
+.hl { background: rgba(245,183,49,.3); color: var(--text); border-radius: 2px; padding: 0 1px; }
+
+/* empty state */
+.empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
+.empty-icon { font-size: 40px; margin-bottom: 16px; opacity: .4; }
+.empty-title { font-size: 18px; font-weight: 700; color: var(--muted2); margin-bottom: 8px; }
+.empty-sub { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+/* STATS ROW */
+.stats-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 40px; background: rgba(17,19,24,.6); }
+.stat-item { padding: 14px 20px; border-right: 1px solid var(--border); display: flex; align-items: baseline; gap: 8px; }
+.stat-item:first-child { padding-left: 0; }
+.stat-num { font-family: var(--mono); font-size: 18px; font-weight: 700; color: var(--text); }
+.stat-label { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+/* footer */
+footer { border-top: 1px solid var(--border); padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.f-left { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.f-links { display: flex; gap: 20px; }
+.f-links a { font-family: var(--mono); font-size: 10px; color: var(--muted); text-decoration: none; transition: .15s; }
+.f-links a:hover { color: var(--accent2); }
 </style>
 </head>
 <body>
+
+<!-- TOPBAR -->
 <div class="topbar">
   <a class="topbar-logo" href="../index.html"><img class="logo-img" src="../assets/logo.png" alt="WinBetix"></a>
   <div class="topbar-sep"></div>
-  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Vocabulary v1.4</span></div>
-</div>
-<nav class="toc">
-<div class="toc-title">On This Page</div>
-<a class="toc-link active" href="#players">Players</a>
-<a class="toc-link" href="#financial">Financial</a>
-<a class="toc-link" href="#payments">Payments</a>
-<a class="toc-link" href="#cohort">Cohort</a>
-<a class="toc-link" href="#affiliate">Affiliate</a>
-<a class="toc-link" href="#formulas">Formulas</a>
-</nav>
-<main class="doc-main">
-<div class="doc-header">
-  <div class="doc-label">04 — Vocabulary</div>
-  <h1>Glossary v1.4</h1>
-  <p>Определения всех ключевых метрик, терминов и концепций платформы WinBetix. Это единственный источник правды для команды.</p>
-  <div class="doc-meta-row">
-    <span class="meta-pill green">v1.4</span>
-    <span class="meta-pill">March 2026</span>
+  <div class="topbar-crumb">
+    <a href="index.html">Docs</a>
+    <span class="sep">/</span>
+    <span class="cur">Vocabulary v1.5</span>
+  </div>
+  <div class="topbar-right">
+    <span class="meta-pill">83 terms</span>
+    <span class="meta-pill green">v1.6</span>
   </div>
 </div>
 
-<div class="doc-section" id="players">
-  <h2>Player Lifecycle</h2>
-  <table class="doc-table">
-    <thead><tr><th>Термин</th><th>Определение</th><th>Примечание</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Reg / Registration</strong></td><td>Успешная регистрация игрока в системе</td><td>Считается per-brand</td></tr>
-      <tr><td><strong>FTD</strong></td><td>First Time Deposit — первый успешный settled депозит игрока</td><td>Per-brand. При chargeback статус не пересчитывается</td></tr>
-      <tr><td><strong>R2D%</strong></td><td>Reg-to-Deposit % — доля зарегистрированных, сделавших FTD</td><td>FTDs / Regs × 100%. При Regs=0 → NULL</td></tr>
-      <tr><td><strong>STD</strong></td><td>Second Time Deposit — второй и последующие депозиты</td><td>Любой успешный депозит после FTD</td></tr>
-      <tr><td><strong>Active Player</strong></td><td>Игрок, совершивший ≥1 успешный депозит в данном периоде</td><td>Для когортного анализа</td></tr>
-      <tr><td><strong>Depositor</strong></td><td>Игрок с хотя бы одним успешным депозитом за всё время</td><td>Исторически</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="doc-section" id="financial">
-  <h2>Financial Metrics</h2>
-  <table class="doc-table">
-    <thead><tr><th>Метрика</th><th>Формула</th><th>Описание</th></tr></thead>
-    <tbody>
-      <tr><td><strong>GGR</strong></td><td>Deposits − Withdrawals (gaming)</td><td>Gross Gaming Revenue. Доход казино до бонусов и других затрат</td></tr>
-      <tr><td><strong>NGR</strong></td><td>GGR − Bonus Released</td><td>Net Gaming Revenue. После вычета выплаченных бонусов</td></tr>
-      <tr><td><strong>Net Cash</strong></td><td>Total Deposits − Total Withdrawals</td><td>Чистый денежный поток включая все транзакции</td></tr>
-      <tr><td><strong>Bonus</strong></td><td>Сумма выплаченных бонусов</td><td>Released — реально выплаченные, не начисленные</td></tr>
-      <tr><td><strong>NET PROFIT</strong></td><td>NGR − Marketing Cost</td><td>Чистая прибыль после всех маркетинговых затрат</td></tr>
-      <tr><td><strong>ROI %</strong></td><td>NGR / Marketing Cost × 100%</td><td>При Marketing Cost = 0 → NULL (не Infinity)</td></tr>
-    </tbody>
-  </table>
-  <div class="callout">
-    <div class="callout-title">Важно — NULL vs 0</div>
-    <p><strong>NULL</strong> = данных нет (аффилиат не работал в этом GEO). <strong>0</strong> = данные есть, результат равен нулю. В UI: NULL → тире (—), 0 → "0" или "0%".</p>
+<!-- PAGE HEADER -->
+<div class="page-header">
+  <div class="page-header-left">
+    <div class="page-label">04 — Vocabulary</div>
+    <h1>Glossary v1.6</h1>
+    <p>Определения всех ключевых метрик, терминов и концепций платформы WinBetix. Единственный источник правды для команды.</p>
+    <div class="page-meta">
+      <span class="meta-pill green">v1.6</span>
+      <span class="meta-pill">March 2026</span>
+      <span class="meta-pill blue">83 terms</span>
+      <span class="meta-pill">8 categories</span>
+    </div>
   </div>
 </div>
 
-<div class="doc-section" id="payments">
-  <h2>Payment Metrics</h2>
-  <table class="doc-table">
-    <thead><tr><th>Метрика</th><th>Определение</th></tr></thead>
-    <tbody>
-      <tr><td><strong>AR% (Approval Rate)</strong></td><td>Count Success / Count Attempts × 100%. Зелёный >80%, тиловый 60–80%, красный &lt;60%</td></tr>
-      <tr><td><strong>Count Attempts</strong></td><td>Общее количество попыток транзакций (включая failed)</td></tr>
-      <tr><td><strong>Count Success</strong></td><td>Количество успешно завершённых транзакций (status = settled)</td></tr>
-      <tr><td><strong>Players Success</strong></td><td>Уникальные игроки с хотя бы 1 успешной транзакцией</td></tr>
-      <tr><td><strong>AR Players%</strong></td><td>Players Success / Players Attempts × 100%</td></tr>
-      <tr><td><strong>Aggregator</strong></td><td>Верхний уровень платёжного провайдера (напр. Stripe)</td></tr>
-      <tr><td><strong>Child System</strong></td><td>Конкретный метод оплаты внутри агрегатора (напр. Visa)</td></tr>
-    </tbody>
-  </table>
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-item"><span class="stat-num">51</span><span class="stat-label">Metrics</span></div>
+  <div class="stat-item"><span class="stat-num">21</span><span class="stat-label">Terms</span></div>
+  <div class="stat-item"><span class="stat-num">10</span><span class="stat-label">Acquisition</span></div>
+  <div class="stat-item"><span class="stat-num">18</span><span class="stat-label">Payment</span></div>
+  <div class="stat-item"><span class="stat-num">14</span><span class="stat-label">Finance</span></div>
+  <div class="stat-item"><span class="stat-num">6</span><span class="stat-label">CRM</span></div>
+  <div class="stat-item"><span class="stat-num">9</span><span class="stat-label">Affiliate</span></div>
+  <div class="stat-item"><span class="stat-num">4</span><span class="stat-label">Risk & Compliance</span></div>
+  <div class="stat-item"><span class="stat-num">11</span><span class="stat-label">Gaming</span></div>
 </div>
 
-<div class="doc-section" id="cohort">
-  <h2>Cohort Analysis</h2>
-  <table class="doc-table">
-    <thead><tr><th>Термин</th><th>Определение</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Cohort</strong></td><td>Группа игроков, сделавших FTD в одном периоде (день/неделя/месяц)</td></tr>
-      <tr><td><strong>M0 (D0, W0)</strong></td><td>Базовый период когорты — всегда 100% (все игроки активны в момент FTD)</td></tr>
-      <tr><td><strong>Retention %</strong></td><td>Active Players в периоде Mn / Cohort Size × 100%</td></tr>
-      <tr><td><strong>Cohort Size</strong></td><td>Количество игроков, сделавших FTD в базовом периоде когорты</td></tr>
-      <tr><td><strong>Small Sample</strong></td><td>Когорта &lt;100 игроков — статистически нестабильна, помечается флагом</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="doc-section" id="affiliate">
-  <h2>Affiliate Terms</h2>
-  <table class="doc-table">
-    <thead><tr><th>Термин</th><th>Определение</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Affiliate</strong></td><td>Партнёр, приводящий трафик на платформу</td></tr>
-      <tr><td><strong>Media Item</strong></td><td>Конкретный рекламный материал / источник трафика аффилиата</td></tr>
-      <tr><td><strong>GEO</strong></td><td>Страна происхождения трафика</td></tr>
-      <tr><td><strong>CPA</strong></td><td>Cost Per Acquisition — фиксированная выплата за FTD</td></tr>
-      <tr><td><strong>Rev Share</strong></td><td>Revenue Share — % от NGR, выплачиваемый аффилиату</td></tr>
-      <tr><td><strong>eCPA</strong></td><td>Effective CPA = Marketing Cost / FTDs. При FTDs=0 → NULL</td></tr>
-      <tr><td><strong>Marketing Cost</strong></td><td>CPA + Rev Share (+ platform costs если применимо)</td></tr>
-      <tr><td><strong>Ret.NEW%</strong></td><td>Retention новых игроков (FTD в данном периоде)</td></tr>
-      <tr><td><strong>Ret.OLD%</strong></td><td>Retention игроков из предыдущих периодов</td></tr>
-      <tr><td><strong>Ret.Tot%</strong></td><td>Общий retention — все активные / все зарегистрированные</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<div class="doc-section" id="formulas">
-  <h2>Key Formulas</h2>
-  <div class="code-block">NGR        = GGR − Bonus Released
-NET PROFIT = NGR − Marketing Cost
-ROI %      = NGR / Marketing Cost × 100%  [NULL if Marketing Cost = 0]
-R2D %      = FTDs / Regs × 100%           [NULL if Regs = 0]
-eCPA       = Marketing Cost / FTDs        [NULL if FTDs = 0]
-AR%        = Count Success / Count Attempts × 100%
-Retention% = Active(Mn) / Cohort Size × 100%
-M0         = 100% (always — base period)</div>
-  <div class="callout warning">
-    <div class="callout-title">⚠ Division by Zero</div>
-    <p>Все формулы с делением должны возвращать NULL при делителе = 0, а не Infinity или ошибку. Frontend отображает NULL как тире (—).</p>
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-row-1">
+    <div class="search-wrap">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search terms, formulas, abbreviations…" autocomplete="off">
+      <button class="search-clear" id="searchClear" title="Clear search">×</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="sort-group">
+      <button class="sort-btn active" data-sort="default">Default</button>
+      <button class="sort-btn" data-sort="az">A → Z</button>
+      <button class="sort-btn" data-sort="za">Z → A</button>
+      <button class="sort-btn" data-sort="cat">Category</button>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="viewGrid" title="Grid view">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity=".5"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor" opacity=".5"/></svg>
+      </button>
+      <button class="view-btn" id="viewList" title="List view">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="result-count">Showing <span id="resultCount">72</span> of 72</div>
+  </div>
+  <div class="filter-row-2">
+    <span class="filter-label">Category:</span>
+    <button class="cat-chip active" data-cat="All">All</button>
+    <button class="cat-chip" data-cat="Acquisition">Acquisition</button>
+    <button class="cat-chip" data-cat="Payment">Payment</button>
+    <button class="cat-chip" data-cat="Finance">Finance</button>
+    <button class="cat-chip" data-cat="CRM">CRM</button>
+    <button class="cat-chip" data-cat="Affiliate">Affiliate</button>
+    <button class="cat-chip" data-cat="KPI">KPI</button>
+    <button class="cat-chip" data-cat="Risk & Compliance">Risk & Compliance</button>
+    <button class="cat-chip" data-cat="Gaming">Gaming</button>
+    <div class="filter-divider-v"></div>
+    <span class="filter-label">Type:</span>
+    <button class="type-chip active" data-type="All">All</button>
+    <button class="type-chip" data-type="Метрика">Metric</button>
+    <button class="type-chip" data-type="Термин">Term</button>
   </div>
 </div>
-</main>
+
+<!-- VOCAB GRID -->
+<div class="vocab-grid" id="vocabGrid">
+  <!-- cards injected by JS -->
+</div>
+
 <footer>
-  <div class="f-left">WinBetix · Vocabulary v1.4 · v2.3 · March 2026</div>
-  <div class="f-links"><a href="../index.html">← Hub</a><a href="index.html">Docs Home</a><a href="roadmap.html">Roadmap</a></div>
+  <div class="f-left">WinBetix · Vocabulary v1.5 · March 2026</div>
+  <div class="f-links">
+    <a href="../index.html">← Hub</a>
+    <a href="index.html">Docs Home</a>
+    <a href="roadmap.html">Roadmap</a>
+    <a href="changelog.html">Changelog</a>
+  </div>
 </footer>
+
+<script>
+var VOCAB = [
+  { id:1,  name:"Visitors",                               abbr:"Vis",              type:"Метрика", cat:"Acquisition",       formula:"count(unique sessions)",                                                        desc:"Уникальные посещения сайта за период по уникальным кукис + IP." },
+  { id:2,  name:"Registrations",                          abbr:"Reg",              type:"Метрика", cat:"Acquisition",       formula:"count(new accounts)",                                                           desc:"Количество новых зарегистрированных аккаунтов за период." },
+  { id:3,  name:"FTDs",                                   abbr:"FTD",              type:"Метрика", cat:"Acquisition",       formula:"count(first successful deposit per brand)",                                     desc:"Количество игроков, совершивших первый успешный депозит. Считается один раз на бренд. Не пересчитывается при чарджбэке." },
+  { id:4,  name:"Visitor to Reg %",                       abbr:"V2R %",            type:"Метрика", cat:"Acquisition",       formula:"Regs / Visitors × 100",                                                         desc:"Конверсия посетителей в регистрации." },
+  { id:5,  name:"Reg to FTD %",                           abbr:"R2D %",            type:"Метрика", cat:"Acquisition",       formula:"FTDs / Regs × 100",                                                             desc:"Конверсия регистраций в первый депозит." },
+  { id:6,  name:"Reg to Try %",                           abbr:"R2T %",            type:"Метрика", cat:"Acquisition",       formula:"Deposit Attempts by new players / Regs × 100",                                  desc:"Доля новых игроков, попытавшихся пополнить счёт." },
+  { id:7,  name:"FTD Deposits € (1st Transaction)",       abbr:"FTD 1 tx",         type:"Метрика", cat:"Acquisition",       formula:"SUM(first transaction amount, FTD players)",                                    desc:"Суммарный объём первых транзакций всех FTD игроков за период." },
+  { id:8,  name:"FTD Deposits € (1st Day)",               abbr:"FTD 1 d",          type:"Метрика", cat:"Acquisition",       formula:"SUM(all deposits on FTD date, FTD players)",                                    desc:"Суммарный объём всех депозитов FTD игроков в день их FTD." },
+  { id:9,  name:"avg € 1st Transaction",                  abbr:"avg FTD 1 tx",     type:"Метрика", cat:"Acquisition",       formula:"FTD Deposits € / FTDs",                                                         desc:"Средний размер первой транзакции FTD игрока." },
+  { id:10, name:"avg € 1st Day",                          abbr:"avg FTD 1 d",      type:"Метрика", cat:"Acquisition",       formula:"€ 1st Day / FTDs",                                                              desc:"Средний депозит FTD игрока в день регистрации." },
+  { id:11, name:"Deposits €",                             abbr:"IN",               type:"Метрика", cat:"Payment",           formula:"SUM(successful deposit amounts, EUR)",                                          desc:"Общий объём успешных депозитов в EUR за период." },
+  { id:12, name:"Deposit Count",                          abbr:"Dep Count",        type:"Метрика", cat:"Payment",           formula:"count(successful deposit transactions)",                                         desc:"Количество успешных депозитных транзакций." },
+  { id:13, name:"Unique Depositors",                      abbr:"U Depositors",     type:"Метрика", cat:"Payment",           formula:"count(distinct player_id, successful deposits)",                                 desc:"Уникальные игроки, сделавшие хотя бы один депозит за период." },
+  { id:14, name:"Avg Deposit / Player",                   abbr:"avg Dep Player",   type:"Метрика", cat:"Payment",           formula:"Deposits € / Unique Depositors",                                                desc:"Средний депозит на одного уникального депозитора." },
+  { id:15, name:"New Depositors",                         abbr:"New Dep Players",  type:"Метрика", cat:"Payment",           formula:"count(FTD players in period)",                                                  desc:"Игроки, которые впервые внесли депозит в данном периоде." },
+  { id:16, name:"Returning Depositors",                   abbr:"Old Dep Players",  type:"Метрика", cat:"Payment",           formula:"Unique Depositors − FTDs",                                                      desc:"Игроки, которые уже депонировали ранее (возвращающиеся)." },
+  { id:17, name:"Withdrawals €",                          abbr:"OUT",              type:"Метрика", cat:"Payment",           formula:"SUM(successful cashout amounts, EUR)",                                          desc:"Общий объём успешных выводов средств в EUR за период." },
+  { id:18, name:"Withdrawal %",                           abbr:"OUT %",            type:"Метрика", cat:"Payment",           formula:"Withdrawals € / Deposits € × 100",                                              desc:"Доля выводов от общего объёма депозитов." },
+  { id:19, name:"Withdrawal Count",                       abbr:"With. Count",      type:"Метрика", cat:"Payment",           formula:"count(successful withdrawal transactions)",                                      desc:"Количество успешных транзакций вывода средств." },
+  { id:20, name:"Avg Deposit Transaction Amount",         abbr:"Avg Dep tx",       type:"Метрика", cat:"Payment",           formula:"(Deposits € + Withdrawals €) / Total TX count",                                 desc:"Средний размер транзакции (включая депозиты и выводы)." },
+  { id:21, name:"Deposit Count Attempts",                 abbr:"Dep Atmp Count",   type:"Метрика", cat:"Payment",           formula:"count(all payment attempts)",                                                   desc:"Общее количество попыток платежей (успешных и неуспешных)." },
+  { id:22, name:"Deposit Count Success",                  abbr:"Dep Succ Count",   type:"Метрика", cat:"Payment",           formula:"count(successful payment transactions)",                                         desc:"Количество успешно проведённых платёжных транзакций." },
+  { id:23, name:"Approval Rate %",                        abbr:"AR%",              type:"Метрика", cat:"Payment",           formula:"Count Success / Count Attempts × 100",                                          desc:"Процент одобренных транзакций от всех попыток. Зелёный >80%, жёлтый 60–80%, красный <60%." },
+  { id:24, name:"Unique Players Approval Rate %",         abbr:"U AR%",            type:"Метрика", cat:"Payment",           formula:"Unique Players Success / Unique Players Attempts × 100",                        desc:"Процент уникальных игроков, у которых хотя бы одна транзакция прошла успешно." },
+  { id:25, name:"FTD Approval Rate %",                    abbr:"FTD AR%",          type:"Метрика", cat:"Payment",           formula:"FTD Count Success / FTD Count Attempts × 100",                                  desc:"Approval Rate для транзакций первого депозита." },
+  { id:26, name:"Unique FTD Players Approval Rate %",     abbr:"U FTD AR%",        type:"Метрика", cat:"Payment",           formula:"Unique FTD Players Success / Unique FTD Players Attempts × 100",                desc:"Уникальный AR для FTD игроков." },
+  { id:27, name:"Standard Players Approval Rate %",       abbr:"STD AR%",          type:"Метрика", cat:"Payment",           formula:"STD Count Success / STD Count Attempts × 100",                                  desc:"Approval Rate для повторных (returning) депозитов." },
+  { id:28, name:"Unique Standard Players Approval Rate %",abbr:"U STD AR%",        type:"Метрика", cat:"Payment",           formula:"Unique STD Players Success / Unique STD Players Attempts × 100",                desc:"Уникальный AR для возвращающихся игроков." },
+  { id:29, name:"Net Cash €",                             abbr:"NC",               type:"Метрика", cat:"Finance",           formula:"Deposits € − Withdrawals €",                                                    desc:"Чистый денежный поток: разница между входящими и исходящими средствами." },
+  { id:30, name:"Average Net Cash per Player",            abbr:"Avg NC / Player",  type:"Метрика", cat:"Finance",           formula:"Net Cash € / Unique Depositors",                                                desc:"Средний чистый кэш на одного уникального депозитора." },
+  { id:31, name:"Net FTDs €",                             abbr:"Net FTDs",         type:"Метрика", cat:"Finance",           formula:"SUM(Deposits − Withdrawals, FTD players)",                                      desc:"Net Cash только по FTD игрокам за период." },
+  { id:32, name:"Net Old €",                              abbr:"Net Old",          type:"Метрика", cat:"Finance",           formula:"SUM(Deposits − Withdrawals, returning players)",                                 desc:"Net Cash только по возвращающимся игрокам." },
+  { id:33, name:"Bet Amount €",                           abbr:"Bet",              type:"Метрика", cat:"Finance",           formula:"SUM(all bet amounts, EUR)",                                                      desc:"Общий объём сделанных ставок (Real Money + Bonus Money)." },
+  { id:34, name:"Win Amount €",                           abbr:"Win",              type:"Метрика", cat:"Finance",           formula:"SUM(all win amounts, EUR)",                                                      desc:"Общий объём выплаченных выигрышей (Real Money + Bonus Money)." },
+  { id:35, name:"RM Bet €",                               abbr:"RM Bet",           type:"Метрика", cat:"Finance",           formula:"SUM(real money bet amounts)",                                                   desc:"Ставки, сделанные только на реальные деньги." },
+  { id:36, name:"RM Win €",                               abbr:"RM Win",           type:"Метрика", cat:"Finance",           formula:"SUM(real money win amounts)",                                                   desc:"Выигрыши с реально-денежных ставок." },
+  { id:37, name:"BM Bet €",                               abbr:"BM Bet",           type:"Метрика", cat:"Finance",           formula:"SUM(bonus money bet amounts)",                                                  desc:"Ставки, сделанные на бонусные деньги." },
+  { id:38, name:"BM Win €",                               abbr:"BM Win",           type:"Метрика", cat:"Finance",           formula:"SUM(bonus money win amounts)",                                                  desc:"Выигрыши с бонусных ставок." },
+  { id:39, name:"avg Bet €",                              abbr:"avg Bet",          type:"Метрика", cat:"Finance",           formula:"Bet Amount € / count(bets)",                                                    desc:"Средний размер одной ставки за период." },
+  { id:40, name:"GGR (Gross Gaming Revenue)",             abbr:"GGR",              type:"Метрика", cat:"Finance",           formula:"Bet Amount € − Win Amount €",                                                   desc:"Валовой игровой доход до вычета бонусов и налогов." },
+  { id:41, name:"GGR Real",                               abbr:"RM GGR",           type:"Метрика", cat:"Finance",           formula:"RM Bet € − RM Win €",                                                           desc:"GGR только от реально-денежных ставок." },
+  { id:42, name:"GGR Bonus",                              abbr:"BM GGR",           type:"Метрика", cat:"Finance",           formula:"BM Bet € − BM Win €",                                                           desc:"GGR только от бонусных ставок." },
+  { id:43, name:"NGR (Net Gaming Revenue)",               abbr:"NGR",              type:"Метрика", cat:"Finance",           formula:"GGR − Bonus Released − Taxes",                                                  desc:"Чистый игровой доход после вычета бонусов и налогов." },
+  { id:44, name:"Bonus Credited €",                       abbr:"Bonus Credited",   type:"Метрика", cat:"Finance",           formula:"SUM(bonus amounts credited to players)",                                         desc:"Сумма бонусов, начисленных игрокам за период." },
+  { id:45, name:"Bonus Released €",                       abbr:"Bonus Released",   type:"Метрика", cat:"Finance",           formula:"SUM(bonus amounts converted to real money)",                                     desc:"Сумма бонусов, вейджер по которым выполнен и конвертированных в реальные деньги." },
+  { id:46, name:"Bonus Credited Count",                   abbr:"Bonus Count",      type:"Метрика", cat:"Finance",           formula:"count(bonus transactions issued)",                                               desc:"Количество выданных бонусов за период." },
+  { id:47, name:"Profit & Loss",                          abbr:"P&L",              type:"Метрика", cat:"Finance",           formula:"NGR − Marketing Cost",                                                          desc:"Прибыль и убытки: чистый доход за вычетом маркетинговых расходов." },
+  { id:48, name:"EUR Equivalent",                         abbr:"EUR eq",           type:"Метрика", cat:"Finance",           formula:"original_amount × eur_rate (rate locked at tx time)",                           desc:"Сумма транзакции в EUR. Курс фиксируется в момент транзакции, не пересчитывается." },
+  { id:49, name:"M2 Retention",                           abbr:"M2",               type:"Метрика", cat:"CRM",               formula:"GGR(month 2) / GGR(month 0) × 100",                                             desc:"Доля GGR когорты, остающаяся через 2 месяца после регистрации." },
+  { id:50, name:"M6 Retention",                           abbr:"M6",               type:"Метрика", cat:"CRM",               formula:"GGR(month 6) / GGR(month 0) × 100",                                             desc:"Доля GGR когорты, остающаяся через 6 месяцев после регистрации." },
+  { id:51, name:"M9 Retention",                           abbr:"M9",               type:"Метрика", cat:"CRM",               formula:"GGR(month 9) / GGR(month 0) × 100",                                             desc:"Доля GGR когорты, остающаяся через 9 месяцев после регистрации." },
+  { id:52, name:"M12 Retention",                          abbr:"M12",              type:"Метрика", cat:"CRM",               formula:"GGR(month 12) / GGR(month 0) × 100",                                            desc:"Доля GGR когорты, остающаяся через 12 месяцев после регистрации." },
+  { id:53, name:"W2 Retention",                           abbr:"W2",               type:"Метрика", cat:"CRM",               formula:"GGR(week 2) / GGR(week 0) × 100",                                               desc:"Доля GGR когорты, остающаяся через 2 недели после регистрации." },
+  { id:54, name:"Cohort",                                 abbr:"Cohort",           type:"Термин",  cat:"CRM",               formula:"",                                                                              desc:"Группа игроков, объединённых по периоду первого депозита (день, неделя, месяц)." },
+  { id:55, name:"Deposits from FTDs €",                   abbr:"Dep FTDs",         type:"Метрика", cat:"Affiliate",         formula:"SUM(FTD deposits, players from affiliate)",                                      desc:"Суммарный первый депозит всех FTD игроков, привлечённых аффилиейтом." },
+  { id:56, name:"Average Deposit from FTDs €",            abbr:"avg Dep FTDs",     type:"Метрика", cat:"Affiliate",         formula:"NGR / FTDs",                                                                    desc:"Средний доход с одного FTD игрока от аффилиейта." },
+  { id:57, name:"Total Affiliate Cost €",                 abbr:"TTL Cost",         type:"Метрика", cat:"Affiliate",         formula:"SUM(CPA) + SUM(RevShare) + SUM(Fixed Fee) + SUM(CPC)",                          desc:"Совокупные расходы на аффилейт-маркетинг: фиксированные CPA + доля от дохода." },
+  { id:58, name:"Average Cost Per Player",                abbr:"eCPA",             type:"Метрика", cat:"Affiliate",         formula:"Total Marketing Cost € / FTDs",                                                 desc:"Фактическая стоимость привлечения одного FTD игрока." },
+  { id:59, name:"ROI %",                                  abbr:"ROI %",            type:"Метрика", cat:"Affiliate",         formula:"(NGR − Marketing Cost) / Marketing Cost × 100",                                 desc:"Возврат инвестиций в маркетинговый канал. При Marketing Cost = 0 → NULL." },
+  { id:60, name:"Affiliate Profit",                       abbr:"Aff Profit",       type:"Метрика", cat:"Affiliate",         formula:"Net Cash − Total Affiliate Cost",                                               desc:"Прибыль от аффилиационного партнёра за период." },
+  { id:61, name:"CPA",                                    abbr:"CPA",              type:"Термин",  cat:"Affiliate",         formula:"",                                                                              desc:"Cost Per Acquisition — фиксированная выплата аффилиейту за каждого FTD игрока." },
+  { id:62, name:"Revenue Share",                          abbr:"RS",               type:"Термин",  cat:"Affiliate",         formula:"",                                                                              desc:"Revenue Share — процент от NGR/GGR игрока, выплачиваемый аффилиейту." },
+  { id:63, name:"Total IN",                               abbr:"IN",               type:"Метрика", cat:"Payment",           formula:"SUM(successful deposit amounts, period)",                                        desc:"Синоним Deposits €, применяется в In/Out отчёте." },
+  { id:64, name:"Total OUT",                              abbr:"OUT",              type:"Метрика", cat:"Payment",           formula:"SUM(successful cashout amounts, period)",                                        desc:"Синоним Withdrawals €, применяется в In/Out отчёте." },
+  { id:65, name:"First Time Depositor",                   abbr:"FTD",              type:"Термин",  cat:"Acquisition",       formula:"",                                                                              desc:"First Time Deposit — первый успешный расчётный депозит игрока на бренд. Не пересчитывается при чарджбэке." },
+  { id:66, name:"Standard Player Depositor",              abbr:"STD",              type:"Термин",  cat:"Payment",           formula:"",                                                                              desc:"Standard Deposit — любой депозит игрока, у которого FTD уже зафиксирован (возвращающийся депозитор)." },
+  { id:67, name:"Depositor Segment",                      abbr:"Dep Seg",          type:"Термин",  cat:"KPI",               formula:"",                                                                              desc:"Группировка депозиторов по сумме депозита: <€20, <€30, <€50, <€100, <€200, >€500." },
+  { id:68, name:"Player ID",                              abbr:"Player ID",        type:"Термин",  cat:"KPI",               formula:"",                                                                              desc:"UUID, объединяющий аккаунты одного игрока на разных брендах (Global Player ID)." },
+  { id:69, name:"Processing Time",                        abbr:"",                 type:"Метрика", cat:"Risk & Compliance",  formula:"timestamp(settled) − timestamp(initiated)",                                     desc:"Время обработки транзакции от инициации до финального статуса." },
+  { id:70, name:"Large Transactions Flag",                abbr:"L tx",             type:"Термин",  cat:"Risk & Compliance",  formula:"",                                                                              desc:"Флаг на транзакцию с суммой выше установленного порога (в системе >€300)." },
+  { id:71, name:"Multi Transactions Flag",                abbr:"M tx",             type:"Термин",  cat:"Risk & Compliance",  formula:"",                                                                              desc:"Флаг на игрока, совершившего несколько транзакций за короткий период." },
+  { id:72, name:"Failed Transactions",                    abbr:"F tx",             type:"Метрика", cat:"Risk & Compliance",  formula:"count(transactions with status = failed, player, period)",                      desc:"Количество неуспешных транзакций игрока за период." },
+  { id:73, name:"RTP (Return to Player)",                  abbr:"RTP%",             type:"Метрика", cat:"Gaming",             formula:"Win Amount € / Bet Amount € × 100",                                              desc:"Процент возврата средств игроку. Теоретический RTP устанавливается провайдером; фактический рассчитывается по реальным данным." },
+  { id:74, name:"GGR Margin",                              abbr:"Margin%",          type:"Метрика", cat:"Gaming",             formula:"GGR € / Bet Amount € × 100 = 100% − RTP%",                                      desc:"Доля от общего объёма ставок, которую казино удерживает как доход. Обратная величина RTP." },
+  { id:75, name:"Game Rounds",                             abbr:"Rounds",           type:"Метрика", cat:"Gaming",             formula:"count(settled game rounds, provider, period)",                                   desc:"Количество завершённых игровых раундов у провайдера за период. Не включает незавершённые и отменённые раунды." },
+  { id:76, name:"Gaming Session",                          abbr:"Session",          type:"Термин",  cat:"Gaming",             formula:"",                                                                               desc:"Игровая сессия — непрерывный период активности игрока у одного провайдера. Завершается при выходе или по таймауту бездействия." },
+  { id:77, name:"Provider GGR Share",                      abbr:"GGR Share%",       type:"Метрика", cat:"Gaming",             formula:"Provider GGR € / Total GGR € × 100",                                             desc:"Доля GGR отдельного провайдера в общем GGR платформы за период." },
+  { id:78, name:"Game GGR Share",                          abbr:"Game GGR%",        type:"Метрика", cat:"Gaming",             formula:"Game GGR € / Total GGR € × 100",                                                 desc:"Доля GGR отдельной игры в общем GGR платформы. Используется для оценки вклада каждого тайтла." },
+  { id:79, name:"Volatility",                              abbr:"Vol",              type:"Термин",  cat:"Gaming",             formula:"",                                                                               desc:"Волатильность игры — частота и размер выплат. High: редкие крупные выплаты. Mid: баланс. Low: частые небольшие выплаты." },
+  { id:80, name:"Bonus Round",                             abbr:"Bonus Rnd",        type:"Термин",  cat:"Gaming",             formula:"",                                                                               desc:"Бонусный раунд — спецфункция игры (Free Spins, Buy Bonus и др.), активируемая по условию или покупкой. Ставки учитываются отдельно." },
+  { id:81, name:"Avg Round €",                             abbr:"Avg Round",        type:"Метрика", cat:"Gaming",             formula:"Bet Amount € / Rounds Count",                                                    desc:"Средний размер ставки на один игровой раунд у провайдера или по конкретной игре." },
+  { id:82, name:"Active Gaming Sessions",                  abbr:"Sessions",         type:"Метрика", cat:"Gaming",             formula:"count(distinct session_id, provider, period)",                                   desc:"Количество уникальных игровых сессий у провайдера за период." },
+  { id:83, name:"Provider",                                abbr:"Provider",         type:"Термин",  cat:"Gaming",             formula:"",                                                                               desc:"Игровой провайдер — компания-разработчик casino-контента (слоты, live-игры, настольные игры), интегрированная через API в платформу." }];
+
+var CAT_CLASS = {
+  "Acquisition": "Acquisition",
+  "Payment": "Payment",
+  "Finance": "Finance",
+  "CRM": "CRM",
+  "Affiliate": "Affiliate",
+  "KPI": "KPI",
+  "Risk & Compliance": "Risk",
+  "Gaming": "Gaming"
+};
+
+var currentCat  = "All";
+var currentType = "All";
+var currentSort = "default";
+var currentSearch = "";
+var isListView = false;
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlight(text, query) {
+  if (!query) return text;
+  var re = new RegExp('(' + escapeRegex(query) + ')', 'gi');
+  return text.replace(re, '<mark class="hl">$1</mark>');
+}
+
+function buildCard(item, query) {
+  var cc = CAT_CLASS[item.cat] || "KPI";
+  var hasFormula = item.formula && item.formula.trim() !== "";
+  var formulaHTML = hasFormula
+    ? '<div class="vc-formula">' + highlight(item.formula, query) + '</div>'
+    : '<div class="vc-formula no-formula">— no formula</div>';
+  var abbrHTML = item.abbr ? '<span class="vc-abbrev">' + highlight(item.abbr, query) + '</span>' : '';
+  var typeLabel = item.type === "Метрика" ? "Metric" : "Term";
+  return (
+    '<div class="vocab-card border-' + cc + '" data-cat="' + item.cat + '" data-type="' + item.type + '">' +
+      '<div class="vc-top">' +
+        '<div class="vc-name">' + highlight(item.name, query) + '</div>' +
+        abbrHTML +
+      '</div>' +
+      formulaHTML +
+      '<div class="vc-desc">' + highlight(item.desc, query) + '</div>' +
+      '<div class="vc-footer">' +
+        '<div class="vc-tags">' +
+          '<span class="vc-cat-badge cat-' + cc + '">' + item.cat + '</span>' +
+          '<span class="vc-type-badge">' + typeLabel + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function getFiltered() {
+  var q = currentSearch.toLowerCase().trim();
+  return VOCAB.filter(function(item) {
+    if (currentCat !== "All" && item.cat !== currentCat) return false;
+    if (currentType !== "All" && item.type !== currentType) return false;
+    if (q) {
+      var haystack = (item.name + " " + item.abbr + " " + item.formula + " " + item.desc).toLowerCase();
+      if (haystack.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+}
+
+function getSorted(arr) {
+  if (currentSort === "az")  return arr.slice().sort(function(a,b){ return a.name.localeCompare(b.name); });
+  if (currentSort === "za")  return arr.slice().sort(function(a,b){ return b.name.localeCompare(a.name); });
+  if (currentSort === "cat") return arr.slice().sort(function(a,b){ return a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name); });
+  return arr; // default = original order
+}
+
+function render() {
+  var filtered = getSorted(getFiltered());
+  var grid = document.getElementById("vocabGrid");
+  var q = currentSearch.trim();
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">No results found</div><div class="empty-sub">Try adjusting your search or filters.</div></div>';
+  } else {
+    grid.innerHTML = filtered.map(function(item){ return buildCard(item, q); }).join("");
+  }
+
+  document.getElementById("resultCount").textContent = filtered.length;
+}
+
+// ── Search ──
+var searchInput = document.getElementById("searchInput");
+var searchClear = document.getElementById("searchClear");
+searchInput.addEventListener("input", function() {
+  currentSearch = this.value;
+  searchClear.classList.toggle("visible", !!this.value);
+  render();
+});
+searchClear.addEventListener("click", function() {
+  searchInput.value = "";
+  currentSearch = "";
+  this.classList.remove("visible");
+  searchInput.focus();
+  render();
+});
+
+// ── Sort ──
+document.querySelectorAll(".sort-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".sort-btn").forEach(function(b){ b.classList.remove("active"); });
+    this.classList.add("active");
+    currentSort = this.dataset.sort;
+    render();
+  });
+});
+
+// ── Category chips ──
+document.querySelectorAll(".cat-chip").forEach(function(chip) {
+  chip.addEventListener("click", function() {
+    document.querySelectorAll(".cat-chip").forEach(function(c){ c.classList.remove("active"); });
+    this.classList.add("active");
+    currentCat = this.dataset.cat;
+    render();
+  });
+});
+
+// ── Type chips ──
+document.querySelectorAll(".type-chip").forEach(function(chip) {
+  chip.addEventListener("click", function() {
+    document.querySelectorAll(".type-chip").forEach(function(c){ c.classList.remove("active"); });
+    this.classList.add("active");
+    currentType = this.dataset.type;
+    render();
+  });
+});
+
+// ── View toggle ──
+document.getElementById("viewGrid").addEventListener("click", function() {
+  isListView = false;
+  document.getElementById("vocabGrid").classList.remove("view-list");
+  this.classList.add("active");
+  document.getElementById("viewList").classList.remove("active");
+});
+document.getElementById("viewList").addEventListener("click", function() {
+  isListView = true;
+  document.getElementById("vocabGrid").classList.add("view-list");
+  this.classList.add("active");
+  document.getElementById("viewGrid").classList.remove("active");
+});
+
+// ── Initial render ──
+render();
+</script>
 </body>
 </html>

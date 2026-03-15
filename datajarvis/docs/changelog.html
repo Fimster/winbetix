@@ -86,11 +86,13 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
 <div class="topbar">
   <a class="topbar-logo" href="../index.html"><img class="logo-img" src="../assets/logo.png" alt="WinBetix"></a>
   <div class="topbar-sep"></div>
-  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Changelog v2.4</span></div>
+  <div class="topbar-crumb"><a href="index.html">Docs</a><span class="sep">/</span><span class="cur">Changelog v2.6</span></div>
 </div>
 <nav class="toc">
 <div class="toc-title">Versions</div>
-<a class="toc-link active" href="#v24">v2.4 Latest</a>
+<a class="toc-link active" href="#v26">v2.6 Latest</a>
+<a class="toc-link" href="#v25">v2.5</a>
+<a class="toc-link" href="#v24">v2.4</a>
 <a class="toc-link" href="#v23">v2.3</a>
 <a class="toc-link" href="#v22">v2.2</a>
 <a class="toc-link" href="#v21">v2.1</a>
@@ -101,12 +103,43 @@ footer{grid-area:nav2;border-top:1px solid var(--border);padding:18px 32px;displ
 <main class="doc-main">
 <div class="doc-header">
   <div class="doc-label">06 — Changelog</div>
-  <h1>Changelog v2.4</h1>
+  <h1>Changelog v2.6</h1>
   <p>История версий WinBetix. Все изменения в спецификациях, прототипах и архитектурных решениях.</p>
   <div class="doc-meta-row">
-    <span class="meta-pill green">Latest: v2.4</span>
+    <span class="meta-pill green">Latest: v2.6</span>
     <span class="meta-pill">March 2026</span>
   </div>
+</div>
+
+<div class="doc-section" id="v26">
+  <h2>v2.6 — March 14, 2026</h2>
+  <h3>New Report: Providers &amp; Games</h3>
+  <ul>
+    <li><strong>providers-report.html</strong> — новый отчёт по игровым провайдерам и играм. Таблица топ провайдеров + топ слотов/игр с полным набором KPI</li>
+    <li><strong>Фильтры</strong> — Company ID, Affiliate ID, Brand, GEO, Traffic Type, Currency, Game Type (All / Slots / Live / Table / Other)</li>
+    <li><strong>Providers KPI</strong> — Unique Players, Sessions, Rounds, Bet €, Win €, avg Bet €, GGR €, Real GGR €, Bonus GGR €, GGR share %, RM Bet/Win/GGR, BM Bet/Win/GGR, RTP%, Margin%, Avg Round €</li>
+    <li><strong>Games KPI</strong> — Unique Players, Rounds, Sessions, Bet €, Win €, avg Bet €, GGR €, GGR share %, Provider %, RTP%, Bonus Rounds, Bonus Win €, Volatility badge, Min Bet €</li>
+    <li><strong>KPI Cards</strong> — Total GGR, Total Bet Volume, Unique Players, Avg Bet/Round, Platform RTP%, Total Rounds — все с delta vs предыдущего периода</li>
+    <li><strong>Визуализация</strong> — inline RTP bar, GGR share bar, game type badge (Slot/Live/Table), volatility badge (High/Mid/Low), rank badges (#1/#2/#3 с цветами)</li>
+  </ul>
+  <h3>Navigation</h3>
+  <ul>
+    <li><strong>nav.js</strong> — добавлена группа "Providers" с ссылкой на Providers &amp; Games KPI, отображается на всех report-страницах</li>
+  </ul>
+  <h3>Documentation</h3>
+  <ul>
+    <li><strong>vocabulary.html</strong> → v1.5 — добавлены термины: RTP, Game Rounds, Gaming Session, GGR Margin, Volatility, Bonus Round, Provider Share, RM/BM Bet/Win</li>
+    <li><strong>roadmap.html</strong> — Providers Report отмечен как доставленный</li>
+  </ul>
+</div>
+
+<div class="doc-section" id="v25">
+  <h2>v2.5 — March 13, 2026</h2>
+  <h3>Homepage</h3>
+  <ul>
+    <li><strong>index.html</strong> — заменена hub-страница на полноценный homepage с 4 module cards (Analytics, Wiki, Roadmap, Changelog), hero, stats bar, quick access links и about-секцией</li>
+    <li>Добавлена интеграция roadmap.html в структуру сайта: footer links на всех страницах, карточка в docs/index.html, standalone ссылка в nav.js</li>
+  </ul>
 </div>
 
 <div class="doc-section" id="v24">
